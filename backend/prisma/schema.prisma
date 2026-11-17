@@ -1,0 +1,292 @@
+// Phase 2 foundation schema. See docs/architecture/03-database-schema.md.
+//
+// Constraints Prisma cannot express (CHECKs, partial indexes, append-only triggers)
+// are hand-written in the migration SQL. Partial indexes are declared here with the
+// same name and columns so `prisma migrate diff` reports no drift; their WHERE clause
+// lives only in SQL. Run `npm run db:drift` after every schema change.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AccountType {
+  CUSTOMER
+  STAFF
+}
+
+enum AccountStatus {
+  // Fail-closed column default. Customer accounts are only created after OTP proof,
+  // so they start ACTIVE.
+  PENDING_PHONE
+  // Staff account created by a super admin; password and TOTP not yet set.
+  PENDING_ACTIVATION
+  ACTIVE
+  LOCKED
+  SUSPENDED
+  CLOSED
+}
+
+enum IdentityStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+  SUSPENDED
+  EXPIRED
+  REVERIFICATION_REQUIRED
+}
+
+enum Locale {
+  en
+  am
+}
+
+enum DevicePlatform {
+  ANDROID
+  IOS
+  WEB
+}
+
+enum AuditActorType {
+  USER
+  STAFF
+  SYSTEM
+  PROVIDER
+}
+
+enum IdempotencyStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum StaffRole {
+  SUPPORT
+  VERIFICATION_OFFICER
+  FINANCE
+  SUPER_ADMIN
+}
+
+enum OtpPurpose {
+  REGISTER
+  LOGIN_STEP_UP
+  PASSWORD_RESET
+  STAFF_ACTIVATION
+  STAFF_MFA_ENROLLMENT
+}
+
+model User {
+  id                String         @id @default(uuid(7)) @db.Uuid
+  phoneE164         String         @unique @map("phone_e164")
+  email             String?        @unique
+  passwordHash      String         @map("password_hash")
+  accountType       AccountType    @map("account_type")
+  status            AccountStatus  @default(PENDING_PHONE)
+  identityStatus    IdentityStatus @default(UNVERIFIED) @map("identity_status")
+  displayName       String?        @map("display_name")
+  preferredLocale   Locale         @default(en) @map("preferred_locale")
+  failedLoginCount  Int            @default(0) @map("failed_login_count")
+  lockedUntil       DateTime?      @map("locked_until") @db.Timestamptz(6)
+  mfaSecretEnc      Bytes?         @map("mfa_secret_enc")
+  // Staff TOTP: enrollment time and last accepted 30-second step (replay protection).
+  mfaEnrolledAt     DateTime?      @map("mfa_enrolled_at") @db.Timestamptz(6)
+  mfaLastUsedStep   BigInt?        @map("mfa_last_used_step")
+  passwordChangedAt DateTime?      @map("password_changed_at") @db.Timestamptz(6)
+  closedAt          DateTime?      @map("closed_at") @db.Timestamptz(6)
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version           Int            @default(0)
+
+  devices       Device[]
+  sessions      Session[]
+  auditLogs     AuditLog[]
+  otpChallenges OtpChallenge[]
+  staffRoles    StaffRoleAssignment[] @relation("StaffRoleHolder")
+  rolesGranted  StaffRoleAssignment[] @relation("StaffRoleGrantor")
+  rolesRevoked  StaffRoleAssignment[] @relation("StaffRoleRevoker")
+
+  @@map("users")
+}
+
+model Device {
+  id             String         @id @default(uuid(7)) @db.Uuid
+  userId         String         @map("user_id") @db.Uuid
+  installationId String         @map("installation_id")
+  platform       DevicePlatform
+  model          String?
+  appVersion     String?        @map("app_version")
+  // Set after the user proved phone possession (OTP) on this installation; cleared on
+  // remote session revocation, password reset and refresh-token reuse.
+  trustedAt      DateTime?      @map("trusted_at") @db.Timestamptz(6)
+  lastSeenAt     DateTime       @default(now()) @map("last_seen_at") @db.Timestamptz(6)
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  sessions Session[]
+
+  @@unique([userId, installationId])
+  @@map("devices")
+}
+
+model Session {
+  id                 String    @id @default(uuid(7)) @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  deviceId           String?   @map("device_id") @db.Uuid
+  refreshTokenFamily String    @map("refresh_token_family") @db.Uuid
+  currentTokenHash   String    @unique @map("current_token_hash")
+  previousTokenHash  String?   @map("previous_token_hash")
+  expiresAt          DateTime  @map("expires_at") @db.Timestamptz(6)
+  lastUsedAt         DateTime  @default(now()) @map("last_used_at") @db.Timestamptz(6)
+  // Last full authentication (password, plus TOTP for staff). Drives step-up checks.
+  authenticatedAt    DateTime  @default(now()) @map("authenticated_at") @db.Timestamptz(6)
+  // When previous_token_hash was retired; bounds the network-retry grace window.
+  rotatedAt          DateTime? @map("rotated_at") @db.Timestamptz(6)
+  revokedAt          DateTime? @map("revoked_at") @db.Timestamptz(6)
+  revokeReason       String?   @map("revoke_reason")
+  ip                 String?   @db.Inet
+  userAgent          String?   @map("user_agent")
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Restrict)
+  device        Device?               @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  retiredTokens RetiredRefreshToken[]
+
+  // Partial (WHERE revoked_at IS NULL) in SQL.
+  @@index([userId], map: "sessions_active_user_idx")
+  @@index([previousTokenHash])
+  @@index([refreshTokenFamily])
+  @@map("sessions")
+}
+
+model AuditLog {
+  // seq orders the hash chain; id is the public identifier.
+  seq         BigInt         @id @default(autoincrement())
+  id          String         @unique @default(uuid(7)) @db.Uuid
+  occurredAt  DateTime       @default(now()) @map("occurred_at") @db.Timestamptz(6)
+  actorUserId String?        @map("actor_user_id") @db.Uuid
+  actorType   AuditActorType @map("actor_type")
+  action      String
+  targetType  String?        @map("target_type")
+  targetId    String?        @map("target_id")
+  requestId   String?        @map("request_id")
+  ip          String?        @db.Inet
+  userAgent   String?        @map("user_agent")
+  reason      String?
+  changes     Json?
+  // Filled once by the audit sealer (hash chain); the trigger forbids any other update.
+  prevHash    String?        @map("prev_hash")
+  hash        String?
+
+  actor User? @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([targetType, targetId, occurredAt])
+  @@index([actorUserId, occurredAt])
+  @@index([occurredAt])
+  @@map("audit_logs")
+}
+
+model IdempotencyRecord {
+  id             String            @id @default(uuid(7)) @db.Uuid
+  scope          String
+  // User id for authenticated calls; a hashed client fingerprint for anonymous ones.
+  principal      String
+  key            String
+  requestHash    String            @map("request_hash")
+  status         IdempotencyStatus @default(IN_PROGRESS)
+  responseStatus Int?              @map("response_status")
+  responseBody   Json?             @map("response_body")
+  lockedUntil    DateTime          @map("locked_until") @db.Timestamptz(6)
+  expiresAt      DateTime          @map("expires_at") @db.Timestamptz(6)
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([scope, principal, key])
+  @@index([expiresAt])
+  @@map("idempotency_records")
+}
+
+model OutboxEvent {
+  // id is the event id used by consumers for de-duplication.
+  id            String    @id @default(uuid(7)) @db.Uuid
+  aggregateType String    @map("aggregate_type")
+  aggregateId   String    @map("aggregate_id")
+  eventType     String    @map("event_type")
+  payload       Json
+  requestId     String?   @map("request_id")
+  availableAt   DateTime  @default(now()) @map("available_at") @db.Timestamptz(6)
+  attempts      Int       @default(0)
+  processedAt   DateTime? @map("processed_at") @db.Timestamptz(6)
+  lastError     String?   @map("last_error")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Partial (WHERE processed_at IS NULL) in SQL.
+  @@index([availableAt], map: "outbox_events_pending_idx")
+  @@index([aggregateType, aggregateId])
+  @@map("outbox_events")
+}
+
+// Every refresh token hash that was rotated out. Presenting one again (outside the
+// short network-retry grace window) is treated as theft and revokes the session.
+model RetiredRefreshToken {
+  tokenHash String   @id @map("token_hash")
+  sessionId String   @map("session_id") @db.Uuid
+  retiredAt DateTime @default(now()) @map("retired_at") @db.Timestamptz(6)
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("retired_refresh_tokens")
+}
+
+// Current role grants, one row per (user, role). Revocation sets revoked_at; history
+// lives in audit_logs. Only staff accounts can hold rows (trigger).
+model StaffRoleAssignment {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  role        StaffRole
+  // NULL only for the bootstrap super admin created by the CLI.
+  grantedById String?   @map("granted_by") @db.Uuid
+  grantedAt   DateTime  @default(now()) @map("granted_at") @db.Timestamptz(6)
+  revokedAt   DateTime? @map("revoked_at") @db.Timestamptz(6)
+  revokedById String?   @map("revoked_by") @db.Uuid
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user      User  @relation("StaffRoleHolder", fields: [userId], references: [id], onDelete: Restrict)
+  grantedBy User? @relation("StaffRoleGrantor", fields: [grantedById], references: [id], onDelete: Restrict)
+  revokedBy User? @relation("StaffRoleRevoker", fields: [revokedById], references: [id], onDelete: Restrict)
+
+  @@unique([userId, role])
+  @@map("staff_role_assignments")
+}
+
+// One-time challenges: SMS codes (registration, new-device login, password reset),
+// staff activation codes and staff MFA enrollment tickets. Only hashes are stored.
+model OtpChallenge {
+  id             String     @id @default(uuid(7)) @db.Uuid
+  purpose        OtpPurpose
+  phoneE164      String     @map("phone_e164")
+  userId         String?    @map("user_id") @db.Uuid
+  // Binds a new-device login challenge to the installation that requested it.
+  installationId String?    @map("installation_id")
+  codeHash       String?    @map("code_hash")
+  ticketHash     String?    @unique @map("ticket_hash")
+  attempts       Int        @default(0)
+  maxAttempts    Int        @map("max_attempts")
+  expiresAt      DateTime   @map("expires_at") @db.Timestamptz(6)
+  consumedAt     DateTime?  @map("consumed_at") @db.Timestamptz(6)
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([phoneE164, purpose, createdAt(sort: Desc)])
+  @@index([userId, purpose])
+  @@map("otp_challenges")
+}
