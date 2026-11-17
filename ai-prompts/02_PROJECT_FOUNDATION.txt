@@ -1,0 +1,123 @@
+PHASE 2 — PROJECT FOUNDATION
+
+Read:
+- 00_MASTER_PROJECT_BRIEF.txt
+- 01_ARCHITECTURE_AND_SPECIFICATION.txt
+
+Inspect the current repository before changing anything.
+
+Implement the approved foundation.
+
+DIRECTORY STRUCTURE
+
+Create a maintainable structure for:
+- mobile
+- backend
+- infrastructure
+- docs
+- tests where appropriate
+
+FLUTTER
+
+Set up:
+- Flutter
+- Dart
+- Material 3
+- Riverpod
+- GoRouter
+- Dio
+- environment configuration
+- secure storage
+- theme
+- localization
+- reusable UI components
+- error/loading/empty states
+- network abstraction
+
+BACKEND
+
+Set up:
+- Node.js
+- TypeScript
+- approved framework
+- strict typing
+- configuration
+- PostgreSQL
+- ORM
+- migrations
+- validation
+- global error handling
+- logging
+- request IDs
+- API versioning
+- Swagger/OpenAPI
+- rate limiting
+- CORS
+- security headers
+- health checks
+
+INFRASTRUCTURE
+
+Create:
+- Dockerfile(s)
+- Docker Compose for local development
+- PostgreSQL service
+- Redis only if architecture requires it
+- environment templates
+- development setup documentation
+
+DATABASE
+
+Implement initial migrations with proper:
+- constraints
+- indexes
+- foreign keys
+- timestamps
+
+AUTHENTICATION FOUNDATION
+
+Implement secure foundations for:
+- registration
+- login
+- logout
+- refresh
+- session/device tracking
+
+Do not store plaintext passwords.
+Do not put secrets in Flutter.
+
+AUTHORIZATION
+
+Implement role-based and resource-level authorization.
+
+Backend authorization must be authoritative.
+
+TESTING
+
+Add tests for:
+- registration
+- login
+- invalid credentials
+- token validation
+- refresh
+- logout
+- protected endpoint
+- unauthorized access
+- validation
+- database constraints
+
+QUALITY GATE
+
+Run:
+- Flutter format
+- Flutter analyze
+- Flutter tests
+- TypeScript compile
+- backend lint
+- backend tests
+- migrations
+- Docker startup validation
+
+Fix errors and rerun.
+
+Do not declare completion without actual verification.

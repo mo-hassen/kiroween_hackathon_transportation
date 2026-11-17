@@ -1,0 +1,63 @@
+PHASE 17 — RATINGS, REVIEWS AND DISPUTES
+
+Implement post-assignment feedback and dispute management.
+
+RATINGS
+
+Allow appropriate parties to rate each other only after an eligible completed interaction.
+
+Prevent:
+- duplicate rating
+- rating unrelated users
+- rating before completion
+- rating manipulation through unauthorized API calls
+
+REVIEWS
+
+Support text review with validation and abuse controls.
+
+DISPUTES
+
+Create dispute entity with:
+- initiator
+- related agreement/assignment/transaction
+- reason
+- description
+- evidence references
+- status
+- assigned staff
+- resolution
+- timestamps
+- audit history
+
+DISPUTE STATES
+
+OPEN
+UNDER_REVIEW
+WAITING_FOR_INFORMATION
+RESOLVED
+REJECTED
+ESCALATED
+CLOSED
+
+FINANCIAL DISPUTES
+
+Do not alter ledger history to resolve a dispute.
+
+Use compensating financial transactions where required.
+
+EVIDENCE
+
+Securely store evidence.
+
+Do not make uploaded evidence public.
+
+ADMIN
+
+Authorized support staff can review and resolve.
+
+FLUTTER
+
+Implement dispute creation, evidence upload, status and resolution view.
+
+TEST authorization and state transitions.

@@ -1,0 +1,56 @@
+PHASE 1 — ARCHITECTURE AND SPECIFICATION
+
+Read 00_MASTER_PROJECT_BRIEF.txt completely.
+
+Do not implement the application yet.
+
+Inspect the repository and determine whether anything already exists.
+
+Produce a concrete architecture for the Addis Ababa driver-owner mobility platform.
+
+Deliver:
+
+1. System context diagram
+2. Actor model
+3. Permission matrix
+4. Core domain model
+5. Domain state machines
+6. PostgreSQL entity relationship design
+7. REST API boundaries
+8. Flutter module structure
+9. Backend module structure
+10. authentication architecture
+11. authorization architecture
+12. identity verification architecture
+13. vehicle verification architecture
+14. financial ledger architecture
+15. payment-provider abstraction
+16. payout architecture
+17. notification architecture
+18. dispute architecture
+19. audit architecture
+20. file/document storage architecture
+21. deployment architecture
+22. testing strategy
+23. observability strategy
+24. security threat model
+25. phased implementation plan
+
+Important:
+
+Do not invent external APIs.
+
+Explicitly distinguish:
+- implemented functionality
+- provider abstractions
+- external dependencies
+- assumptions
+- legal/compliance questions
+
+For identity, investigate the official Fayda integration model if documentation is available to the project environment. Do not invent endpoints.
+
+For payments, identify the interface needed for Ethiopian providers without pretending an unavailable provider is integrated.
+
+Use the architecture to define a clear dependency order.
+
+At the end, provide an implementation roadmap with small, verifiable phases.

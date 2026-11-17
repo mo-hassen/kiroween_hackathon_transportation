@@ -1,0 +1,60 @@
+PHASE 22 — ADDIS ABABA UX AND LOCALIZATION REVIEW
+
+Review the application specifically for Addis Ababa.
+
+LANGUAGES
+
+Ensure the architecture supports:
+- English
+- Amharic
+
+Do not hard-code user-facing strings.
+
+MONEY
+
+Use Ethiopian Birr formatting.
+
+PHONE
+
+Handle Ethiopian phone-number formats consistently.
+
+LOCATION
+
+Consider:
+- neighborhoods
+- sub-cities
+- landmarks
+- GPS accuracy
+- permission denial
+- unavailable location
+- map failure
+- local addressing realities
+
+CONNECTIVITY
+
+Design for variable mobile connectivity and low bandwidth.
+
+UX
+
+Review:
+- Android-first usability
+- touch targets
+- readable typography
+- accessibility
+- loading states
+- error messages
+- offline/read-only behavior
+
+CULTURAL/LOCAL FIT
+
+Do not invent local legal requirements.
+
+Do not use Western assumptions where they conflict with the product's actual Ethiopian operating context.
+
+LEGAL/REGULATORY
+
+Flag areas requiring professional/legal/regulatory review rather than making unsupported claims.
+
+Review all visible text and flows.
+
+Implement concrete improvements where appropriate and test them.

@@ -1,0 +1,82 @@
+PHASE 19 — FULL SECURITY AUDIT
+
+Act as an independent application-security team.
+
+Do not add unrelated features.
+
+Inspect the actual repository and test the implementation.
+
+Threat model:
+- identity data
+- driver licenses
+- vehicle documents
+- location
+- payments
+- accounts
+- admin actions
+
+Check for:
+
+1. broken authentication
+2. broken authorization
+3. IDOR
+4. privilege escalation
+5. mass assignment
+6. SQL injection
+7. XSS where applicable
+8. CSRF where applicable
+9. SSRF
+10. path traversal
+11. malicious file uploads
+12. token leakage
+13. refresh-token issues
+14. session fixation
+15. brute force
+16. enumeration
+17. rate-limit bypass
+18. weak password handling
+19. sensitive logs
+20. exposed secrets
+21. insecure local storage
+22. insecure deep links
+23. unsafe WebViews
+24. payment vulnerabilities
+25. webhook replay
+26. duplicate transactions
+27. race conditions
+28. concurrent vehicle assignment
+29. insecure admin endpoints
+30. insufficient audit logging
+31. privacy violations
+32. unsafe error messages
+33. missing validation
+34. insecure CORS
+35. weak security headers
+36. insecure document access
+
+For every vulnerability:
+- identify file
+- identify code path
+- explain attack
+- explain impact
+- classify severity
+- fix it where safe
+- add regression test
+- rerun tests
+
+Do not merely list recommendations.
+
+Run:
+- static analysis
+- tests
+- dependency audit
+- build validation
+
+Produce:
+CRITICAL
+HIGH
+MEDIUM
+LOW
+INFORMATIONAL
+
+Do not claim the application is secure simply because tests pass.

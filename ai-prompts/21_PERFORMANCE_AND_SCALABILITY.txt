@@ -1,0 +1,70 @@
+PHASE 21 — PERFORMANCE AND SCALABILITY
+
+Review the real implementation for performance and scalability.
+
+DATABASE
+
+Inspect:
+- indexes
+- query plans where available
+- N+1 queries
+- unnecessary joins
+- pagination
+- filtering
+- sorting
+- transaction scope
+- lock contention
+
+BACKEND
+
+Inspect:
+- CPU-heavy operations
+- blocking work
+- memory use
+- connection pooling
+- queue usage
+- cache opportunities
+- rate limits
+
+REDIS
+
+Use only where justified for:
+- caching
+- rate limiting
+- distributed locks where carefully designed
+- queues
+
+Do not introduce Redis complexity without a clear need.
+
+FLUTTER
+
+Inspect:
+- unnecessary rebuilds
+- large widget trees
+- image loading
+- pagination
+- network calls
+- memory
+- lifecycle handling
+
+NETWORK
+
+Design for Addis Ababa mobile connectivity:
+- compact responses
+- pagination
+- timeouts
+- safe retries
+- caching
+- graceful degradation
+
+SCALABILITY
+
+Identify bottlenecks likely to appear as users, vehicles and transactions grow.
+
+Do not prematurely introduce microservices.
+
+Keep a modular monolith unless a concrete scaling boundary justifies another architecture.
+
+Measure before optimizing where practical.
+
+Run tests after changes.

@@ -1,0 +1,69 @@
+PHASE 10 — RENTAL / VEHICLE ASSIGNMENT AGREEMENTS
+
+Implement formal owner-driver agreements.
+
+AGREEMENT DATA
+
+Include:
+- owner
+- driver
+- vehicle
+- start date
+- end date
+- pricing/financial terms
+- commission rules/version
+- responsibilities
+- status
+- agreement version
+- timestamps
+
+AGREEMENT STATES
+
+DRAFT
+PENDING_ACCEPTANCE
+ACCEPTED
+ACTIVE
+EXPIRED
+TERMINATED
+DISPUTED
+
+Do not allow silent modification of accepted terms.
+
+Use versioning.
+
+ACCEPTANCE
+
+Record:
+- actor
+- timestamp
+- agreement version
+- accepted terms reference
+- audit event
+
+ASSIGNMENT
+
+An accepted agreement creates or enables a valid vehicle assignment according to the approved business rules.
+
+CONCURRENCY
+
+One vehicle cannot have overlapping active assignments.
+
+Use database constraints/transactions and appropriate application validation.
+
+SECURITY
+
+Only the involved parties and authorized staff can access agreement details.
+
+FLUTTER
+
+Implement:
+- agreement review
+- terms
+- acceptance
+- rejection
+- active agreement
+- history
+
+BACKEND
+
+Implement domain rules, transactions, audit and tests.

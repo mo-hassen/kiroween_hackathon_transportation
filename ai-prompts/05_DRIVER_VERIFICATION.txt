@@ -1,0 +1,81 @@
+PHASE 5 — DRIVER VERIFICATION
+
+Implement the complete driver-verification workflow.
+
+DRIVER PROFILE
+
+Support:
+- profile
+- contact information
+- identity verification status
+- driving-license information
+- required documents
+- eligibility
+- suspension
+- expiration
+
+DOCUMENT WORKFLOW
+
+States:
+DRAFT
+SUBMITTED
+UNDER_REVIEW
+APPROVED
+REJECTED
+EXPIRED
+SUSPENDED
+
+Do not treat document upload as verification.
+
+DRIVER ELIGIBILITY
+
+A driver can browse or request vehicles only according to the approved eligibility rules.
+
+The backend must enforce eligibility.
+
+DOCUMENT SECURITY
+
+Uploaded documents must:
+- not be public
+- use controlled object-storage access
+- validate file type
+- validate file size
+- use safe generated object keys
+- avoid exposing storage credentials
+- use signed URLs where appropriate
+
+AUDIT
+
+Record important actions:
+- submission
+- review
+- approval
+- rejection
+- expiration
+- suspension
+
+ADMIN/VERIFICATION
+
+Create authorized workflows for verification staff.
+
+A driver must not be able to approve himself.
+
+FLUTTER
+
+Implement:
+- driver profile
+- document submission
+- verification status
+- rejection feedback
+- expiration warnings
+- resubmission
+
+TEST:
+- access control
+- invalid transitions
+- expired license
+- suspended driver
+- document access
+- forged client state
+
+Run all checks.

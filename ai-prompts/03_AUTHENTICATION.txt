@@ -1,0 +1,77 @@
+PHASE 3 — AUTHENTICATION
+
+Read the master brief and architecture documents.
+
+Implement production-quality authentication.
+
+Support:
+- account registration
+- phone/email identifier as approved by architecture
+- secure password hashing where passwords are used
+- login
+- logout
+- refresh tokens
+- token rotation
+- session management
+- device tracking
+- account status
+- password reset/recovery
+- account lock/rate-limit protections
+
+SECURITY
+
+Do not store plaintext passwords.
+
+Do not store long-lived access tokens insecurely.
+
+Do not put secrets in Flutter.
+
+Use secure refresh-token handling.
+
+Protect authentication endpoints from:
+- brute force
+- enumeration
+- replay
+- credential stuffing
+
+AUTHORIZATION
+
+Implement:
+- driver
+- owner
+- support/admin
+- verification officer
+- finance/admin
+- super administrator
+
+Enforce permissions server-side.
+
+RESOURCE AUTHORIZATION
+
+A user must not be able to access another user's:
+- profile
+- documents
+- vehicles
+- applications
+- agreements
+- earnings
+- payouts
+- disputes
+
+Add automated authorization tests.
+
+FLUTTER
+
+Implement:
+- auth state
+- guarded routes
+- login
+- registration
+- logout
+- session restoration
+- expired-session handling
+- network error handling
+
+Do not expose internal security details in user-facing error messages.
+
+Run all tests and static analysis before completion.

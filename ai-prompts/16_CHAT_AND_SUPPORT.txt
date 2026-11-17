@@ -1,0 +1,66 @@
+PHASE 16 — CHAT AND SUPPORT
+
+Implement communication features carefully.
+
+CHAT
+
+Allow communication only between authorized parties when a valid business relationship exists.
+
+Potential participants:
+- owner
+- driver
+- support
+
+Do not expose private conversations to unrelated users.
+
+MESSAGE SECURITY
+
+Validate:
+- sender
+- recipient/conversation membership
+- message size
+- content
+- attachments if supported
+
+Do not allow arbitrary file uploads through chat without security controls.
+
+SUPPORT
+
+Create support tickets with:
+- category
+- subject
+- description
+- status
+- priority
+- assigned staff
+- timestamps
+- audit history
+
+TICKET STATES
+
+OPEN
+IN_PROGRESS
+WAITING_FOR_USER
+RESOLVED
+CLOSED
+
+ADMIN/SUPPORT
+
+Implement role-based access.
+
+AUDIT
+
+Important support actions must be auditable.
+
+FLUTTER
+
+Implement:
+- conversation list
+- conversation details
+- send message
+- loading
+- retry
+- support ticket list
+- ticket details
+
+Protect against unauthorized conversation access.

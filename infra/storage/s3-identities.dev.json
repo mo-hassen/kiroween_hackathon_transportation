@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "platform-api-dev",
+      "credentials": [{ "accessKey": "dev-access-key", "secretKey": "dev-secret-key-not-for-production" }],
+      "actions": ["Read", "Write", "List", "Tagging", "Admin"]
+    }
+  ]
+}

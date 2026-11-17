@@ -1,0 +1,64 @@
+PHASE 8 — VEHICLE MARKETPLACE
+
+Implement the driver-facing vehicle marketplace.
+
+Only display vehicles that satisfy backend eligibility rules:
+
+- verified owner
+- verified vehicle
+- valid required documents
+- active
+- available
+- not assigned
+- owner not suspended
+- vehicle not suspended
+
+DRIVER EXPERIENCE
+
+Implement:
+- browse
+- search
+- filters
+- sorting
+- vehicle details
+- terms
+- availability
+- estimated cost/earnings information where approved
+- owner information appropriate for privacy
+- request/apply
+
+OWNER EXPERIENCE
+
+Implement:
+- vehicle availability
+- terms
+- pricing configuration
+- request list
+- request details
+- accept/reject
+
+BACKEND AUTHORITY
+
+Do not rely on Flutter to enforce eligibility.
+
+The backend must enforce every marketplace rule.
+
+SEARCH
+
+Design efficient PostgreSQL queries and indexes.
+
+Do not load the entire vehicle table into Flutter.
+
+Use pagination.
+
+NETWORK
+
+Support:
+- loading
+- empty
+- error
+- retry
+- pagination
+- safe cancellation where appropriate
+
+Add authorization and marketplace tests.

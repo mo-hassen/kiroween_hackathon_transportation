@@ -1,0 +1,70 @@
+PHASE 7 — VEHICLE REGISTRATION AND VERIFICATION
+
+Implement vehicle management and verification.
+
+VEHICLE DATA
+
+Support appropriate fields for:
+- make
+- model
+- year
+- vehicle type
+- registration information
+- plate information
+- ownership information
+- availability
+- status
+
+VEHICLE DOCUMENTS
+
+Support:
+- registration documents
+- ownership evidence
+- required insurance/compliance documents where applicable
+- vehicle photos
+- expiration dates
+
+Do not assume a document proves ownership without verification.
+
+VEHICLE STATES
+
+DRAFT
+SUBMITTED
+UNDER_REVIEW
+APPROVED
+REJECTED
+EXPIRED
+SUSPENDED
+ARCHIVED
+
+VERIFICATION
+
+Only authorized verification staff can approve vehicles.
+
+A vehicle must satisfy all required eligibility rules before appearing in the marketplace.
+
+EXPIRATION
+
+Expired required documents must automatically affect eligibility.
+
+SECURITY
+
+Owner A must never access Owner B's vehicle documents through guessed IDs.
+
+Use resource-level authorization.
+
+FLUTTER
+
+Build:
+- add vehicle
+- edit draft
+- upload documents
+- upload photos
+- submit
+- verification status
+- rejection feedback
+- expiration warnings
+
+BACKEND
+
+Implement validation, storage access, verification workflow, audit events and tests.

@@ -1,0 +1,83 @@
+PHASE 4 — FAYDA / IDENTITY VERIFICATION
+
+Read the master brief and architecture documents.
+
+Implement the identity-verification domain.
+
+IMPORTANT:
+
+Do not invent undocumented Fayda endpoints.
+
+Use the official Fayda/eSignet/OIDC integration pattern where appropriate and available.
+
+Create a provider abstraction so the application is not tightly coupled to one identity provider.
+
+IDENTITY STATE MACHINE
+
+Support:
+UNVERIFIED
+PENDING
+VERIFIED
+REJECTED
+SUSPENDED
+EXPIRED
+REVERIFICATION_REQUIRED
+
+Separate:
+- application authentication
+- identity verification
+
+DATA MINIMIZATION
+
+Store only information actually needed by the business.
+
+Do not store raw biometric information.
+
+Do not expose identity-provider credentials to Flutter.
+
+VERIFICATION SESSION
+
+Design:
+- verification session
+- state/nonce protection where applicable
+- secure callback processing
+- expiration
+- result validation
+- audit trail
+
+If external credentials are unavailable:
+- implement the provider interface
+- implement a safe development adapter
+- clearly document the production integration boundary
+- do not fake production verification
+
+FLUTTER
+
+Build:
+- verification introduction
+- consent
+- verification status
+- pending state
+- success
+- rejection
+- retry/reverification
+
+BACKEND
+
+Implement:
+- verification service
+- provider abstraction
+- status transitions
+- authorization
+- audit events
+
+SECURITY TESTS
+
+Verify:
+- user cannot mark self verified
+- client cannot forge verification state
+- callbacks cannot be replayed
+- unauthorized users cannot access verification details
+- verification data cannot be accessed by another user
+
+Run tests and static analysis.

@@ -1,0 +1,11 @@
+name: core_shared
+description: Pure-Dart code shared by the mobile and admin apps (money, phone rules).
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0

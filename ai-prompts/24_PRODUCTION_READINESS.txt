@@ -1,0 +1,144 @@
+PHASE 24 — FINAL PRODUCTION READINESS AUDIT
+
+Perform a final production-readiness review of the entire platform.
+
+Inspect the actual repository.
+
+ARCHITECTURE
+- boundaries
+- dependencies
+- maintainability
+- scalability
+- failure isolation
+
+FLUTTER
+- release build
+- state management
+- navigation
+- error handling
+- loading states
+- offline behavior
+- accessibility
+- localization
+- secure storage
+- performance
+- memory leaks
+- unnecessary rebuilds
+
+BACKEND
+- authentication
+- authorization
+- validation
+- error handling
+- rate limiting
+- logging
+- API versioning
+- transactions
+- concurrency
+- idempotency
+
+DATABASE
+- migrations
+- constraints
+- indexes
+- foreign keys
+- transaction isolation
+- data integrity
+- backup
+- recovery
+
+SECURITY
+- secrets
+- identity documents
+- authentication
+- authorization
+- admin boundaries
+- payment security
+- file security
+- audit trails
+
+FINANCIAL
+- ledger correctness
+- duplicate transactions
+- payout safety
+- reconciliation
+- webhook processing
+- rounding
+- currency handling
+
+IDENTITY
+- verification states
+- provider abstraction
+- privacy
+- document access
+- expiration
+- re-verification
+
+VEHICLES
+- verification
+- availability
+- concurrent assignment
+- suspension
+- document expiration
+
+OPERATIONS
+- health checks
+- monitoring
+- logs
+- alerts
+- backups
+- disaster recovery
+- deployment
+- rollback
+
+TESTING
+- unit
+- integration
+- widget
+- end-to-end
+- authorization
+- concurrency
+- financial invariants
+- security regression
+
+PERFORMANCE
+
+Identify important bottlenecks and verify them.
+
+DOCUMENTATION
+
+Ensure another competent developer can understand:
+- architecture
+- local setup
+- environment variables
+- migrations
+- testing
+- deployment
+- security
+- external integrations
+- payment integration
+- identity integration
+
+PRODUCTION BUILD
+
+Actually run relevant build/test commands.
+
+Fix real errors rather than merely reporting them.
+
+FINAL REPORT
+
+Provide:
+1. production readiness score
+2. blocking issues
+3. high-risk issues
+4. medium-risk issues
+5. low-risk issues
+6. tests executed
+7. tests passed
+8. tests failed
+9. build results
+10. external dependencies
+11. legal/compliance items requiring review
+12. recommended controlled launch sequence
+
+Do not claim the platform is production-ready if blocking issues remain.

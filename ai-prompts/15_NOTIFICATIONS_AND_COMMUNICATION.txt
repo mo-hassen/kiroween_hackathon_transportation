@@ -1,0 +1,68 @@
+PHASE 15 — NOTIFICATIONS AND COMMUNICATION
+
+Implement reliable platform notifications.
+
+CHANNELS
+
+Design for:
+- in-app notifications
+- push notifications
+- email/SMS only where justified and provider availability supports it
+
+NOTIFICATION EVENTS
+
+Examples:
+- verification submitted
+- verification approved
+- verification rejected
+- vehicle approved
+- driver application received
+- application accepted
+- application rejected
+- agreement ready
+- agreement accepted
+- assignment started
+- assignment ending
+- payment status
+- payout status
+- dispute updates
+
+NOTIFICATION MODEL
+
+Include:
+- recipient
+- event type
+- title
+- body
+- metadata
+- read status
+- timestamps
+- delivery status where applicable
+
+Do not store sensitive information unnecessarily in push payloads.
+
+PUSH SECURITY
+
+Never place secrets or full sensitive documents in notifications.
+
+DEDUPE
+
+Avoid duplicate notifications caused by retried events.
+
+Use idempotency/event identifiers.
+
+FLUTTER
+
+Implement:
+- notification list
+- unread state
+- deep links
+- safe navigation
+- permission handling
+- failure handling
+
+BACKEND
+
+Implement event-driven notification dispatch where appropriate.
+
+Test duplicates and unauthorized access.

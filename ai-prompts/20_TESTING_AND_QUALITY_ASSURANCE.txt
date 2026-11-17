@@ -1,0 +1,86 @@
+PHASE 20 — TESTING AND QUALITY ASSURANCE
+
+Perform a comprehensive quality pass.
+
+BACKEND
+
+Test:
+- authentication
+- authorization
+- validation
+- database behavior
+- state transitions
+- concurrency
+- transactions
+- ledger invariants
+- payment idempotency
+- webhook handling
+- file access
+- admin permissions
+
+FLUTTER
+
+Test:
+- providers
+- repositories
+- services
+- widgets
+- navigation
+- forms
+- validation
+- loading/error/empty states
+- authentication flows
+
+INTEGRATION
+
+Test critical end-to-end flows:
+
+1. owner registration
+2. owner verification
+3. vehicle registration
+4. vehicle verification
+5. driver registration
+6. driver verification
+7. vehicle browsing
+8. driver request
+9. owner acceptance
+10. agreement
+11. assignment
+12. activity/trip
+13. earnings
+14. settlement
+15. payout
+16. dispute
+
+SECURITY REGRESSION
+
+Include:
+- unauthorized resource access
+- role escalation
+- forged verification
+- duplicate request
+- duplicate payment
+- duplicate webhook
+- concurrent assignment
+- invalid state transition
+
+PERFORMANCE
+
+Identify slow queries and unnecessary mobile rebuilds.
+
+Do not optimize without evidence.
+
+QUALITY GATE
+
+Run all available:
+- formatting
+- lint
+- static analysis
+- unit tests
+- integration tests
+- widget tests
+- build checks
+
+Fix failures.
+
+Report exact commands and results.

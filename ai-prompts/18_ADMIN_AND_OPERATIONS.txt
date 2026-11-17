@@ -1,0 +1,65 @@
+PHASE 18 — ADMINISTRATION AND OPERATIONS
+
+Implement the backend/admin architecture needed to operate the platform safely.
+
+ROLES
+
+Support:
+- support/admin
+- verification officer
+- finance/admin
+- super administrator
+
+LEAST PRIVILEGE
+
+Each role gets only necessary permissions.
+
+ADMIN CAPABILITIES
+
+Verification:
+- review identity verification
+- review driver documents
+- review owner documents
+- review vehicles
+
+Operations:
+- suspend users
+- suspend vehicles
+- manage disputes
+- inspect assignments
+
+Finance:
+- inspect ledger
+- inspect payouts
+- reconcile payments
+
+Audit:
+- inspect audit events
+
+ADMIN SECURITY
+
+Require strong authentication.
+
+Never expose admin functions to ordinary mobile users.
+
+Do not rely on hidden Flutter routes.
+
+Backend authorization is authoritative.
+
+AUDIT
+
+Record:
+- who acted
+- what changed
+- target resource
+- before/after where safe
+- timestamp
+- reason where appropriate
+
+Do not log secrets or sensitive document contents.
+
+ADMIN API
+
+Version and document admin endpoints.
+
+Add authorization tests for every role.

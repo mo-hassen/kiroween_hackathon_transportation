@@ -1,0 +1,70 @@
+PHASE 13 — PAYMENT PROVIDERS
+
+Implement the payment-provider abstraction.
+
+Do not invent undocumented APIs.
+
+CREATE
+
+PaymentProvider interface
+
+with provider-independent operations such as:
+- create payment
+- query payment
+- verify payment
+- initiate payout where supported
+- handle webhook/event
+
+Use provider adapters.
+
+DEVELOPMENT
+
+Create a safe development/sandbox provider if needed.
+
+Do not confuse a fake provider with production integration.
+
+PRODUCTION
+
+Production provider adapters must be based on official provider documentation and credentials.
+
+WEBHOOKS
+
+Implement:
+- signature/authentication verification
+- event validation
+- idempotency
+- replay protection
+- duplicate detection
+- safe retry
+- audit logging
+
+PAYMENT STATES
+
+PENDING
+PROCESSING
+SUCCEEDED
+FAILED
+CANCELLED
+EXPIRED
+REVERSED
+
+Never trust a mobile client to declare a payment successful.
+
+The server/provider confirmation is authoritative.
+
+SECURITY
+
+Do not log:
+- payment secrets
+- authentication tokens
+- sensitive card/payment credentials
+
+Test:
+- duplicate webhook
+- invalid webhook
+- replay
+- delayed webhook
+- provider failure
+- network retry
+- payment mismatch
+- unauthorized payment access

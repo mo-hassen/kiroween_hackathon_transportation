@@ -1,0 +1,66 @@
+PHASE 14 — OWNER PAYOUTS AND DRIVER EARNINGS
+
+Implement settlement and payout workflows using the financial ledger.
+
+OWNER
+
+Display:
+- gross earnings
+- platform commission
+- deductions/fees
+- net payable
+- payout status
+- payout history
+
+DRIVER
+
+Display:
+- gross earnings
+- applicable platform fees
+- net earnings
+- pending earnings
+- paid earnings
+- payout history
+
+PAYOUT STATES
+
+PENDING
+PROCESSING
+COMPLETED
+FAILED
+REVERSED
+HELD
+
+PAYOUT SAFETY
+
+Never mark payout completed because the Flutter app says it succeeded.
+
+Only trusted backend/provider confirmation can do so.
+
+IDEMPOTENCY
+
+Every payout operation must be protected against duplicate execution.
+
+RECONCILIATION
+
+Design a mechanism for comparing internal ledger records with provider records.
+
+ADMIN
+
+Finance staff can:
+- view
+- investigate
+- hold where authorized
+- retry failed payout
+- reconcile
+
+They must not rewrite historical ledger records.
+
+Add tests for:
+- duplicate payout
+- concurrent payout
+- failed payout
+- reversal
+- provider timeout
+- retry
+- authorization

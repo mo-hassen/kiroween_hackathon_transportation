@@ -1,0 +1,63 @@
+PHASE 11 — ACTIVE ASSIGNMENTS AND TRIPS
+
+Implement active vehicle assignment management.
+
+ACTIVE ASSIGNMENT
+
+Track:
+- driver
+- owner
+- vehicle
+- agreement
+- start
+- end
+- status
+- relevant operational metadata
+
+TRIP/ACTIVITY
+
+Design trip/activity tracking only to the level actually required by the business.
+
+Support:
+- start
+- active
+- completed
+- cancelled
+- disputed
+
+LOCATION PRIVACY
+
+Do not collect continuous location data unless there is a justified product requirement.
+
+If location is needed:
+- obtain appropriate permission
+- minimize collection
+- define retention
+- protect access
+- avoid exposing location unnecessarily
+
+GPS
+
+Handle:
+- permission denied
+- poor accuracy
+- unavailable GPS
+- network failure
+
+CONCURRENCY
+
+Do not allow invalid overlapping assignments.
+
+BACKEND
+
+Validate that:
+- driver is eligible
+- vehicle is eligible
+- agreement is valid
+- assignment is active
+
+FLUTTER
+
+Implement operational status screens and robust error handling.
+
+Add tests for invalid transitions and unauthorized access.

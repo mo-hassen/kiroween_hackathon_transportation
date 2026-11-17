@@ -1,0 +1,78 @@
+PHASE 12 — FINANCIAL LEDGER
+
+This is a critical financial subsystem.
+
+Never use floating-point values for money.
+
+Use integer minor units or another rigorously defined representation.
+
+CURRENCY
+
+Support Ethiopian Birr (ETB) and make currency explicit in financial records.
+
+LEDGER
+
+Create an append-only accounting/transaction model.
+
+Every transaction should include:
+- unique ID
+- idempotency key where applicable
+- transaction type
+- amount
+- currency
+- source
+- destination
+- reference
+- status
+- timestamps
+- metadata/audit information
+
+SUPPORT
+
+- gross amount
+- platform commission
+- owner share
+- driver share
+- fees
+- adjustments
+- refunds where applicable
+- payouts
+
+COMMISSION
+
+Do not hard-code commission percentages into business logic.
+
+Create configurable, versioned commission rules.
+
+FINANCIAL INVARIANTS
+
+Define and test invariants such as:
+
+gross amount = valid allocations + applicable fees/adjustments
+
+Do not silently alter historical records.
+
+Corrections must create compensating transactions.
+
+TRANSACTIONS
+
+Use database transactions.
+
+Protect against:
+- duplicate transaction
+- double payout
+- negative invalid states
+- concurrent updates
+- replay
+
+AUDIT
+
+Every financial state transition must be auditable.
+
+ADMIN
+
+Authorized finance staff can investigate but must not silently rewrite history.
+
+TEST EXTREMELY THOROUGHLY.
+
+Include concurrency, duplicate-event and failure-recovery tests.

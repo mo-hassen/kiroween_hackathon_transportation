@@ -1,0 +1,472 @@
+KIROWEEN HACKA TRANSPORTATION
+MASTER PROJECT BRIEF
+
+ROLE
+
+You are the principal software architect and lead engineering team for a production-grade mobility and vehicle-rental platform designed specifically for Addis Ababa, Ethiopia.
+
+Build a real, runnable, security-first mobile platform. Do not build a toy, mockup, disconnected UI demo, or fake production system.
+
+CORE PRODUCT
+
+The platform connects verified vehicle owners with verified drivers.
+
+Vehicle owner:
+A person or organization that owns a vehicle and wants an eligible driver to operate it commercially through the platform.
+
+Driver:
+A verified person who wants to obtain an eligible vehicle through the platform and use it to generate income.
+
+Core lifecycle:
+
+Identity verification
+-> eligibility
+-> vehicle verification
+-> marketplace
+-> driver request/application
+-> owner approval
+-> agreement
+-> vehicle assignment
+-> activity/trips
+-> earnings
+-> settlement
+-> payout
+-> dispute/support
+
+The system must eventually support:
+- identity verification
+- driver verification
+- vehicle verification
+- owner-driver relationships
+- vehicle availability
+- vehicle discovery
+- applications/requests
+- rental/assignment agreements
+- active assignments
+- trip/activity records
+- earnings
+- platform commission
+- owner payouts
+- driver earnings
+- notifications
+- ratings/reviews
+- disputes
+- support
+- documents
+- security
+- audit trails
+- administration
+
+INITIAL TECHNOLOGY
+
+Mobile:
+- Flutter
+- Dart
+- Material 3
+- Riverpod
+- GoRouter
+- Dio
+- Freezed/json_serializable where justified
+- secure local storage
+- responsive UI
+- localization-ready architecture
+
+Backend:
+- Node.js
+- TypeScript
+- NestJS or another production-grade framework, but justify the choice
+- REST API initially
+- PostgreSQL
+- Prisma or another production-grade ORM, but justify the choice
+- Redis where appropriate
+- background jobs/queues where appropriate
+- secure object/file storage
+- structured logging
+- centralized error handling
+- validation
+- rate limiting
+- audit logging
+
+Infrastructure:
+- Docker
+- Docker Compose for local development
+- environment-based configuration
+- CI/CD-ready structure
+- database migrations
+- automated testing
+
+NON-NEGOTIABLE RULE
+
+Do not blindly implement the entire application.
+
+First inspect the repository and understand the existing code.
+
+Then produce:
+1. product requirements
+2. actors and permissions
+3. domain model
+4. business rules
+5. user journeys
+6. API boundaries
+7. database schema
+8. security architecture
+9. verification architecture
+10. financial/ledger architecture
+11. notification architecture
+12. dispute architecture
+13. audit architecture
+14. scalability requirements
+15. failure scenarios
+16. testing strategy
+17. deployment architecture
+18. Ethiopian-specific assumptions and risks
+
+Do not invent government APIs or payment-provider APIs.
+
+Where an external integration is unavailable, create a provider abstraction and a safe development adapter. Clearly identify the production integration boundary.
+
+ETHIOPIAN CONTEXT
+
+The architecture must be specifically suitable for Addis Ababa.
+
+Consider:
+- Ethiopian identity verification
+- Fayda/National ID ecosystem where legally and technically appropriate
+- Ethiopian phone numbers
+- Ethiopian Birr
+- Addis Ababa neighborhoods/sub-cities
+- landmarks and local address realities
+- local driving context
+- variable connectivity
+- low-bandwidth conditions
+- Android-first realities
+- GPS accuracy
+- location permissions
+- map failures
+- Ethiopian payment-provider integrations
+- applicable legal/compliance requirements
+
+Do not make legal claims without verification. Mark requirements needing legal/regulatory review.
+
+IDENTITY
+
+Design identity verification as a separate domain from ordinary authentication.
+
+Support:
+- pending
+- verified
+- rejected
+- suspended
+- expired
+- re-verification required
+
+Minimize stored identity data.
+Do not store raw biometric data.
+Do not expose identity credentials to the mobile app.
+
+VEHICLES
+
+Vehicle owners must be able to submit vehicles for verification.
+
+Support:
+- vehicle information
+- registration information
+- ownership information
+- required documents
+- vehicle photos
+- verification status
+- expiration dates
+- suspension
+
+A submitted vehicle is not automatically a verified vehicle.
+
+DRIVERS
+
+Drivers must have:
+- identity verification
+- required driving-license information
+- required document verification
+- eligibility state
+- account state
+
+Unverified or suspended drivers must not be able to obtain vehicles through the production workflow.
+
+MONEY
+
+Never use floating-point arithmetic for financial amounts.
+
+Use integer minor units or another precisely defined financial representation.
+
+Use an auditable ledger.
+
+Support:
+- gross amount
+- platform commission
+- owner share
+- driver share
+- fees
+- adjustments
+- refunds where applicable
+- payout state
+- transaction state
+
+Do not silently rewrite historical financial records.
+
+PAYMENTS
+
+Use a PaymentProvider abstraction.
+
+Do not pretend an external Ethiopian payment provider is integrated unless its official API/sandbox has actually been integrated and tested.
+
+Webhook handling must be:
+- authenticated
+- validated
+- idempotent
+- replay-safe
+- auditable
+
+SECURITY
+
+Treat security as a first-class product requirement.
+
+Protect against:
+- SQL injection
+- broken authorization
+- IDOR
+- privilege escalation
+- mass assignment
+- brute force
+- credential stuffing
+- replay attacks
+- duplicate payments
+- webhook replay
+- session theft
+- token leakage
+- malicious file uploads
+- rate-limit abuse
+- enumeration
+- sensitive data leakage
+
+Use:
+- secure password hashing
+- short-lived access tokens
+- refresh-token rotation where appropriate
+- resource-level authorization
+- request validation
+- rate limiting
+- secure CORS
+- security headers
+- secrets management
+- secure document access
+- audit logging
+
+Never put backend secrets in Flutter.
+Never trust client-side authorization.
+Backend authorization is authoritative.
+
+ROLES
+
+At minimum:
+- driver
+- vehicle owner
+- support/admin
+- verification officer
+- finance/admin
+- super administrator
+
+Use least privilege.
+
+DATABASE
+
+Design a normalized PostgreSQL schema with appropriate:
+- primary keys
+- foreign keys
+- unique constraints
+- indexes
+- timestamps
+- status fields
+- audit information
+- soft deletion where justified
+
+Potential entities:
+User
+IdentityVerification
+DriverProfile
+OwnerProfile
+DriverLicense
+Vehicle
+VehicleDocument
+VehicleVerification
+VehicleAvailability
+VehicleAssignment
+RentalAgreement
+Application
+Trip
+LedgerAccount/Entry
+Transaction
+Payout
+Payment
+Notification
+Conversation
+Message
+Rating
+Review
+Dispute
+SupportTicket
+AuditLog
+Session
+Device
+Document
+
+Do not create unnecessary entities.
+
+API
+
+Create versioned APIs with consistent:
+- authentication
+- authorization
+- validation
+- pagination
+- filtering
+- sorting
+- response format
+- error format
+
+Use OpenAPI/Swagger.
+
+MOBILE
+
+Build a professional, fast, accessible Flutter application.
+
+Support:
+- English
+- Amharic-ready localization
+- ETB formatting
+- Ethiopian phone formatting
+- local addresses
+- loading states
+- empty states
+- error states
+- retry states
+- offline/read-only states
+
+Do not hard-code UI text everywhere.
+Do not create fake buttons.
+Do not leave core functionality as placeholders.
+
+CONCURRENCY
+
+The backend must prevent two drivers from successfully obtaining the same vehicle at the same time.
+
+Use database transactions, constraints and appropriate locking.
+
+OFFLINE/NETWORK
+
+Assume unreliable mobile connectivity.
+
+Design:
+- timeouts
+- safe retries
+- idempotency
+- caching
+- offline states
+- synchronization where appropriate
+
+Never blindly retry financial operations.
+
+OBSERVABILITY
+
+Implement:
+- structured logs
+- request IDs
+- error tracking hooks
+- audit logs
+- health checks
+- metrics-ready architecture
+
+Never log:
+- passwords
+- authentication tokens
+- full identity documents
+- payment secrets
+- unnecessary sensitive data
+
+TESTING
+
+Use:
+- unit tests
+- service tests
+- repository/integration tests
+- API tests
+- authorization tests
+- security tests
+- payment/ledger tests
+- Flutter unit tests
+- widget tests
+- state tests
+- navigation tests
+- important end-to-end tests
+
+Critical workflows must be automated.
+
+DEFINITION OF DONE
+
+A feature is complete only when:
+- implementation exists
+- types compile
+- validation exists
+- authorization exists
+- error handling exists
+- tests exist
+- tests pass
+- UI handles loading/error/empty/success
+- migrations exist where needed
+- API docs exist where needed
+- security implications are reviewed
+- no obvious placeholder remains
+
+ENGINEERING QUALITY
+
+Follow:
+- SOLID
+- clean architecture where useful
+- dependency inversion
+- separation of concerns
+- meaningful naming
+- small testable functions
+- strict TypeScript
+- Dart analysis/linting
+- formatting
+- documentation
+
+Do not generate giant files.
+Do not create duplicate implementations.
+Do not optimize for code volume.
+
+AFTER EACH MAJOR PHASE
+
+1. format
+2. static analysis
+3. tests
+4. inspect failures
+5. fix failures
+6. rerun
+7. summarize changes and remaining risks
+
+FIRST TASK
+
+Do NOT implement the whole application yet.
+
+Inspect the repository and produce:
+1. proposed architecture
+2. domain model
+3. PostgreSQL schema design
+4. API architecture
+5. Flutter architecture
+6. security architecture
+7. identity/verification architecture
+8. financial/ledger architecture
+9. phased implementation plan
+10. assumptions and risks
+
+Wait for approval before beginning implementation.

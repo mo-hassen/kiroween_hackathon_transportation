@@ -1,0 +1,97 @@
+KIROWEEN HACKA TRANSPORTATION
+RELEASE CHECKLIST
+
+Use this checklist before any real-world pilot.
+
+PRODUCT
+[ ] Owner registration works
+[ ] Driver registration works
+[ ] Identity verification workflow works
+[ ] Driver verification works
+[ ] Owner verification works
+[ ] Vehicle registration works
+[ ] Vehicle verification works
+[ ] Marketplace works
+[ ] Driver application works
+[ ] Owner approval works
+[ ] Agreement works
+[ ] Assignment works
+[ ] Earnings work
+[ ] Settlement works
+[ ] Payout workflow works
+[ ] Notifications work
+[ ] Support works
+[ ] Disputes work
+[ ] Ratings/reviews work
+[ ] Admin workflows work
+
+SECURITY
+[ ] No secrets in repository
+[ ] No secrets in Flutter
+[ ] Authentication tested
+[ ] Authorization tested
+[ ] IDOR tested
+[ ] Rate limits tested
+[ ] File uploads secured
+[ ] Documents private
+[ ] Webhooks authenticated
+[ ] Webhooks idempotent
+[ ] Financial operations idempotent
+[ ] Admin authorization tested
+[ ] Sensitive logs removed
+[ ] Dependency vulnerabilities reviewed
+
+DATABASE
+[ ] Migrations tested
+[ ] Constraints reviewed
+[ ] Indexes reviewed
+[ ] Backups configured
+[ ] Restore tested
+[ ] Transaction behavior tested
+[ ] Concurrent assignment tested
+
+FINANCIAL
+[ ] No floating-point money
+[ ] ETB representation verified
+[ ] Ledger tested
+[ ] Commission rules versioned
+[ ] Duplicate payment tested
+[ ] Duplicate payout tested
+[ ] Reconciliation process documented
+
+MOBILE
+[ ] Release build succeeds
+[ ] Android testing completed
+[ ] Offline/error states work
+[ ] Localization works
+[ ] Permissions handled
+[ ] Crash/error reporting configured
+[ ] Performance reviewed
+
+OPERATIONS
+[ ] Staging environment tested
+[ ] Production configuration reviewed
+[ ] TLS configured
+[ ] Monitoring configured
+[ ] Alerts configured
+[ ] Logs configured
+[ ] Rollback documented
+[ ] Disaster recovery documented
+
+LEGAL/COMPLIANCE
+[ ] Identity-provider terms reviewed
+[ ] Payment-provider requirements reviewed
+[ ] Vehicle/rental regulations reviewed
+[ ] Data privacy requirements reviewed
+[ ] Terms of service reviewed
+[ ] Privacy policy reviewed
+[ ] Required licenses/registrations confirmed
+
+LAUNCH
+[ ] Pilot scope defined
+[ ] Pilot users verified
+[ ] Support process ready
+[ ] Incident response ready
+[ ] Financial reconciliation owner assigned
+[ ] Verification process staffed
+[ ] Emergency suspension process tested

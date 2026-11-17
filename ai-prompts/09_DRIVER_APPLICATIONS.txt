@@ -1,0 +1,67 @@
+PHASE 9 — DRIVER APPLICATIONS AND REQUESTS
+
+Implement driver-to-vehicle application/request workflows.
+
+REQUEST STATES
+
+PENDING
+ACCEPTED
+REJECTED
+CANCELLED
+EXPIRED
+AGREEMENT_REQUIRED
+ACTIVE
+COMPLETED
+DISPUTED
+
+Prevent illegal state transitions.
+
+DRIVER
+
+Can:
+- submit request
+- view status
+- cancel where allowed
+- respond to agreement
+- view history
+
+OWNER
+
+Can:
+- view eligible requests
+- inspect driver profile information allowed by privacy rules
+- accept
+- reject
+- withdraw/cancel where allowed
+
+CONCURRENCY
+
+Multiple drivers may request the same vehicle.
+
+The system must prevent inconsistent acceptance.
+
+Use database transactions and constraints.
+
+IDEMPOTENCY
+
+Duplicate requests caused by retries must not create duplicate applications.
+
+Use idempotency where appropriate.
+
+AUDIT
+
+Record state transitions.
+
+FLUTTER
+
+Implement request UI and status updates.
+
+BACKEND
+
+Implement transactional workflow and tests for:
+- duplicate requests
+- concurrent acceptance
+- unauthorized access
+- invalid state transitions
+- cancelled request
+- expired request

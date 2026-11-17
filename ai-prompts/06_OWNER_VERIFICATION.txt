@@ -1,0 +1,60 @@
+PHASE 6 — VEHICLE OWNER VERIFICATION
+
+Implement owner onboarding and verification.
+
+OWNER PROFILE
+
+Support:
+- identity status
+- owner type where applicable
+- contact information
+- required documents
+- account state
+
+OWNER VERIFICATION
+
+States:
+UNVERIFIED
+PENDING
+VERIFIED
+REJECTED
+SUSPENDED
+EXPIRED
+REVERIFICATION_REQUIRED
+
+Only verified owners can submit vehicles for production marketplace use.
+
+OWNER DOCUMENTS
+
+Use secure private storage and controlled access.
+
+Do not expose raw documents publicly.
+
+AUDIT
+
+Track:
+- submission
+- approval
+- rejection
+- suspension
+- expiration
+- reviewer
+- timestamps
+
+SECURITY
+
+A normal owner cannot:
+- approve himself
+- approve his own vehicle
+- modify reviewer decisions
+- access another owner's documents
+
+FLUTTER
+
+Implement owner onboarding, verification status and required-document UI.
+
+BACKEND
+
+Implement service, repository, validation, authorization and audit.
+
+Add automated tests.
