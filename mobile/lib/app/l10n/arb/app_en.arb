@@ -1,0 +1,397 @@
+{
+  "@@locale": "en",
+  "appTitle": "Kiroween Mobility",
+  "@appTitle": {
+    "description": "Application name shown in the launcher and title bar."
+  },
+  "welcomeHeadline": "Verified vehicles for verified drivers in Addis Ababa",
+  "@welcomeHeadline": {
+    "description": "Main headline on the welcome screen."
+  },
+  "welcomeBody": "Owners list verified vehicles. Drivers apply. Agreements, payments and support happen in one place.",
+  "@welcomeBody": {
+    "description": "Short product description on the welcome screen."
+  },
+  "languageMenuTooltip": "Language",
+  "@languageMenuTooltip": {
+    "description": "Tooltip of the language selection button."
+  },
+  "languageSystem": "System default",
+  "@languageSystem": {
+    "description": "Language option that follows the phone setting."
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Name of the English language (always written in English)."
+  },
+  "languageAmharic": "አማርኛ",
+  "@languageAmharic": {
+    "description": "Name of the Amharic language (always written in Amharic)."
+  },
+  "serviceStatusTitle": "Service status",
+  "@serviceStatusTitle": {
+    "description": "Title of the card that shows whether the server is reachable."
+  },
+  "serviceStatusOnline": "Connected to the service",
+  "@serviceStatusOnline": {
+    "description": "Shown when the server responded successfully."
+  },
+  "serviceStatusChecking": "Checking connection…",
+  "@serviceStatusChecking": {
+    "description": "Shown while the server connection is being checked."
+  },
+  "loadingLabel": "Loading",
+  "@loadingLabel": {
+    "description": "Accessibility label for loading indicators."
+  },
+  "retryAction": "Try again",
+  "@retryAction": {
+    "description": "Button that retries a failed request."
+  },
+  "offlineBanner": "You are offline. Showing saved information.",
+  "@offlineBanner": {
+    "description": "Banner shown when cached data is displayed without a connection."
+  },
+  "emptyTitle": "Nothing here yet",
+  "@emptyTitle": {
+    "description": "Default title for empty lists."
+  },
+  "errorNetwork": "No internet connection. Check your connection and try again.",
+  "@errorNetwork": {
+    "description": "Error when the device cannot reach the server."
+  },
+  "errorTimeout": "The connection is slow. Please try again.",
+  "@errorTimeout": {
+    "description": "Error when a request timed out."
+  },
+  "errorUnauthorized": "Your session has ended. Please sign in again.",
+  "@errorUnauthorized": {
+    "description": "Error when the user must authenticate again."
+  },
+  "errorForbidden": "You don't have access to this.",
+  "@errorForbidden": {
+    "description": "Error when the user is not allowed to perform an action."
+  },
+  "errorNotFound": "We couldn't find what you were looking for.",
+  "@errorNotFound": {
+    "description": "Error when a resource does not exist."
+  },
+  "errorConflict": "This was changed by someone else. Refresh and try again.",
+  "@errorConflict": {
+    "description": "Error when the data changed concurrently."
+  },
+  "errorValidation": "Some information is missing or incorrect.",
+  "@errorValidation": {
+    "description": "Error when submitted fields are invalid."
+  },
+  "errorRateLimited": "Too many attempts. Please wait a moment and try again.",
+  "@errorRateLimited": {
+    "description": "Error when the user was rate limited."
+  },
+  "errorServer": "Something went wrong on our side. Please try again later.",
+  "@errorServer": {
+    "description": "Error when the server failed."
+  },
+  "errorUnknown": "Something went wrong. Please try again.",
+  "@errorUnknown": {
+    "description": "Fallback error message."
+  },
+  "errorReference": "Reference: {reference}",
+  "@errorReference": {
+    "description": "Support reference (request id) shown under an error.",
+    "placeholders": {
+      "reference": {
+        "type": "String",
+        "example": "1a2b3c4d"
+      }
+    }
+  },
+  "notFoundTitle": "Page not found",
+  "@notFoundTitle": {
+    "description": "Title of the screen for unknown links."
+  },
+  "notFoundBody": "This link is not available in the app.",
+  "@notFoundBody": {
+    "description": "Body of the screen for unknown links."
+  },
+  "goHomeAction": "Go to start",
+  "@goHomeAction": {
+    "description": "Button that returns to the first screen."
+  },
+  "signInTitle": "Sign in",
+  "@signInTitle": {
+    "description": "Title of the sign-in screen."
+  },
+  "signInAction": "Sign in",
+  "@signInAction": {
+    "description": "Button that signs in."
+  },
+  "createAccountAction": "Create account",
+  "@createAccountAction": {
+    "description": "Button/link to registration."
+  },
+  "forgotPasswordAction": "Forgot password?",
+  "@forgotPasswordAction": {
+    "description": "Link to password reset."
+  },
+  "signOutAction": "Sign out",
+  "@signOutAction": {
+    "description": "Signs out of this device."
+  },
+  "signOutConfirm": "Sign out of this device?",
+  "@signOutConfirm": {
+    "description": "Confirmation before signing out."
+  },
+  "cancelAction": "Cancel",
+  "@cancelAction": {
+    "description": "Dismisses a dialog."
+  },
+  "saveAction": "Save",
+  "@saveAction": {
+    "description": "Saves a change."
+  },
+  "continueAction": "Continue",
+  "@continueAction": {
+    "description": "Moves to the next step."
+  },
+  "sendCodeAction": "Send code",
+  "@sendCodeAction": {
+    "description": "Requests an SMS code."
+  },
+  "verifyAction": "Verify",
+  "@verifyAction": {
+    "description": "Submits an SMS code."
+  },
+  "phoneLabel": "Phone number",
+  "@phoneLabel": {
+    "description": "Label of the phone field."
+  },
+  "phoneHint": "09… or 07…",
+  "@phoneHint": {
+    "description": "Hint of the phone field."
+  },
+  "phoneInvalid": "Enter an Ethiopian mobile number (09… or 07…).",
+  "@phoneInvalid": {
+    "description": "Phone validation error."
+  },
+  "passwordLabel": "Password",
+  "@passwordLabel": {
+    "description": "Label of the password field."
+  },
+  "newPasswordLabel": "New password",
+  "@newPasswordLabel": {
+    "description": "Label of the new password field."
+  },
+  "currentPasswordLabel": "Current password",
+  "@currentPasswordLabel": {
+    "description": "Label of the current password field."
+  },
+  "passwordHelper": "At least 10 characters. A short sentence is easy to remember.",
+  "@passwordHelper": {
+    "description": "Help text under a new password field."
+  },
+  "showPassword": "Show password",
+  "@showPassword": {
+    "description": "Tooltip of the reveal-password button."
+  },
+  "hidePassword": "Hide password",
+  "@hidePassword": {
+    "description": "Tooltip of the hide-password button."
+  },
+  "passwordRequired": "Enter your password.",
+  "@passwordRequired": {
+    "description": "Empty password error."
+  },
+  "passwordTooShort": "Use at least 10 characters.",
+  "@passwordTooShort": {
+    "description": "Password length error."
+  },
+  "passwordTooCommon": "This password is too common. Choose another one.",
+  "@passwordTooCommon": {
+    "description": "Password policy error."
+  },
+  "passwordContainsPhone": "Don't use your phone number in the password.",
+  "@passwordContainsPhone": {
+    "description": "Password policy error."
+  },
+  "passwordRepetitive": "Avoid repeated or sequential characters.",
+  "@passwordRepetitive": {
+    "description": "Password policy error."
+  },
+  "passwordIncorrect": "The current password is incorrect.",
+  "@passwordIncorrect": {
+    "description": "Wrong current password on password change."
+  },
+  "nameLabel": "Your name",
+  "@nameLabel": {
+    "description": "Label of the name field."
+  },
+  "nameRequired": "Enter your name.",
+  "@nameRequired": {
+    "description": "Empty name error."
+  },
+  "codeLabel": "6-digit code",
+  "@codeLabel": {
+    "description": "Label of the SMS code field."
+  },
+  "codeInvalidFormat": "Enter the 6 digits from the text message.",
+  "@codeInvalidFormat": {
+    "description": "SMS code format error."
+  },
+  "codeSentTo": "We sent a code to {phone}.",
+  "@codeSentTo": {
+    "description": "Confirmation that an SMS was sent.",
+    "placeholders": {
+      "phone": {
+        "type": "String",
+        "example": "+251 91 123 4567"
+      }
+    }
+  },
+  "resendCode": "Send a new code",
+  "@resendCode": {
+    "description": "Requests another SMS code."
+  },
+  "resendIn": "You can request a new code in {seconds} s.",
+  "@resendIn": {
+    "description": "Countdown before another code can be requested.",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "45"
+      }
+    }
+  },
+  "errorInvalidCredentials": "Incorrect phone number or password. After several failed attempts sign-in is paused for a while; you can reset your password.",
+  "@errorInvalidCredentials": {
+    "description": "Generic sign-in failure."
+  },
+  "errorOtpInvalid": "The code is wrong or has expired. Request a new one.",
+  "@errorOtpInvalid": {
+    "description": "Wrong or expired SMS code."
+  },
+  "errorSmsUnavailable": "We can't send text messages right now. Please try again later.",
+  "@errorSmsUnavailable": {
+    "description": "SMS service unavailable."
+  },
+  "errorRateLimitedMinutes": "Too many attempts. Try again in {minutes} min.",
+  "@errorRateLimitedMinutes": {
+    "description": "Rate limit with a wait time.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "15"
+      }
+    }
+  },
+  "errorAccountRestricted": "Your account can't make changes right now.",
+  "@errorAccountRestricted": {
+    "description": "Suspended account tried to change something."
+  },
+  "sessionExpiredBanner": "Your session has ended. Please sign in again.",
+  "@sessionExpiredBanner": {
+    "description": "Shown on sign-in after the session expired."
+  },
+  "registerTitle": "Create account",
+  "@registerTitle": {
+    "description": "Title of registration."
+  },
+  "registerPhoneIntro": "We'll text you a code to confirm your number.",
+  "@registerPhoneIntro": {
+    "description": "Registration step 1 text."
+  },
+  "registerDetailsIntro": "Enter the code and choose a password.",
+  "@registerDetailsIntro": {
+    "description": "Registration step 2 text."
+  },
+  "verifyDeviceTitle": "Confirm it's you",
+  "@verifyDeviceTitle": {
+    "description": "Title of new-device verification."
+  },
+  "verifyDeviceBody": "You're signing in on a new device. Enter the code we sent to your phone.",
+  "@verifyDeviceBody": {
+    "description": "New-device verification text."
+  },
+  "resetPasswordTitle": "Reset password",
+  "@resetPasswordTitle": {
+    "description": "Title of password reset."
+  },
+  "resetPasswordIntro": "We'll text you a code to reset your password.",
+  "@resetPasswordIntro": {
+    "description": "Password reset step 1 text."
+  },
+  "resetPasswordAction": "Reset password",
+  "@resetPasswordAction": {
+    "description": "Submits the password reset."
+  },
+  "connectionProblemTitle": "Can't reach the service",
+  "@connectionProblemTitle": {
+    "description": "Splash screen when the session cannot be restored."
+  },
+  "accountTitle": "Account",
+  "@accountTitle": {
+    "description": "Title of the account screen."
+  },
+  "accountSuspendedBanner": "Your account is suspended. You can view your information but can't make changes.",
+  "@accountSuspendedBanner": {
+    "description": "Suspended account notice."
+  },
+  "editNameAction": "Edit name",
+  "@editNameAction": {
+    "description": "Opens the name editor."
+  },
+  "nameSaved": "Name saved.",
+  "@nameSaved": {
+    "description": "Confirmation after saving the name."
+  },
+  "devicesTitle": "Devices and sessions",
+  "@devicesTitle": {
+    "description": "Title of the sessions screen."
+  },
+  "thisDevice": "This device",
+  "@thisDevice": {
+    "description": "Marks the current session."
+  },
+  "lastActive": "Last active {date}",
+  "@lastActive": {
+    "description": "When a session was last used.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "17 Nov 2026 14:05"
+      }
+    }
+  },
+  "signOutDevice": "Sign out this device",
+  "@signOutDevice": {
+    "description": "Ends another session."
+  },
+  "signOutDeviceConfirm": "Sign out this device? Signing in there again will need a text-message code.",
+  "@signOutDeviceConfirm": {
+    "description": "Confirmation before ending another session."
+  },
+  "platformAndroid": "Android phone",
+  "@platformAndroid": {
+    "description": "Device type."
+  },
+  "platformIos": "iPhone",
+  "@platformIos": {
+    "description": "Device type."
+  },
+  "platformWeb": "Web browser",
+  "@platformWeb": {
+    "description": "Device type."
+  },
+  "platformUnknown": "Unknown device",
+  "@platformUnknown": {
+    "description": "Device type when not reported."
+  },
+  "changePasswordTitle": "Change password",
+  "@changePasswordTitle": {
+    "description": "Title of the change password screen."
+  },
+  "passwordChanged": "Password changed. Other devices were signed out.",
+  "@passwordChanged": {
+    "description": "Confirmation after a password change."
+  }
+}
