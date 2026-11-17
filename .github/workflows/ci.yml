@@ -1,0 +1,149 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: platform
+          POSTGRES_PASSWORD: ci_postgres_password
+          POSTGRES_DB: platform
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U platform" --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7.4-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      APP_ENV: test
+      DATABASE_URL: postgresql://platform:ci_postgres_password@localhost:5432/platform
+      SHADOW_DATABASE_URL: postgresql://platform:ci_postgres_password@localhost:5432/platform_shadow
+      TEST_DATABASE_URL: postgresql://platform:ci_postgres_password@localhost:5432/platform_test
+      REDIS_URL: redis://localhost:6379/0
+      STORAGE_ENDPOINT: http://localhost:8333
+      STORAGE_REGION: us-east-1
+      STORAGE_BUCKET: platform-documents
+      STORAGE_FORCE_PATH_STYLE: 'true'
+      STORAGE_ACCESS_KEY_ID: dev-access-key
+      STORAGE_SECRET_ACCESS_KEY: dev-secret-key-not-for-production
+      SMS_PROVIDER: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Create test and shadow databases
+        run: |
+          for db in platform_test platform_shadow; do
+            PGPASSWORD=ci_postgres_password psql -h localhost -U platform -d platform -c "CREATE DATABASE $db"
+          done
+      - name: Start S3-compatible storage
+        run: |
+          docker run -d --name storage -p 8333:8333 \
+            -v "$GITHUB_WORKSPACE/infra/storage/s3-identities.dev.json:/etc/seaweedfs/s3.json:ro" \
+            chrislusf/seaweedfs:4.54 server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json
+          for i in $(seq 1 30); do
+            echo 's3.bucket.create -name platform-documents' | docker exec -i storage weed shell -master=localhost:9333 && break
+            sleep 2
+          done
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Migrations apply to an empty database
+        run: npm run db:deploy
+      - name: Schema and migrations are in sync
+        run: npm run db:drift
+      - run: npm test
+      - run: npm run test:integration
+      - name: Auth and authorization coverage (target 90% lines, docs/architecture/11 §3)
+        run: npm run test:coverage:auth
+      - run: npm run build
+      - run: npm run audit:deps
+
+  backend-image:
+    runs-on: ubuntu-24.04
+    needs: backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build runtime and migrator images
+        run: |
+          docker build --target runtime -t mobility-api:ci backend
+          docker build --target migrator -t mobility-migrate:ci backend
+      - name: Runtime image refuses insecure production config
+        run: |
+          if docker run --rm -e APP_ENV=production -e DATABASE_URL=postgresql://u:p@db/x \
+              -e REDIS_URL=redis://r -e STORAGE_REGION=x -e STORAGE_BUCKET=platform-documents \
+              -e STORAGE_ACCESS_KEY_ID=k -e STORAGE_SECRET_ACCESS_KEY=s mobility-api:ci; then
+            echo "expected startup to fail"; exit 1
+          fi
+
+  core-shared:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: packages/core_shared
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.13.5
+      - run: dart pub get
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: dart analyze --fatal-infos
+      - run: dart test
+
+  mobile:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - run: flutter analyze --fatal-infos
+      - run: flutter test
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Build release APK (no secrets; debug-signed until Phase 23)
+        run: flutter build apk --release --dart-define-from-file=config/production.example.json
+
+  secrets-scan:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

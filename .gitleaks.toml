@@ -1,0 +1,22 @@
+# Development-only credentials for the local docker stack are intentionally committed.
+# They are bound to 127.0.0.1, rejected by the API config outside development, and
+# never used in staging or production.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Local development fixtures"
+paths = [
+  '''infra/storage/s3-identities\.dev\.json''',
+  '''backend/\.env\.example''',
+]
+regexes = [
+  '''dev_only_[a-z_]+''',
+  '''dev-secret-key-not-for-production''',
+  '''ci_postgres_password''',
+  # Synthetic passwords used only by automated tests (Phase 3).
+  '''Bole-Road-Taxi-2026''',
+  '''Arat-Kilo-Office-77''',
+  # Prisma migration directory names (timestamp_name), not secrets.
+  '''\b\d{14}_[a-z_]+\b''',
+]
