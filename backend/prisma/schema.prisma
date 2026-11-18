@@ -81,35 +81,69 @@ enum OtpPurpose {
   STAFF_MFA_ENROLLMENT
 }
 
-model User {
-  id                String         @id @default(uuid(7)) @db.Uuid
-  phoneE164         String         @unique @map("phone_e164")
-  email             String?        @unique
-  passwordHash      String         @map("password_hash")
-  accountType       AccountType    @map("account_type")
-  status            AccountStatus  @default(PENDING_PHONE)
-  identityStatus    IdentityStatus @default(UNVERIFIED) @map("identity_status")
-  displayName       String?        @map("display_name")
-  preferredLocale   Locale         @default(en) @map("preferred_locale")
-  failedLoginCount  Int            @default(0) @map("failed_login_count")
-  lockedUntil       DateTime?      @map("locked_until") @db.Timestamptz(6)
-  mfaSecretEnc      Bytes?         @map("mfa_secret_enc")
-  // Staff TOTP: enrollment time and last accepted 30-second step (replay protection).
-  mfaEnrolledAt     DateTime?      @map("mfa_enrolled_at") @db.Timestamptz(6)
-  mfaLastUsedStep   BigInt?        @map("mfa_last_used_step")
-  passwordChangedAt DateTime?      @map("password_changed_at") @db.Timestamptz(6)
-  closedAt          DateTime?      @map("closed_at") @db.Timestamptz(6)
-  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
-  version           Int            @default(0)
+// Phase 4. MANUAL (document review fallback) is designed but not added until the
+// [LEGAL] review in docs/architecture/08-identity-and-verification.md §6.
+enum IdentityProviderCode {
+  DEV
+  FAYDA_ESIGNET
+}
 
-  devices       Device[]
-  sessions      Session[]
-  auditLogs     AuditLog[]
-  otpChallenges OtpChallenge[]
-  staffRoles    StaffRoleAssignment[] @relation("StaffRoleHolder")
-  rolesGranted  StaffRoleAssignment[] @relation("StaffRoleGrantor")
-  rolesRevoked  StaffRoleAssignment[] @relation("StaffRoleRevoker")
+// Lifecycle of ONE verification attempt. The account-level status is
+// users.identity_status. Allowed transitions: src/modules/identity/identity-state.ts,
+// enforced again by a trigger in the migration.
+enum IdentityVerificationStatus {
+  // Started; waiting for the provider callback.
+  PENDING
+  VERIFIED
+  // The provider answered, but the result cannot be accepted (identity linked to another
+  // account, different person than the account's verified identity, assurance too low).
+  REJECTED
+  // Technical failure: provider error, timeout or a response that failed validation.
+  FAILED
+  // The 15-minute session lapsed, or a verified identity reached valid_until.
+  EXPIRED
+  // Cancelled in the app, declined at the provider, or closed by a staff action.
+  CANCELLED
+  // Replaced by a newer attempt of the same account.
+  SUPERSEDED
+  SUSPENDED
+  REVERIFICATION_REQUIRED
+}
+
+model User {
+  id                  String         @id @default(uuid(7)) @db.Uuid
+  phoneE164           String         @unique @map("phone_e164")
+  email               String?        @unique
+  passwordHash        String         @map("password_hash")
+  accountType         AccountType    @map("account_type")
+  status              AccountStatus  @default(PENDING_PHONE)
+  identityStatus      IdentityStatus @default(UNVERIFIED) @map("identity_status")
+  displayName         String?        @map("display_name")
+  preferredLocale     Locale         @default(en) @map("preferred_locale")
+  failedLoginCount    Int            @default(0) @map("failed_login_count")
+  lockedUntil         DateTime?      @map("locked_until") @db.Timestamptz(6)
+  mfaSecretEnc        Bytes?         @map("mfa_secret_enc")
+  // Staff TOTP: enrollment time and last accepted 30-second step (replay protection).
+  mfaEnrolledAt       DateTime?      @map("mfa_enrolled_at") @db.Timestamptz(6)
+  mfaLastUsedStep     BigInt?        @map("mfa_last_used_step")
+  passwordChangedAt   DateTime?      @map("password_changed_at") @db.Timestamptz(6)
+  // Keyed hash of the provider subject bound to this account (BR-ID-2). Set once, on the
+  // first successful verification; a trigger forbids changing it.
+  identitySubjectHmac String?        @unique @map("identity_subject_hmac")
+  closedAt            DateTime?      @map("closed_at") @db.Timestamptz(6)
+  createdAt           DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version             Int            @default(0)
+
+  devices               Device[]
+  sessions              Session[]
+  auditLogs             AuditLog[]
+  otpChallenges         OtpChallenge[]
+  staffRoles            StaffRoleAssignment[]  @relation("StaffRoleHolder")
+  rolesGranted          StaffRoleAssignment[]  @relation("StaffRoleGrantor")
+  rolesRevoked          StaffRoleAssignment[]  @relation("StaffRoleRevoker")
+  identityVerifications IdentityVerification[] @relation("IdentityVerificationSubject")
+  identityReviews       IdentityVerification[] @relation("IdentityVerificationReviewer")
 
   @@map("users")
 }
@@ -155,9 +189,10 @@ model Session {
   createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  user          User                  @relation(fields: [userId], references: [id], onDelete: Restrict)
-  device        Device?               @relation(fields: [deviceId], references: [id], onDelete: SetNull)
-  retiredTokens RetiredRefreshToken[]
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Restrict)
+  device                Device?                @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  retiredTokens         RetiredRefreshToken[]
+  identityVerifications IdentityVerification[]
 
   // Partial (WHERE revoked_at IS NULL) in SQL.
   @@index([userId], map: "sessions_active_user_idx")
@@ -289,4 +324,63 @@ model OtpChallenge {
   @@index([phoneE164, purpose, createdAt(sort: Desc)])
   @@index([userId, purpose])
   @@map("otp_challenges")
+}
+
+// One identity verification attempt (docs/architecture/08-identity-and-verification.md).
+// Never stored: photos, biometrics, address, raw national ID numbers, provider tokens.
+model IdentityVerification {
+  id                     String                     @id @default(uuid(7)) @db.Uuid
+  userId                 String                     @map("user_id") @db.Uuid
+  provider               IdentityProviderCode
+  status                 IdentityVerificationStatus @default(PENDING)
+  // Account-level status before this attempt; restored when it ends without a result.
+  previousIdentityStatus IdentityStatus             @map("previous_identity_status")
+  consentedAt            DateTime                   @map("consented_at") @db.Timestamptz(6)
+  // SHA-256 of the 256-bit OIDC state; the callback is looked up by it.
+  stateHash              String                     @unique @map("state_hash")
+  // AES-GCM {state, nonce, PKCE verifier}. Erased when the attempt leaves PENDING.
+  requestSecretsEnc      Bytes?                     @map("request_secrets_enc")
+  sessionExpiresAt       DateTime                   @map("session_expires_at") @db.Timestamptz(6)
+  // Set once, atomically, by the first callback (replay protection).
+  callbackReceivedAt     DateTime?                  @map("callback_received_at") @db.Timestamptz(6)
+  completedAt            DateTime?                  @map("completed_at") @db.Timestamptz(6)
+  // Keyed hash of the subject the provider returned (also kept for rejected attempts, as
+  // evidence for duplicate-identity investigations).
+  subjectHmac            String?                    @map("subject_hmac")
+  // AES-GCM {fullName, dateOfBirth}. Only on attempts that were verified.
+  verifiedClaimsEnc      Bytes?                     @map("verified_claims_enc")
+  assuranceLevel         String?                    @map("assurance_level")
+  verifiedAt             DateTime?                  @map("verified_at") @db.Timestamptz(6)
+  validUntil             DateTime?                  @map("valid_until") @db.Timestamptz(6)
+  // Internal reason for REJECTED/FAILED/EXPIRED/CANCELLED/SUPERSEDED/staff actions.
+  // Clients only see a coarse, non-enumerating mapping of it.
+  // Same-device confirmation (cross-device consent phishing defence): the session that
+  // started the attempt, the validated provider result waiting for confirmation (AES-GCM),
+  // and the SHA-256 of the one-time token sent to the app through the return link.
+  initiatedSessionId     String?                    @map("initiated_session_id") @db.Uuid
+  pendingResultEnc       Bytes?                     @map("pending_result_enc")
+  confirmationHash       String?                    @map("confirmation_hash")
+  confirmationExpiresAt  DateTime?                  @map("confirmation_expires_at") @db.Timestamptz(6)
+  outcomeCode            String?                    @map("outcome_code")
+  reviewedById           String?                    @map("reviewed_by") @db.Uuid
+  createdAt              DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version                Int                        @default(0)
+
+  user             User     @relation("IdentityVerificationSubject", fields: [userId], references: [id], onDelete: Restrict)
+  initiatedSession Session? @relation(fields: [initiatedSessionId], references: [id], onDelete: Restrict)
+  reviewedBy       User?    @relation("IdentityVerificationReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
+
+  // PARTIAL unique indexes (WHERE clause in SQL only): one PENDING attempt per user; one
+  // current (VERIFIED | SUSPENDED | REVERIFICATION_REQUIRED) attempt per user; a subject
+  // is VERIFIED on one attempt only. Declared @@unique so `db:drift` matches the SQL.
+  // They are NOT unique over the whole table: never use them as findUnique keys.
+  @@unique([userId, status], map: "identity_verifications_one_pending_per_user")
+  @@unique([userId], map: "identity_verifications_one_current_per_user")
+  @@unique([subjectHmac], map: "identity_verifications_verified_subject_key")
+  @@index([userId, createdAt(sort: Desc)])
+  // Partial (WHERE status = 'PENDING' / 'VERIFIED') in SQL: expiry sweeps.
+  @@index([sessionExpiresAt], map: "identity_verifications_pending_expiry_idx")
+  @@index([validUntil], map: "identity_verifications_verified_validity_idx")
+  @@map("identity_verifications")
 }
