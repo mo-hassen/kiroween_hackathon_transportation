@@ -28,6 +28,10 @@ x-api-env: &api-env
   API_DOCS_ENABLED: 'true'
   # Development only: SMS codes are kept in memory, readable at /api/v1/dev/sms/messages.
   SMS_PROVIDER: dev
+  # Development only: synthetic identities from the dev consent page. The browser in the
+  # Android emulator reaches the host's API at 10.0.2.2 (use http://localhost:3000 on desktop).
+  IDENTITY_PROVIDER: dev
+  PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://10.0.2.2:3000}
 
 services:
   postgres:

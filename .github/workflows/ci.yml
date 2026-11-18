@@ -80,6 +80,8 @@ jobs:
       - run: npm run test:integration
       - name: Auth and authorization coverage (target 90% lines, docs/architecture/11 §3)
         run: npm run test:coverage:auth
+      - name: Identity verification coverage (target 90% lines)
+        run: npm run test:coverage:identity
       - run: npm run build
       - run: npm run audit:deps
 
