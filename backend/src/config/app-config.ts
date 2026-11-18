@@ -1,10 +1,15 @@
+import type { JsonWebKey } from 'node:crypto';
 import {
+  DEV_IDENTITY_APP_RETURN_URL,
   DEV_ONLY_FIELD_ENCRYPTION_ACTIVE_KEY_ID,
   DEV_ONLY_FIELD_ENCRYPTION_KEYS,
   DEV_ONLY_HASHING_PEPPER,
   envSchema,
   parseEncryptionKeys,
+  parseRsaPrivateJwk,
   type AppEnvironment,
+  type IdentityProviderId,
+  type ParsedEnv,
   type SmsProviderId,
 } from './env.schema.js';
 
@@ -39,6 +44,32 @@ export interface AppConfig {
     readonly keys: ReadonlyMap<string, Buffer>;
   };
   readonly sms: { readonly provider: SmsProviderId };
+  readonly identity: IdentityConfig;
+}
+
+export interface EsignetConfig {
+  readonly issuer: string;
+  readonly clientId: string;
+  readonly clientPrivateJwk: JsonWebKey;
+  readonly userinfoPrivateJwk: JsonWebKey | undefined;
+  readonly scopes: readonly string[];
+  readonly claims: readonly string[];
+  readonly acrValues: string | undefined;
+  readonly acceptedAcr: readonly string[];
+  readonly claimsLocale: string;
+}
+
+export interface IdentityConfig {
+  readonly provider: IdentityProviderId;
+  /** Origin the browser uses to reach this API (no trailing slash). */
+  readonly publicApiBaseUrl: string;
+  /** Browser target after the callback; `?verification=<id>` is appended. */
+  readonly appReturnUrl: string;
+  readonly sessionTtlMs: number;
+  readonly validityMonths: number;
+  readonly providerTimeoutMs: number;
+  /** Present only when provider is `esignet`. */
+  readonly esignet: EsignetConfig | undefined;
 }
 
 export const APP_CONFIG = Symbol('APP_CONFIG');
@@ -104,5 +135,43 @@ export function loadConfig(source: Record<string, string | undefined>): AppConfi
     },
     // No production SMS provider is integrated: deployed environments fail closed.
     sms: { provider: env.SMS_PROVIDER ?? (isDeployed ? 'disabled' : 'dev') },
+    identity: identityConfig(env, isDeployed),
+  });
+}
+
+function identityConfig(env: ParsedEnv, isDeployed: boolean): IdentityConfig {
+  // Without onboarding credentials deployed environments fail closed (no fake provider).
+  const provider = env.IDENTITY_PROVIDER ?? (isDeployed ? 'disabled' : 'dev');
+  let esignet: EsignetConfig | undefined;
+  if (provider === 'esignet') {
+    // The schema has already validated presence and format of every value read here.
+    const clientKey = parseRsaPrivateJwk(env.IDENTITY_ESIGNET_CLIENT_PRIVATE_KEY ?? '');
+    const userinfoKey =
+      env.IDENTITY_ESIGNET_USERINFO_PRIVATE_KEY === undefined
+        ? undefined
+        : parseRsaPrivateJwk(env.IDENTITY_ESIGNET_USERINFO_PRIVATE_KEY);
+    if (typeof clientKey === 'string' || typeof userinfoKey === 'string') {
+      throw new ConfigValidationError(['IDENTITY_ESIGNET_*_PRIVATE_KEY: invalid key']);
+    }
+    esignet = Object.freeze({
+      issuer: env.IDENTITY_ESIGNET_ISSUER ?? '',
+      clientId: env.IDENTITY_ESIGNET_CLIENT_ID ?? '',
+      clientPrivateJwk: clientKey,
+      userinfoPrivateJwk: userinfoKey,
+      scopes: Object.freeze(env.IDENTITY_ESIGNET_SCOPES.split(' ').filter((s) => s.length > 0)),
+      claims: Object.freeze([...env.IDENTITY_ESIGNET_CLAIMS]),
+      acrValues: env.IDENTITY_ESIGNET_ACR_VALUES,
+      acceptedAcr: Object.freeze([...env.IDENTITY_ESIGNET_ACCEPTED_ACR]),
+      claimsLocale: env.IDENTITY_ESIGNET_CLAIMS_LOCALE,
+    });
+  }
+  return Object.freeze({
+    provider,
+    publicApiBaseUrl: env.PUBLIC_API_BASE_URL ?? `http://localhost:${env.PORT}`,
+    appReturnUrl: env.IDENTITY_APP_RETURN_URL ?? DEV_IDENTITY_APP_RETURN_URL,
+    sessionTtlMs: env.IDENTITY_SESSION_TTL_MINUTES * 60_000,
+    validityMonths: env.IDENTITY_VALIDITY_MONTHS,
+    providerTimeoutMs: env.IDENTITY_PROVIDER_TIMEOUT_MS,
+    esignet,
   });
 }

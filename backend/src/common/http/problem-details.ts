@@ -32,6 +32,11 @@ export const ErrorCode = {
   PHONE_IN_USE: 'PHONE_IN_USE',
   CANNOT_MODIFY_OWN_ACCOUNT: 'CANNOT_MODIFY_OWN_ACCOUNT',
   LAST_SUPER_ADMIN: 'LAST_SUPER_ADMIN',
+  // Phase 4: identity verification and state machines.
+  IDENTITY_UNAVAILABLE: 'IDENTITY_UNAVAILABLE',
+  IDENTITY_VERIFICATION_NOT_ALLOWED: 'IDENTITY_VERIFICATION_NOT_ALLOWED',
+  INVALID_STATE_TRANSITION: 'INVALID_STATE_TRANSITION',
+  IDENTITY_CONFIRMATION_INVALID: 'IDENTITY_CONFIRMATION_INVALID',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
@@ -62,6 +67,10 @@ const TITLES: Record<ErrorCode, string> = {
   PHONE_IN_USE: 'The phone number is already registered',
   CANNOT_MODIFY_OWN_ACCOUNT: 'You cannot change your own staff access',
   LAST_SUPER_ADMIN: 'At least one super administrator must remain',
+  IDENTITY_UNAVAILABLE: 'Identity verification is temporarily unavailable',
+  IDENTITY_VERIFICATION_NOT_ALLOWED: 'Identity verification cannot be started now',
+  INVALID_STATE_TRANSITION: 'This action is not possible in the current state',
+  IDENTITY_CONFIRMATION_INVALID: 'The verification cannot be confirmed from this session',
 };
 
 const STATUS_TO_CODE: Partial<Record<number, ErrorCode>> = {

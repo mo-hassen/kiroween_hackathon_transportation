@@ -189,4 +189,124 @@ describe('loadConfig', () => {
       expect(issues.join('\n')).not.toContain(pepper);
     });
   });
+
+  describe('identity provider (Phase 4)', () => {
+    const rsaJwk = (bits = 2048) =>
+      Buffer.from(
+        JSON.stringify(
+          generateKeyPairSync('rsa', { modulusLength: bits }).privateKey.export({ format: 'jwk' }),
+        ),
+      ).toString('base64');
+    const clientKey = rsaJwk();
+    const esignetEnv = {
+      IDENTITY_PROVIDER: 'esignet',
+      IDENTITY_ESIGNET_ISSUER: 'https://esignet.example.et',
+      IDENTITY_ESIGNET_CLIENT_ID: 'mobility-client',
+      IDENTITY_ESIGNET_CLIENT_PRIVATE_KEY: clientKey,
+      PUBLIC_API_BASE_URL: 'https://api.example.et',
+      IDENTITY_APP_RETURN_URL: 'https://app.example.et/identity/return',
+    };
+
+    it('uses the dev adapter in development and fails closed in deployed environments', () => {
+      const dev = loadConfig(developmentEnv).identity;
+      expect(dev).toMatchObject({
+        provider: 'dev',
+        publicApiBaseUrl: 'http://localhost:3000',
+        appReturnUrl: 'kiroweenmobility://app/identity/return',
+        sessionTtlMs: 15 * 60_000,
+        validityMonths: 24,
+        providerTimeoutMs: 15_000,
+        esignet: undefined,
+      });
+      expect(loadConfig(productionEnv).identity.provider).toBe('disabled');
+    });
+
+    it('rejects the dev identity adapter in staging and production', () => {
+      for (const env of ['staging', 'production']) {
+        expect(
+          issuesFor({ ...productionEnv, APP_ENV: env, IDENTITY_PROVIDER: 'dev' }).some((issue) =>
+            issue.startsWith('IDENTITY_PROVIDER:'),
+          ),
+        ).toBe(true);
+      }
+    });
+
+    it('accepts a complete eSignet configuration in production', () => {
+      const identity = loadConfig({ ...productionEnv, ...esignetEnv }).identity;
+      expect(identity.provider).toBe('esignet');
+      expect(identity.esignet).toMatchObject({
+        issuer: 'https://esignet.example.et',
+        clientId: 'mobility-client',
+        scopes: ['openid', 'profile'],
+        claims: ['name', 'birthdate'],
+        claimsLocale: 'en',
+      });
+      expect(identity.esignet?.clientPrivateJwk.kty).toBe('RSA');
+    });
+
+    it('requires every eSignet credential and https outside development', () => {
+      const issues = issuesFor({ ...productionEnv, IDENTITY_PROVIDER: 'esignet' });
+      for (const name of [
+        'IDENTITY_ESIGNET_ISSUER',
+        'IDENTITY_ESIGNET_CLIENT_ID',
+        'IDENTITY_ESIGNET_CLIENT_PRIVATE_KEY',
+        'PUBLIC_API_BASE_URL',
+        'IDENTITY_APP_RETURN_URL',
+      ]) {
+        expect(issues.some((issue) => issue.startsWith(`${name}:`))).toBe(true);
+      }
+      const insecure = issuesFor({
+        ...productionEnv,
+        ...esignetEnv,
+        IDENTITY_ESIGNET_ISSUER: 'http://esignet.example.et',
+        PUBLIC_API_BASE_URL: 'http://api.example.et',
+        IDENTITY_APP_RETURN_URL: 'kiroweenmobility://app/identity/return',
+      });
+      expect(insecure).toEqual(
+        expect.arrayContaining([
+          'IDENTITY_ESIGNET_ISSUER: must use https outside development',
+          'PUBLIC_API_BASE_URL: must use https outside development',
+          'IDENTITY_APP_RETURN_URL: must be an https App Link outside development',
+        ]),
+      );
+    });
+
+    it('validates the client key, scopes and claims', () => {
+      const bad = (overrides: Record<string, string>) =>
+        issuesFor({ ...developmentEnv, ...esignetEnv, ...overrides });
+      expect(
+        bad({ IDENTITY_ESIGNET_CLIENT_PRIVATE_KEY: Buffer.from('{}').toString('base64') }),
+      ).toContain('IDENTITY_ESIGNET_CLIENT_PRIVATE_KEY: must be an RSA private key');
+      expect(bad({ IDENTITY_ESIGNET_CLIENT_PRIVATE_KEY: rsaJwk(1024) })).toContain(
+        'IDENTITY_ESIGNET_CLIENT_PRIVATE_KEY: RSA key must be at least 2048 bits',
+      );
+      expect(bad({ IDENTITY_ESIGNET_SCOPES: 'profile' })).toContain(
+        'IDENTITY_ESIGNET_SCOPES: must include openid',
+      );
+      expect(bad({ IDENTITY_ESIGNET_CLAIMS: 'birthdate' })).toContain(
+        'IDENTITY_ESIGNET_CLAIMS: must request name (needed for licence matching)',
+      );
+    });
+
+    it('only redirects browsers to safe return URLs', () => {
+      for (const url of [
+        'javascript:alert(1)',
+        'http://app.example.et/return',
+        'https://app.example.et/return?next=x',
+        'not a url',
+      ]) {
+        expect(issuesFor({ ...developmentEnv, IDENTITY_APP_RETURN_URL: url })).toContain(
+          'IDENTITY_APP_RETURN_URL: must be an https or app-scheme URL without query or fragment',
+        );
+      }
+      expect(
+        issuesFor({ ...developmentEnv, PUBLIC_API_BASE_URL: 'https://api.example.et/path' }),
+      ).toContain('PUBLIC_API_BASE_URL: must be a bare origin (scheme://host[:port])');
+    });
+
+    it('never includes the client key in validation errors', () => {
+      const issues = issuesFor({ ...productionEnv, ...esignetEnv, IDENTITY_ESIGNET_SCOPES: 'x' });
+      expect(issues.join('\n')).not.toContain(clientKey.slice(0, 40));
+    });
+  });
 });

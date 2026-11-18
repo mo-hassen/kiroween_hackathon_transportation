@@ -31,6 +31,13 @@ const SENSITIVE_KEYS = [
   'tin',
   'nationalId',
   'accountRef',
+  // Phase 4: identity provider session values and claims.
+  'codeVerifier',
+  'nonce',
+  'state',
+  'clientAssertion',
+  'fullName',
+  'dateOfBirth',
 ] as const;
 
 export const REDACT_PATHS: readonly string[] = SENSITIVE_KEYS.flatMap((key) => [key, `*.${key}`]);

@@ -1,4 +1,4 @@
-import { createPrivateKey } from 'node:crypto';
+import { createPrivateKey, type JsonWebKey } from 'node:crypto';
 import { isIP } from 'node:net';
 import { z } from 'zod';
 
@@ -8,6 +8,17 @@ export type AppEnvironment = (typeof APP_ENVIRONMENTS)[number];
 /** Implemented SMS adapters. `dev` stores messages in memory; `disabled` fails closed. */
 export const SMS_PROVIDERS = ['dev', 'disabled'] as const;
 export type SmsProviderId = (typeof SMS_PROVIDERS)[number];
+
+/**
+ * Implemented identity adapters (docs/architecture/08-identity-and-verification.md §3).
+ * `dev` serves a local synthetic consent page; `esignet` is the OIDC relying-party adapter
+ * for Fayda via eSignet; `disabled` fails closed.
+ */
+export const IDENTITY_PROVIDERS = ['dev', 'esignet', 'disabled'] as const;
+export type IdentityProviderId = (typeof IDENTITY_PROVIDERS)[number];
+
+/** Browser return target after the callback when none is configured (development/test). */
+export const DEV_IDENTITY_APP_RETURN_URL = 'kiroweenmobility://app/identity/return';
 
 /**
  * Development/test defaults for server secrets. They are public (committed), so the
@@ -54,6 +65,43 @@ function isEd25519PrivateKeyPem(base64Pem: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Base64 of an RSA private key in JWK (JSON) form, the format eSignet relying parties
+ * are issued. Returns the parsed JWK, or an error message.
+ */
+export function parseRsaPrivateJwk(base64Jwk: string): JsonWebKey | string {
+  let jwk: unknown;
+  try {
+    jwk = JSON.parse(Buffer.from(base64Jwk, 'base64').toString('utf8'));
+  } catch {
+    return 'must be base64 of a JSON Web Key';
+  }
+  if (typeof jwk !== 'object' || jwk === null || Array.isArray(jwk)) {
+    return 'must be a single JSON Web Key object (not a key set)';
+  }
+  const key = jwk as JsonWebKey;
+  if (key.kty !== 'RSA' || typeof key.d !== 'string') return 'must be an RSA private key';
+  try {
+    const parsed = createPrivateKey({ key, format: 'jwk' });
+    if ((parsed.asymmetricKeyDetails?.modulusLength ?? 0) < 2048) {
+      return 'RSA key must be at least 2048 bits';
+    }
+  } catch {
+    return 'is not a valid RSA private JWK';
+  }
+  return key;
+}
+
+/** Schemes a browser must never be redirected to after the identity callback. */
+const BLOCKED_RETURN_SCHEMES = new Set(['http', 'javascript', 'data', 'file', 'vbscript', 'blob']);
+
+/** An absolute URL without query or fragment. */
+function isBareUrl(value: string): boolean {
+  if (!URL.canParse(value)) return false;
+  const url = new URL(value);
+  return url.search === '' && url.hash === '';
 }
 
 function isIpOrCidr(value: string): boolean {
@@ -110,6 +158,34 @@ export const envSchema = z
     FIELD_ENCRYPTION_ACTIVE_KEY_ID: z.string().min(1).optional(),
     SMS_PROVIDER: z.enum(SMS_PROVIDERS).optional(),
     STAFF_IP_ALLOWLIST: commaList.default([]),
+
+    // Identity verification (docs/architecture/08-identity-and-verification.md).
+    IDENTITY_PROVIDER: z.enum(IDENTITY_PROVIDERS).optional(),
+    // Origin the user's browser uses to reach this API: the OIDC redirect URI is
+    // <PUBLIC_API_BASE_URL>/api/v1/identity/callback/<provider>.
+    PUBLIC_API_BASE_URL: urlString.optional(),
+    // Where the browser is sent after the callback (an Android App Link in production).
+    IDENTITY_APP_RETURN_URL: z.string().min(1).optional(),
+    IDENTITY_SESSION_TTL_MINUTES: z.coerce.number().int().min(5).max(60).default(15),
+    // BR-ID-3: verified identity validity (default 24 months) [ASSUMPTION].
+    IDENTITY_VALIDITY_MONTHS: z.coerce.number().int().min(1).max(120).default(24),
+    IDENTITY_PROVIDER_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60_000).default(15_000),
+    // eSignet relying-party credentials [EXTERNAL]: issued during NIDP onboarding.
+    IDENTITY_ESIGNET_ISSUER: urlString.optional(),
+    IDENTITY_ESIGNET_CLIENT_ID: z.string().min(1).max(200).optional(),
+    IDENTITY_ESIGNET_CLIENT_PRIVATE_KEY: base64String.optional(),
+    // Only for clients registered for encrypted user information (JWE).
+    IDENTITY_ESIGNET_USERINFO_PRIVATE_KEY: base64String.optional(),
+    IDENTITY_ESIGNET_SCOPES: z.string().min(1).default('openid profile'),
+    // Claims requested as essential in the `claims` parameter (names only).
+    IDENTITY_ESIGNET_CLAIMS: commaList.default(['name', 'birthdate']),
+    IDENTITY_ESIGNET_ACR_VALUES: z.string().min(1).optional(),
+    // If set, the ID token `acr` must be one of these.
+    IDENTITY_ESIGNET_ACCEPTED_ACR: commaList.default([]),
+    IDENTITY_ESIGNET_CLAIMS_LOCALE: z
+      .string()
+      .regex(/^[a-z]{2,3}$/)
+      .default('en'),
   })
   .superRefine((env, ctx) => {
     const issue = (path: string, message: string): void => {
@@ -151,6 +227,55 @@ export const envSchema = z
         !keys.has(env.FIELD_ENCRYPTION_ACTIVE_KEY_ID)
       ) {
         issue('FIELD_ENCRYPTION_ACTIVE_KEY_ID', 'must name one of FIELD_ENCRYPTION_KEYS');
+      }
+    }
+
+    if (
+      env.PUBLIC_API_BASE_URL !== undefined &&
+      (!URL.canParse(env.PUBLIC_API_BASE_URL) ||
+        new URL(env.PUBLIC_API_BASE_URL).origin !== env.PUBLIC_API_BASE_URL)
+    ) {
+      issue('PUBLIC_API_BASE_URL', 'must be a bare origin (scheme://host[:port])');
+    }
+    if (env.IDENTITY_APP_RETURN_URL !== undefined) {
+      const scheme = isBareUrl(env.IDENTITY_APP_RETURN_URL)
+        ? new URL(env.IDENTITY_APP_RETURN_URL).protocol.slice(0, -1)
+        : '';
+      if (scheme === '' || BLOCKED_RETURN_SCHEMES.has(scheme)) {
+        issue(
+          'IDENTITY_APP_RETURN_URL',
+          'must be an https or app-scheme URL without query or fragment',
+        );
+      }
+    }
+    if (env.IDENTITY_PROVIDER === 'esignet') {
+      for (const name of [
+        'IDENTITY_ESIGNET_ISSUER',
+        'IDENTITY_ESIGNET_CLIENT_ID',
+        'IDENTITY_ESIGNET_CLIENT_PRIVATE_KEY',
+        'PUBLIC_API_BASE_URL',
+      ] as const) {
+        if (env[name] === undefined) issue(name, 'is required when IDENTITY_PROVIDER=esignet');
+      }
+      if (env.IDENTITY_ESIGNET_ISSUER !== undefined && !isBareUrl(env.IDENTITY_ESIGNET_ISSUER)) {
+        issue('IDENTITY_ESIGNET_ISSUER', 'must be a URL without query or fragment');
+      }
+      if (env.IDENTITY_ESIGNET_CLIENT_PRIVATE_KEY !== undefined) {
+        const key = parseRsaPrivateJwk(env.IDENTITY_ESIGNET_CLIENT_PRIVATE_KEY);
+        if (typeof key === 'string') issue('IDENTITY_ESIGNET_CLIENT_PRIVATE_KEY', key);
+      }
+      if (env.IDENTITY_ESIGNET_USERINFO_PRIVATE_KEY !== undefined) {
+        const key = parseRsaPrivateJwk(env.IDENTITY_ESIGNET_USERINFO_PRIVATE_KEY);
+        if (typeof key === 'string') issue('IDENTITY_ESIGNET_USERINFO_PRIVATE_KEY', key);
+      }
+      if (!env.IDENTITY_ESIGNET_SCOPES.split(' ').includes('openid')) {
+        issue('IDENTITY_ESIGNET_SCOPES', 'must include openid');
+      }
+      if (!env.IDENTITY_ESIGNET_CLAIMS.every((claim) => /^[a-z_]{1,64}$/.test(claim))) {
+        issue('IDENTITY_ESIGNET_CLAIMS', 'claim names must match [a-z_]{1,64}');
+      }
+      if (!env.IDENTITY_ESIGNET_CLAIMS.includes('name')) {
+        issue('IDENTITY_ESIGNET_CLAIMS', 'must request name (needed for licence matching)');
       }
     }
 
@@ -206,6 +331,28 @@ export const envSchema = z
         'SMS_PROVIDER',
         'the dev SMS adapter is development/test only; no production SMS provider is integrated yet',
       );
+    }
+    if (env.IDENTITY_PROVIDER === 'dev') {
+      issue(
+        'IDENTITY_PROVIDER',
+        'the dev identity adapter returns synthetic identities and is development/test only',
+      );
+    }
+    if (env.IDENTITY_PROVIDER === 'esignet') {
+      for (const name of ['IDENTITY_ESIGNET_ISSUER', 'PUBLIC_API_BASE_URL'] as const) {
+        const value = env[name];
+        if (value !== undefined && URL.canParse(value) && new URL(value).protocol !== 'https:') {
+          issue(name, 'must use https outside development');
+        }
+      }
+      if (env.IDENTITY_APP_RETURN_URL === undefined) {
+        issue('IDENTITY_APP_RETURN_URL', 'is required outside development');
+      } else if (
+        URL.canParse(env.IDENTITY_APP_RETURN_URL) &&
+        new URL(env.IDENTITY_APP_RETURN_URL).protocol !== 'https:'
+      ) {
+        issue('IDENTITY_APP_RETURN_URL', 'must be an https App Link outside development');
+      }
     }
   });
 
