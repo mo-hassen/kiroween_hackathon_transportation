@@ -8,10 +8,13 @@ import 'package:mobility/core/l10n/locale_controller.dart';
 import 'package:mobility/core/storage/token_store.dart';
 import 'package:mobility/features/account/data/account_api.dart';
 import 'package:mobility/features/auth/data/auth_api.dart';
+import 'package:mobility/features/identity/application/identity_flow.dart';
+import 'package:mobility/features/identity/data/identity_api.dart';
 import 'package:mobility/features/system_status/data/system_status_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fakes.dart';
+import 'identity_fakes.dart';
 
 final class _OnlineStatus implements SystemStatusApi {
   @override
@@ -24,10 +27,12 @@ final class AppHarness {
   final MemoryTokenStore store;
   final auth = FakeAuthApi();
   final account = FakeAccountApi();
+  final identity = FakeIdentityApi();
+  final launcher = FakeIdentityLauncher();
   late ProviderContainer container;
 
   /// Boots the real app (router, session controller, guards) with fake APIs.
-  Future<void> pump(WidgetTester tester, {Locale? locale}) async {
+  Future<void> pump(WidgetTester tester, {Locale? locale, bool settle = true}) async {
     SharedPreferences.setMockInitialValues({
       if (locale != null) LocaleController.storageKey: locale.languageCode,
     });
@@ -44,13 +49,15 @@ final class AppHarness {
           installationIdStoreProvider.overrideWithValue(FixedInstallationId()),
           authApiProvider.overrideWithValue(auth),
           accountApiProvider.overrideWithValue(account),
+          identityApiProvider.overrideWithValue(identity),
+          identityLauncherProvider.overrideWithValue(launcher),
           systemStatusApiProvider.overrideWithValue(_OnlineStatus()),
         ],
         child: const MobilityApp(),
       ),
     );
     container = ProviderScope.containerOf(tester.element(find.byType(MobilityApp)));
-    await tester.pumpAndSettle();
+    if (settle) await tester.pumpAndSettle();
   }
 }
 
