@@ -12,6 +12,7 @@ import {
   type Tokens,
   uniquePhone,
 } from '../helpers/auth-helpers.js';
+import { startVerification } from '../helpers/identity-helpers.js';
 import { collectRoutes } from '../helpers/routes.js';
 import { createTestApp, type TestApp } from '../helpers/test-app.js';
 
@@ -35,6 +36,8 @@ interface Fixtures {
   tokens: Record<Exclude<Actor, 'anonymous'>, Tokens>;
   /** A second session of `otherCustomer`: target for IDOR attempts. */
   otherCustomerSpareSessionId: string;
+  /** An open identity verification of `otherCustomer`: target for IDOR attempts. */
+  otherCustomerVerificationId: string;
   /** A SUPPORT staff member that the super admin may manage. */
   managedStaffId: string;
 }
@@ -62,6 +65,26 @@ const superAdminOnly = (ok: number): Record<Actor, number> => ({
   verificationOfficer: 403,
   finance: 403,
   superAdmin: ok,
+});
+
+/** Customer routes: `customer` is a stranger to otherCustomer's data; staff get 404. */
+const customersOnly = (customer: number, otherCustomer: number): Record<Actor, number> => ({
+  anonymous: 401,
+  customer,
+  otherCustomer,
+  support: 404,
+  verificationOfficer: 404,
+  finance: 404,
+  superAdmin: 404,
+});
+const verificationOfficerOnly = (ok: number): Record<Actor, number> => ({
+  anonymous: 401,
+  customer: 404,
+  otherCustomer: 404,
+  support: 403,
+  verificationOfficer: ok,
+  finance: 403,
+  superAdmin: 403,
 });
 
 const ROWS: Row[] = [
@@ -119,6 +142,69 @@ const ROWS: Row[] = [
     call: (a, fx) => a.post(`/api/v1/admin/staff/${fx.managedStaffId}/credentials/reset`),
     expect: superAdminOnly(200),
   },
+  // Phase 4: identity. Customers only (staff have no customer identity: 404); own data only.
+  {
+    route: 'GET identity/verifications/current',
+    call: (a) => a.get('/api/v1/identity/verifications/current'),
+    expect: customersOnly(200, 200),
+  },
+  {
+    route: 'GET identity/verifications/:id',
+    call: (a, fx) => a.get(`/api/v1/identity/verifications/${fx.otherCustomerVerificationId}`),
+    expect: customersOnly(404, 200),
+  },
+  {
+    // 400 for the owner: no provider result to confirm (and a random token).
+    route: 'POST identity/verifications/:id/confirm',
+    call: (a, fx) =>
+      a
+        .post(`/api/v1/identity/verifications/${fx.otherCustomerVerificationId}/confirm`)
+        .send({ confirmation: 'A'.repeat(43) }),
+    expect: customersOnly(404, 400),
+  },
+  {
+    // Runs before the start row below, which would replace this attempt.
+    route: 'POST identity/verifications/:id/cancel',
+    call: (a, fx) =>
+      a.post(`/api/v1/identity/verifications/${fx.otherCustomerVerificationId}/cancel`),
+    expect: customersOnly(404, 200),
+  },
+  {
+    route: 'POST identity/verifications',
+    call: (a) =>
+      a
+        .post('/api/v1/identity/verifications')
+        .set('Idempotency-Key', randomUUID())
+        .send({ consent: true }),
+    expect: customersOnly(201, 201),
+  },
+  {
+    route: 'GET admin/identity-verifications/:id',
+    call: (a, fx) =>
+      a
+        .get(`/api/v1/admin/identity-verifications/${fx.otherCustomerVerificationId}`)
+        .query({ reason: 'Authorization matrix check' }),
+    expect: verificationOfficerOnly(200),
+  },
+  {
+    // 409: the officer passes authorization; the attempt is not in a verified state.
+    route: 'POST admin/identity-verifications/:id/require-reverification',
+    call: (a, fx) =>
+      a
+        .post(
+          `/api/v1/admin/identity-verifications/${fx.otherCustomerVerificationId}/require-reverification`,
+        )
+        .send({ reason: 'Authorization matrix check' }),
+    expect: verificationOfficerOnly(409),
+  },
+  {
+    route: 'POST admin/identity-verifications/:id/suspend',
+    call: (a, fx) =>
+      a
+        .post(`/api/v1/admin/identity-verifications/${fx.otherCustomerVerificationId}/suspend`)
+        .send({ reason: 'Authorization matrix check' }),
+    expect: verificationOfficerOnly(409),
+  },
   {
     route: 'POST auth/staff/reauthenticate',
     call: (a) =>
@@ -161,6 +247,8 @@ describe('authorization matrix', () => {
         superAdmin: await staffLogin(app, await seedStaff(app, ['SUPER_ADMIN'])),
       },
       otherCustomerSpareSessionId: spare.sessionId,
+      otherCustomerVerificationId: (await startVerification(app, other.tokens)).body.data
+        .verification.id as string,
       managedStaffId: managed.userId,
     };
   });

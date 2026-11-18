@@ -27,6 +27,12 @@ const PUBLIC_ROUTE_ALLOWLIST = [
   // Development/test only: mounted solely with SMS_PROVIDER=dev, which config rejects
   // outside development/test (see sms.module.ts and app-config.spec.ts).
   'GET dev/sms/messages',
+  // Phase 4: identity provider browser redirect (single-use state, see the service).
+  'GET identity/callback/:provider',
+  // Development/test only: the dev identity provider's consent page, mounted solely with
+  // IDENTITY_PROVIDER=dev, which config rejects in staging/production.
+  'GET dev/identity/authorize',
+  'GET dev/identity/authorize/decision',
 ];
 
 describe('public route allow-list', () => {
