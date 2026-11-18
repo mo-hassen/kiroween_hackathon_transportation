@@ -59,7 +59,7 @@ Customer API (mobile). Paths abbreviated; all under `/api/v1`.
 |---|---|
 | auth | `POST /auth/otp` · `POST /auth/register` · `POST /auth/login` · `POST /auth/refresh` · `POST /auth/logout` · `POST /auth/password/reset/request` · `POST /auth/password/reset/confirm` |
 | me | `GET/PATCH /me` · `GET /me/sessions` · `DELETE /me/sessions/{id}` · `POST /me/devices/push-token` · `POST /me/close` |
-| identity | `POST /identity/verifications` (returns authorization URL) · `GET /identity/verifications/current` · `GET /identity/verifications/{id}` · `GET /identity/callback/{provider}` (browser redirect target, not called by app) |
+| identity | `POST /identity/verifications` (returns authorization URL) · `GET /identity/verifications/current` · `GET /identity/verifications/{id}` · `POST /identity/verifications/{id}/confirm` (same-session confirmation, Phase 4) · `POST /identity/verifications/{id}/cancel` · `GET /identity/callback/{provider}` (browser redirect target, not called by app) |
 | documents | `POST /documents` (create upload intent → presigned PUT URL, constraints) · `POST /documents/{id}/complete` · `GET /documents/{id}/url` (short-lived GET URL) · `DELETE /documents/{id}` (only DRAFT) |
 | drivers | `POST /drivers/me` · `GET/PATCH /drivers/me` · `POST /drivers/me/licenses` · `PATCH /drivers/me/licenses/{id}` · `POST /drivers/me/licenses/{id}/submit` · `GET /drivers/me/eligibility` |
 | owners | `POST /owners/me` · `GET/PATCH /owners/me` · `POST /owners/me/submit` |

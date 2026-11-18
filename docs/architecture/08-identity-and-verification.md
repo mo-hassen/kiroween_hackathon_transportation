@@ -60,6 +60,8 @@ App              API                           Identity provider
  │ GET /identity/verifications/{id} → status
 ```
 
+**Phase 4 change (same-device confirmation).** The callback does not link the identity by itself. It stores the validated result encrypted and redirects to the app link with `?verification=<id>&confirmation=<one-time token>`; the app then calls `POST /identity/verifications/{id}/confirm` from the session that started the attempt (10-minute window). A provider link forwarded to another person therefore cannot bind that person's identity to the sender's account (cross-device consent phishing). Details and residual risk: `docs/reports/phase-04.md` §12.
+
 Replay protection: state is single-use (`callback_received_at` set in the same transaction with `WHERE callback_received_at IS NULL`); authorization codes are one-time at the provider; nonce binds the ID token to the session. Callbacks after expiry → `EXPIRED` session.
 
 Name matching: verified full name is compared (normalized, Amharic/Latin transliteration-tolerant) against the name later found on the driving licence by the officer, not automatically [ASSUMPTION].

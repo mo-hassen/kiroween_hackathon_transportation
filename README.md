@@ -2,9 +2,11 @@
 
 A platform that connects verified vehicle owners with verified drivers in Addis Ababa.
 
-Status: **Phase 3 (authentication) complete.** Customers can register, sign in (with an SMS
-code on new devices), manage sessions and reset passwords; staff sign in with password + TOTP.
-See [`docs/reports/phase-03.md`](docs/reports/phase-03.md),
+Status: **Phase 4 (identity verification) implemented, awaiting review.** Customers verify their
+identity through an identity-provider boundary (development adapter; the Fayda/eSignet adapter
+needs NIDP onboarding). Phase 3 (authentication) is complete.
+See [`docs/reports/phase-04.md`](docs/reports/phase-04.md),
+[`docs/reports/phase-03.md`](docs/reports/phase-03.md),
 [`docs/reports/phase-02.md`](docs/reports/phase-02.md) and the roadmap in
 [`docs/architecture/13-implementation-plan.md`](docs/architecture/13-implementation-plan.md).
 
@@ -61,6 +63,8 @@ npm run build && npm run start:dev
 | `npm run db:migrate` | Create a migration (`prisma migrate dev`) |
 | `npm run db:drift` | Fails if `schema.prisma` and the migrations disagree |
 | `npm run test:coverage:auth` | Coverage of auth/authorization code; fails below 90% lines |
+| `npm run test:coverage:identity` | Coverage of identity code; fails below 90% lines |
+| `npm run identity:expire` | Applies due identity expiries (run from a scheduler; after `npm run build`) |
 | `npm run audit:deps` | Production dependency audit |
 
 Schema changes: edit `prisma/schema.prisma`, run `npx prisma migrate dev --create-only --name <name>`,
@@ -91,6 +95,24 @@ npm run staff:bootstrap -- --phone 0911234567 --name "Full Name"
 Staging and production refuse to start without `AUTH_JWT_PRIVATE_KEY`, `AUTH_JWT_KEY_ID`,
 `HASHING_PEPPER` and `FIELD_ENCRYPTION_KEYS`/`FIELD_ENCRYPTION_ACTIVE_KEY_ID` (see
 `backend/.env.example`).
+
+## Identity verification in development
+
+No real identity provider is connected. With `IDENTITY_PROVIDER=dev` (development/test only) the
+API serves a **test consent page** with synthetic people and failure simulations; the flow
+(state, nonce, PKCE, one-time code, callback) is the same as with a real OIDC provider.
+
+1. The app calls `POST /api/v1/identity/verifications` and opens the returned URL in the browser.
+2. The test page at `/api/v1/dev/identity/authorize` offers "Approve as …", "Decline" and failures.
+3. The API callback redirects to `kiroweenmobility://app/identity/return?verification=…&confirmation=…`,
+   which opens the app. The app confirms the result from the session that started it
+   (`POST /api/v1/identity/verifications/{id}/confirm`); only then is the identity linked.
+
+`PUBLIC_API_BASE_URL` must be the address the *browser* uses: the compose stack defaults to
+`http://10.0.2.2:3000` (Android emulator); use `http://localhost:3000` on a desktop browser.
+Outside development the API defaults to `IDENTITY_PROVIDER=disabled` (`503 IDENTITY_UNAVAILABLE`)
+and rejects `dev`. The `esignet` adapter needs the NIDP relying-party credentials listed in
+`backend/.env.example` and [`docs/reports/phase-04.md`](docs/reports/phase-04.md).
 
 ## Mobile development
 
