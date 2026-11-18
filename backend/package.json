@@ -26,7 +26,9 @@
     "db:drift": "prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --exit-code",
     "audit:deps": "npm audit --omit=dev --audit-level=high",
     "test:coverage:auth": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=text-summary --coverage.include='src/common/auth/**' --coverage.include='src/modules/auth/**' --coverage.include='src/modules/me/**' --coverage.include='src/modules/admin/**' --coverage.include='src/common/idempotency/**' --coverage.exclude='**/*.spec.ts' --coverage.thresholds.lines=90",
-    "staff:bootstrap": "node --env-file-if-exists=.env dist/cli/bootstrap-super-admin.js"
+    "test:coverage:identity": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=text-summary --coverage.include='src/modules/identity/**' --coverage.include='src/providers/identity/**' --coverage.exclude='**/*.spec.ts' --coverage.thresholds.lines=90",
+    "staff:bootstrap": "node --env-file-if-exists=.env dist/cli/bootstrap-super-admin.js",
+    "identity:expire": "node --env-file-if-exists=.env dist/cli/identity-expire.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1170.0",
