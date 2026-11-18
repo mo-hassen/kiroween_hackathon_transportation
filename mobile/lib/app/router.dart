@@ -12,6 +12,8 @@ import '../features/auth/presentation/forgot_password_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/register_screen.dart';
 import '../features/auth/presentation/verify_device_screen.dart';
+import '../features/identity/presentation/identity_return_screen.dart';
+import '../features/identity/presentation/identity_screen.dart';
 import '../features/not_found/not_found_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/welcome/welcome_screen.dart';
@@ -23,21 +25,54 @@ import 'routes.dart';
 /// * signed out -> only the public routes (an expired session lands on sign-in)
 /// * signed in -> never the public routes
 /// * unknown locations are not redirected: they show the not-found screen
-String? redirectFor(SessionState session, String location) {
+///
+/// The identity return link is kept across session restore (cold start from the browser):
+/// splash carries it in `next` and it is resumed once signed in. Signed out, it is dropped.
+String? redirectFor(SessionState session, String location, {Uri? uri}) {
   if (!AppRoutes.all.contains(location)) return null;
   final isPublic = AppRoutes.signedOutRoutes.contains(location);
   return switch (session) {
-    SessionRestoring() ||
-    SessionUnreachable() => location == AppRoutes.splash ? null : AppRoutes.splash,
+    SessionRestoring() || SessionUnreachable() =>
+      location == AppRoutes.splash
+          ? null
+          : location == AppRoutes.identityReturn && uri != null
+          ? Uri(
+              path: AppRoutes.splash,
+              queryParameters: {'next': identityReturnLocation(uri.queryParameters)},
+            ).toString()
+          : AppRoutes.splash,
     SignedOut(:final reason) =>
       isPublic
           ? null
           : (reason == SignOutReason.sessionExpired ? AppRoutes.login : AppRoutes.welcome),
     SignedIn() =>
-      isPublic || location == AppRoutes.splash || location == AppRoutes.root
+      isPublic || location == AppRoutes.root
           ? AppRoutes.account
+          : location == AppRoutes.splash
+          ? (_resumableNext(uri) ?? AppRoutes.account)
           : null,
   };
+}
+
+/// The return route with only its two known parameters (anything else is dropped).
+String identityReturnLocation(Map<String, String> query) => Uri(
+  path: AppRoutes.identityReturn,
+  queryParameters: {
+    for (final key in const ['verification', 'confirmation'])
+      if (query[key] != null) key: query[key]!,
+  },
+).toString();
+
+/// Only the identity return route may be resumed from splash (no open redirect).
+String? _resumableNext(Uri? uri) {
+  final next = Uri.tryParse(uri?.queryParameters['next'] ?? '');
+  if (next == null ||
+      next.hasScheme ||
+      next.hasAuthority ||
+      next.path != AppRoutes.identityReturn) {
+    return null;
+  }
+  return identityReturnLocation(next.queryParameters);
 }
 
 GoRouter buildRouter({
@@ -46,7 +81,7 @@ GoRouter buildRouter({
 }) => GoRouter(
   initialLocation: initialLocation,
   refreshListenable: session,
-  redirect: (_, state) => redirectFor(session.value, state.matchedLocation),
+  redirect: (_, state) => redirectFor(session.value, state.matchedLocation, uri: state.uri),
   routes: [
     GoRoute(path: AppRoutes.root, redirect: (_, _) => AppRoutes.welcome),
     GoRoute(path: AppRoutes.splash, builder: (_, _) => const SplashScreen()),
@@ -63,6 +98,12 @@ GoRouter buildRouter({
     GoRoute(path: AppRoutes.account, builder: (_, _) => const AccountScreen()),
     GoRoute(path: AppRoutes.accountSessions, builder: (_, _) => const SessionsScreen()),
     GoRoute(path: AppRoutes.accountPassword, builder: (_, _) => const ChangePasswordScreen()),
+    GoRoute(path: AppRoutes.identity, builder: (_, _) => const IdentityScreen()),
+    // Browser return: confirms the provider result from this session, then shows the status.
+    GoRoute(
+      path: AppRoutes.identityReturn,
+      builder: (_, state) => IdentityReturnScreen(query: state.uri.queryParameters),
+    ),
   ],
   errorBuilder: (_, _) => const NotFoundScreen(),
 );

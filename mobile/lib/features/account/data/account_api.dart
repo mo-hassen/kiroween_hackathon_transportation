@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/session_controller.dart';
 import '../../../core/network/api_client.dart';
+import '../../identity/data/identity_api.dart';
 
 /// The signed-in user's account (`GET /me`).
 final class AccountProfile {
@@ -12,6 +13,7 @@ final class AccountProfile {
     required this.preferredLocale,
     required this.status,
     required this.version,
+    this.identityStatus = IdentityStatus.unverified,
   });
 
   factory AccountProfile.fromJson(Map<String, Object?> json) => AccountProfile(
@@ -21,6 +23,7 @@ final class AccountProfile {
     preferredLocale: json['preferredLocale']! as String,
     status: json['status']! as String,
     version: json['version']! as int,
+    identityStatus: IdentityStatus.parse(json['identityStatus']),
   );
 
   final String id;
@@ -33,6 +36,9 @@ final class AccountProfile {
 
   /// Sent as If-Match on updates.
   final int version;
+
+  /// Server-managed; changed only by the identity verification flow.
+  final IdentityStatus identityStatus;
 
   bool get isRestricted => status == 'SUSPENDED' || status == 'LOCKED';
 }

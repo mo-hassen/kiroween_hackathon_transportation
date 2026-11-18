@@ -10,6 +10,7 @@ import '../../../core/network/api_failure.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../auth/presentation/auth_messages.dart';
 import '../../auth/presentation/login_screen.dart';
+import '../../identity/presentation/identity_labels.dart';
 import '../../welcome/welcome_screen.dart';
 import '../data/account_api.dart';
 
@@ -48,6 +49,16 @@ class AccountScreen extends ConsumerWidget {
                       ),
               ),
               const Divider(),
+              ListTile(
+                leading: const Icon(Icons.badge_outlined),
+                title: Text(l10n.identityTitle),
+                subtitle: Text(identityStatusLabel(l10n, account.identityStatus)),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  await context.push(AppRoutes.identity);
+                  ref.invalidate(accountProfileProvider);
+                },
+              ),
               ListTile(
                 leading: const Icon(Icons.devices_outlined),
                 title: Text(l10n.devicesTitle),

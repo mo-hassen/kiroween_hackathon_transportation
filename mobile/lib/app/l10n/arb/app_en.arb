@@ -393,5 +393,179 @@
   "passwordChanged": "Password changed. Other devices were signed out.",
   "@passwordChanged": {
     "description": "Confirmation after a password change."
+  },
+  "identityTitle": "Identity verification",
+  "@identityTitle": {
+    "description": "Title of the identity verification screen and its account menu entry."
+  },
+  "identityStatusNotVerified": "Not verified yet",
+  "@identityStatusNotVerified": {
+    "description": "Identity status: no verification yet."
+  },
+  "identityIntroBody": "Drivers and owners verify their identity once with the national ID service (Fayda) before they can use or list vehicles.",
+  "@identityIntroBody": {
+    "description": "Why identity verification is needed."
+  },
+  "identityConsentTitle": "Before you continue",
+  "@identityConsentTitle": {
+    "description": "Heading of the consent section."
+  },
+  "identityConsentShared": "We receive your full name and date of birth, confirmed by the national ID service.",
+  "@identityConsentShared": {
+    "description": "Consent: data that is shared."
+  },
+  "identityConsentNotStored": "We never store your photo, fingerprints or other biometrics, your ID number or your address.",
+  "@identityConsentNotStored": {
+    "description": "Consent: data that is never stored."
+  },
+  "identityConsentBrowser": "You sign in on the national ID service's own page in your browser. This app never sees your ID credentials.",
+  "@identityConsentBrowser": {
+    "description": "Consent: authentication happens in the browser at the provider."
+  },
+  "identityConsentCheckbox": "I agree to share my name and date of birth for identity verification.",
+  "@identityConsentCheckbox": {
+    "description": "Consent checkbox label."
+  },
+  "identityStartAction": "Verify my identity",
+  "@identityStartAction": {
+    "description": "Button that starts identity verification."
+  },
+  "identityRetryAction": "Verify again",
+  "@identityRetryAction": {
+    "description": "Button that starts a new verification after an earlier attempt."
+  },
+  "identityContinueAction": "Continue in browser",
+  "@identityContinueAction": {
+    "description": "Reopens the provider page of the open attempt."
+  },
+  "identityCheckStatusAction": "Check status",
+  "@identityCheckStatusAction": {
+    "description": "Refreshes the verification status."
+  },
+  "identityCancelAction": "Cancel verification",
+  "@identityCancelAction": {
+    "description": "Cancels the open verification."
+  },
+  "identityKeepAction": "Keep it",
+  "@identityKeepAction": {
+    "description": "Dialog button that keeps the open verification."
+  },
+  "identityCancelConfirm": "Cancel this verification? You can start again later.",
+  "@identityCancelConfirm": {
+    "description": "Confirmation before cancelling a verification."
+  },
+  "identityStatusPending": "Verification in progress",
+  "@identityStatusPending": {
+    "description": "Identity status: started, waiting for the provider."
+  },
+  "identityPendingBody": "Finish on the national ID service's page, then come back to this app.",
+  "@identityPendingBody": {
+    "description": "Explains what to do while verification is in progress."
+  },
+  "identityStatusVerified": "Identity verified",
+  "@identityStatusVerified": {
+    "description": "Identity status: verified."
+  },
+  "identityVerifiedAs": "Verified as {name}",
+  "@identityVerifiedAs": {
+    "description": "Shows the verified name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "identityValidUntil": "Valid until {date}",
+  "@identityValidUntil": {
+    "description": "Shows when the verification expires.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "identityStatusRejected": "Verification not accepted",
+  "@identityStatusRejected": {
+    "description": "Identity status: rejected."
+  },
+  "identityRejectedBody": "We could not accept this verification. If you think this is a mistake, contact support.",
+  "@identityRejectedBody": {
+    "description": "Explains a rejected verification without giving a reason."
+  },
+  "identityFailedBody": "The last verification could not be completed. Please try again.",
+  "@identityFailedBody": {
+    "description": "Last attempt failed for a technical reason."
+  },
+  "identityProviderUnavailableBody": "The national ID service did not respond. Please try again later.",
+  "@identityProviderUnavailableBody": {
+    "description": "Last attempt failed because the provider did not answer."
+  },
+  "identityStatusExpired": "Verification expired",
+  "@identityStatusExpired": {
+    "description": "Identity status: the verified identity expired."
+  },
+  "identityValidityEndedBody": "Your identity verification has expired. Verify again to keep using vehicles.",
+  "@identityValidityEndedBody": {
+    "description": "Explains that a verified identity reached its validity end."
+  },
+  "identitySessionExpiredBody": "The last verification was not finished in time.",
+  "@identitySessionExpiredBody": {
+    "description": "Last attempt was not finished before the session expired."
+  },
+  "identityCancelledBody": "The last verification was cancelled.",
+  "@identityCancelledBody": {
+    "description": "Last attempt was cancelled in the app."
+  },
+  "identityDeclinedBody": "You chose not to share your details. Verification is needed to use or list vehicles.",
+  "@identityDeclinedBody": {
+    "description": "Last attempt was declined at the provider."
+  },
+  "identityClosedBySupportBody": "The last verification was closed by our support team.",
+  "@identityClosedBySupportBody": {
+    "description": "Last attempt was closed by a staff action."
+  },
+  "identityStatusSuspended": "Identity verification on hold",
+  "@identityStatusSuspended": {
+    "description": "Identity status: suspended by staff."
+  },
+  "identitySuspendedBody": "Please contact support to continue.",
+  "@identitySuspendedBody": {
+    "description": "Explains a suspended identity."
+  },
+  "identityStatusReverification": "Please verify again",
+  "@identityStatusReverification": {
+    "description": "Identity status: staff require re-verification."
+  },
+  "identityReverificationBody": "We need you to confirm your identity again.",
+  "@identityReverificationBody": {
+    "description": "Explains re-verification."
+  },
+  "identityStatusUnknown": "Status unavailable. Update the app or try again later.",
+  "@identityStatusUnknown": {
+    "description": "Shown for a status this app version does not know."
+  },
+  "identityLaunchFailed": "Could not open the browser. Please try again.",
+  "@identityLaunchFailed": {
+    "description": "The provider page could not be opened."
+  },
+  "identityUnavailable": "Identity verification is temporarily unavailable.",
+  "@identityUnavailable": {
+    "description": "No identity provider is available on the server."
+  },
+  "identityNotAllowed": "Verification cannot be started right now.",
+  "@identityNotAllowed": {
+    "description": "The server refused to start or cancel in the current state."
+  },
+  "identityFinishing": "Finishing verification…",
+  "@identityFinishing": {
+    "description": "Shown while the app confirms a verification after returning from the browser."
+  },
+  "identityConfirmFailed": "This verification could not be completed here. Start it again from this app on this phone.",
+  "@identityConfirmFailed": {
+    "description": "The return link could not confirm the verification (other session, expired or invalid)."
+  },
+  "identityPendingFinishHint": "Finish on the same phone and in the same app where you started. A link sent to you by someone else will not verify your account.",
+  "@identityPendingFinishHint": {
+    "description": "Warns against completing verification links received from others."
   }
 }
