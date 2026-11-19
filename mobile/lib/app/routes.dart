@@ -17,6 +17,13 @@ abstract final class AppRoutes {
   /// only `?verification=<id>`; the screen reads the result from the server.
   static const identityReturn = '/identity/return';
 
+  /// Driver onboarding (Phase 5).
+  static const driver = '/driver';
+  static const driverProfile = '/driver/profile';
+  static const driverLicense = '/driver/license';
+  static const driverPhotos = '/driver/license/photos';
+  static const driverReview = '/driver/license/review';
+
   /// Reachable without a session.
   static const signedOutRoutes = {welcome, login, loginVerify, register, forgotPassword};
 
@@ -30,5 +37,10 @@ abstract final class AppRoutes {
     accountPassword,
     identity,
     identityReturn,
+    driver,
+    driverProfile,
+    driverLicense,
+    driverPhotos,
+    driverReview,
   };
 }

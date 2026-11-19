@@ -60,6 +60,13 @@ class AccountScreen extends ConsumerWidget {
                 },
               ),
               ListTile(
+                leading: const Icon(Icons.directions_car_outlined),
+                title: Text(l10n.driverTitle),
+                subtitle: Text(l10n.driverMenuSubtitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push(AppRoutes.driver),
+              ),
+              ListTile(
                 leading: const Icon(Icons.devices_outlined),
                 title: Text(l10n.devicesTitle),
                 trailing: const Icon(Icons.chevron_right),

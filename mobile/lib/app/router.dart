@@ -8,6 +8,11 @@ import '../features/account/presentation/account_screen.dart';
 import '../features/account/presentation/change_password_screen.dart';
 import '../features/account/presentation/sessions_screen.dart';
 import '../features/auth/data/auth_api.dart';
+import '../features/driver/presentation/driver_profile_screen.dart';
+import '../features/driver/presentation/driver_screen.dart';
+import '../features/driver/presentation/license_form_screen.dart';
+import '../features/driver/presentation/license_photos_screen.dart';
+import '../features/driver/presentation/license_review_screen.dart';
 import '../features/auth/presentation/forgot_password_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/register_screen.dart';
@@ -99,6 +104,11 @@ GoRouter buildRouter({
     GoRoute(path: AppRoutes.accountSessions, builder: (_, _) => const SessionsScreen()),
     GoRoute(path: AppRoutes.accountPassword, builder: (_, _) => const ChangePasswordScreen()),
     GoRoute(path: AppRoutes.identity, builder: (_, _) => const IdentityScreen()),
+    GoRoute(path: AppRoutes.driver, builder: (_, _) => const DriverScreen()),
+    GoRoute(path: AppRoutes.driverProfile, builder: (_, _) => const DriverProfileScreen()),
+    GoRoute(path: AppRoutes.driverLicense, builder: (_, _) => const LicenseFormScreen()),
+    GoRoute(path: AppRoutes.driverPhotos, builder: (_, _) => const LicensePhotosScreen()),
+    GoRoute(path: AppRoutes.driverReview, builder: (_, _) => const LicenseReviewScreen()),
     // Browser return: confirms the provider result from this session, then shows the status.
     GoRoute(
       path: AppRoutes.identityReturn,

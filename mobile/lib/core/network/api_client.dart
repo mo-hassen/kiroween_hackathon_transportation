@@ -71,6 +71,10 @@ final class ApiClient {
     decode,
   );
 
+  /// PUT replaces a resource, so repeating it is safe.
+  Future<T> put<T>(String path, {Object? body, required T Function(Object? data) decode}) =>
+      _send(() => _dio.put<Object?>(path, data: body), decode);
+
   Future<void> delete(String path) => _send(() => _dio.delete<Object?>(path), (_) {});
 
   Options _options(String? idempotencyKey, bool noRetry, Map<String, String> headers) => Options(

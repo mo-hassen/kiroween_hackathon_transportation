@@ -567,5 +567,474 @@
   "identityPendingFinishHint": "Finish on the same phone and in the same app where you started. A link sent to you by someone else will not verify your account.",
   "@identityPendingFinishHint": {
     "description": "Warns against completing verification links received from others."
+  },
+  "driverTitle": "Driver",
+  "@driverTitle": {
+    "description": "Driver screen title and account menu entry."
+  },
+  "driverMenuSubtitle": "Licence verification and eligibility",
+  "@driverMenuSubtitle": {
+    "description": "Account menu entry subtitle."
+  },
+  "driverIntroTitle": "Drive with Kiroween",
+  "@driverIntroTitle": {
+    "description": "Driver onboarding intro title."
+  },
+  "driverIntroBody": "To drive rented vehicles you need a verified identity and a valid driving licence. You will enter the licence details and take photos of the front and back. A verification officer checks them.",
+  "@driverIntroBody": {
+    "description": "Driver onboarding intro body."
+  },
+  "driverStartAction": "Start",
+  "@driverStartAction": {
+    "description": "Starts driver onboarding."
+  },
+  "driverEligibleTitle": "You can drive",
+  "@driverEligibleTitle": {
+    "description": "Eligibility: eligible."
+  },
+  "driverIneligibleTitle": "Not yet eligible to drive",
+  "@driverIneligibleTitle": {
+    "description": "Eligibility: not eligible."
+  },
+  "driverSuspendedTitle": "Driving is suspended",
+  "@driverSuspendedTitle": {
+    "description": "Eligibility: suspended."
+  },
+  "driverSuspendedBody": "Contact support for details.",
+  "@driverSuspendedBody": {
+    "description": "Shown when suspended."
+  },
+  "blockerACCOUNT_NOT_ACTIVE": "Your account is restricted",
+  "@blockerACCOUNT_NOT_ACTIVE": {
+    "description": "Eligibility blocker."
+  },
+  "blockerIDENTITY_NOT_VERIFIED": "Verify your identity",
+  "@blockerIDENTITY_NOT_VERIFIED": {
+    "description": "Eligibility blocker."
+  },
+  "blockerLICENSE_MISSING": "Add your driving licence",
+  "@blockerLICENSE_MISSING": {
+    "description": "Eligibility blocker."
+  },
+  "blockerLICENSE_NOT_APPROVED": "Your licence is not approved yet",
+  "@blockerLICENSE_NOT_APPROVED": {
+    "description": "Eligibility blocker."
+  },
+  "blockerLICENSE_EXPIRED": "Your licence has expired",
+  "@blockerLICENSE_EXPIRED": {
+    "description": "Eligibility blocker."
+  },
+  "blockerDOCUMENTS_NOT_APPROVED": "Licence photos are not approved yet",
+  "@blockerDOCUMENTS_NOT_APPROVED": {
+    "description": "Eligibility blocker."
+  },
+  "blockerDRIVER_SUSPENDED": "Driving is suspended",
+  "@blockerDRIVER_SUSPENDED": {
+    "description": "Eligibility blocker."
+  },
+  "blockerOther": "Something still needs attention",
+  "@blockerOther": {
+    "description": "Unknown blocker code."
+  },
+  "driverProfileSection": "Driver profile",
+  "@driverProfileSection": {
+    "description": "Hub section title."
+  },
+  "driverProfileTitle": "Driver profile",
+  "@driverProfileTitle": {
+    "description": "Profile form title."
+  },
+  "yearsLicensedLabel": "Years of driving experience",
+  "@yearsLicensedLabel": {
+    "description": "Profile field."
+  },
+  "yearsLicensedInvalid": "Enter a number from 0 to 60",
+  "@yearsLicensedInvalid": {
+    "description": "Profile field error."
+  },
+  "subCityLabel": "Home sub-city",
+  "@subCityLabel": {
+    "description": "Profile field."
+  },
+  "subCityNone": "Not set",
+  "@subCityNone": {
+    "description": "Sub-city not chosen."
+  },
+  "bioLabel": "About you (optional)",
+  "@bioLabel": {
+    "description": "Profile field."
+  },
+  "profileSaved": "Saved.",
+  "@profileSaved": {
+    "description": "Snackbar after save."
+  },
+  "subCityADDIS_KETEMA": "Addis Ketema",
+  "@subCityADDIS_KETEMA": {
+    "description": "Sub-city."
+  },
+  "subCityAKAKY_KALITI": "Akaky Kaliti",
+  "@subCityAKAKY_KALITI": {
+    "description": "Sub-city."
+  },
+  "subCityARADA": "Arada",
+  "@subCityARADA": {
+    "description": "Sub-city."
+  },
+  "subCityBOLE": "Bole",
+  "@subCityBOLE": {
+    "description": "Sub-city."
+  },
+  "subCityGULLELE": "Gullele",
+  "@subCityGULLELE": {
+    "description": "Sub-city."
+  },
+  "subCityKIRKOS": "Kirkos",
+  "@subCityKIRKOS": {
+    "description": "Sub-city."
+  },
+  "subCityKOLFE_KERANIO": "Kolfe Keranio",
+  "@subCityKOLFE_KERANIO": {
+    "description": "Sub-city."
+  },
+  "subCityLEMI_KURA": "Lemi Kura",
+  "@subCityLEMI_KURA": {
+    "description": "Sub-city."
+  },
+  "subCityLIDETA": "Lideta",
+  "@subCityLIDETA": {
+    "description": "Sub-city."
+  },
+  "subCityNIFAS_SILK_LAFTO": "Nifas Silk-Lafto",
+  "@subCityNIFAS_SILK_LAFTO": {
+    "description": "Sub-city."
+  },
+  "subCityYEKA": "Yeka",
+  "@subCityYEKA": {
+    "description": "Sub-city."
+  },
+  "licenseSection": "Driving licence",
+  "@licenseSection": {
+    "description": "Hub section title."
+  },
+  "licenseAddAction": "Add licence details",
+  "@licenseAddAction": {
+    "description": "Hub action."
+  },
+  "licenseEditAction": "Edit licence details",
+  "@licenseEditAction": {
+    "description": "Hub action."
+  },
+  "licensePhotosAction": "Licence photos",
+  "@licensePhotosAction": {
+    "description": "Hub action and photos screen title."
+  },
+  "licenseReviewAction": "Review and submit",
+  "@licenseReviewAction": {
+    "description": "Hub action."
+  },
+  "licenseFormTitle": "Licence details",
+  "@licenseFormTitle": {
+    "description": "Licence form title."
+  },
+  "licenseFormIntro": "Enter the details exactly as printed on your licence.",
+  "@licenseFormIntro": {
+    "description": "Licence form intro."
+  },
+  "licenseNumberLabel": "Licence number",
+  "@licenseNumberLabel": {
+    "description": "Licence field."
+  },
+  "licenseNumberInvalid": "Use 4 to 20 letters and digits",
+  "@licenseNumberInvalid": {
+    "description": "Licence field error."
+  },
+  "licenseNumberMasked": "Licence {number}",
+  "@licenseNumberMasked": {
+    "description": "Masked licence number.",
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "categoriesLabel": "Categories as printed (e.g. B, C1)",
+  "@categoriesLabel": {
+    "description": "Licence field."
+  },
+  "categoriesHelper": "Separate with commas",
+  "@categoriesHelper": {
+    "description": "Licence field helper."
+  },
+  "categoriesInvalid": "Enter 1 to 10 different codes (letters, digits, hyphen)",
+  "@categoriesInvalid": {
+    "description": "Licence field error."
+  },
+  "issuedOnLabel": "Issue date",
+  "@issuedOnLabel": {
+    "description": "Licence field."
+  },
+  "expiresOnLabel": "Expiry date",
+  "@expiresOnLabel": {
+    "description": "Licence field."
+  },
+  "licenseExpiresOn": "Expires {date}",
+  "@licenseExpiresOn": {
+    "description": "Licence expiry line.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dateRequired": "Choose a date",
+  "@dateRequired": {
+    "description": "Date field error."
+  },
+  "dateInFuture": "The issue date cannot be in the future",
+  "@dateInFuture": {
+    "description": "Date field error."
+  },
+  "dateBeforeIssue": "The expiry date must be after the issue date",
+  "@dateBeforeIssue": {
+    "description": "Date field error."
+  },
+  "dateExpired": "This licence has expired",
+  "@dateExpired": {
+    "description": "Date field error."
+  },
+  "authorityLabel": "Issuing authority",
+  "@authorityLabel": {
+    "description": "Licence field."
+  },
+  "authorityInvalid": "Enter the authority name (2 to 120 characters)",
+  "@authorityInvalid": {
+    "description": "Licence field error."
+  },
+  "licenseNumberInUse": "This licence number is already registered to another account. Contact support if it is yours.",
+  "@licenseNumberInUse": {
+    "description": "Duplicate licence number."
+  },
+  "licenseStatusDraft": "Not submitted yet",
+  "@licenseStatusDraft": {
+    "description": "Licence status."
+  },
+  "licenseStatusSubmitted": "Submitted. Waiting for a verification officer.",
+  "@licenseStatusSubmitted": {
+    "description": "Licence status."
+  },
+  "licenseStatusUnderReview": "A verification officer is reviewing your licence.",
+  "@licenseStatusUnderReview": {
+    "description": "Licence status."
+  },
+  "licenseStatusApproved": "Approved",
+  "@licenseStatusApproved": {
+    "description": "Licence status."
+  },
+  "licenseStatusRejected": "Not approved",
+  "@licenseStatusRejected": {
+    "description": "Licence status."
+  },
+  "licenseRejectedBody": "Correct the details if needed, take new photos and submit again.",
+  "@licenseRejectedBody": {
+    "description": "Rejected licence guidance."
+  },
+  "licenseStatusExpired": "Expired. Enter your renewed licence and new photos.",
+  "@licenseStatusExpired": {
+    "description": "Licence status."
+  },
+  "licenseStatusSuspended": "Suspended",
+  "@licenseStatusSuspended": {
+    "description": "Licence status."
+  },
+  "licenseStatusUnknown": "Status unavailable",
+  "@licenseStatusUnknown": {
+    "description": "Unknown licence status."
+  },
+  "officerNoteLabel": "Note from the officer: {note}",
+  "@officerNoteLabel": {
+    "description": "Officer note shown as plain text.",
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionReason": "Reason: {reason}",
+  "@decisionReason": {
+    "description": "Decision reason line.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonBLURRY": "The photo is not clear",
+  "@reasonBLURRY": {
+    "description": "Decision reason."
+  },
+  "reasonMISMATCH_NAME": "The name does not match your verified identity",
+  "@reasonMISMATCH_NAME": {
+    "description": "Decision reason."
+  },
+  "reasonEXPIRED": "The licence has expired",
+  "@reasonEXPIRED": {
+    "description": "Decision reason."
+  },
+  "reasonNOT_OWNER": "The licence does not belong to you",
+  "@reasonNOT_OWNER": {
+    "description": "Decision reason."
+  },
+  "reasonINCOMPLETE": "Information or photos are missing",
+  "@reasonINCOMPLETE": {
+    "description": "Decision reason."
+  },
+  "reasonINVALID_LICENSE_DETAILS": "The details do not match the licence",
+  "@reasonINVALID_LICENSE_DETAILS": {
+    "description": "Decision reason."
+  },
+  "reasonSUSPECTED_FRAUD": "The documents could not be accepted",
+  "@reasonSUSPECTED_FRAUD": {
+    "description": "Decision reason (worded neutrally)."
+  },
+  "reasonSAFETY_CONCERN": "A safety concern was reported",
+  "@reasonSAFETY_CONCERN": {
+    "description": "Decision reason."
+  },
+  "reasonOTHER": "Other",
+  "@reasonOTHER": {
+    "description": "Decision reason."
+  },
+  "identityRequiredBanner": "Verify your identity first. Your licence can only be submitted after that.",
+  "@identityRequiredBanner": {
+    "description": "Banner on the driver screen."
+  },
+  "identityGoAction": "Verify identity",
+  "@identityGoAction": {
+    "description": "Opens identity verification."
+  },
+  "photosIntro": "Place the licence on a dark, flat surface in good light. All four corners and all text must be readable. No flash glare.",
+  "@photosIntro": {
+    "description": "Photo guidance."
+  },
+  "photoFront": "Front",
+  "@photoFront": {
+    "description": "Licence side."
+  },
+  "photoBack": "Back",
+  "@photoBack": {
+    "description": "Licence side."
+  },
+  "photoMissing": "No photo yet",
+  "@photoMissing": {
+    "description": "Side status."
+  },
+  "photoReady": "Uploaded and checked",
+  "@photoReady": {
+    "description": "Side status."
+  },
+  "photoInReview": "Sent for review",
+  "@photoInReview": {
+    "description": "Side status for a submitted photo."
+  },
+  "photoNeedsReplacement": "Take a new photo",
+  "@photoNeedsReplacement": {
+    "description": "Side status for a decided photo that must be replaced."
+  },
+  "photoTakeAction": "Take photo",
+  "@photoTakeAction": {
+    "description": "Opens the camera."
+  },
+  "photoGalleryAction": "Choose from gallery",
+  "@photoGalleryAction": {
+    "description": "Opens the gallery."
+  },
+  "photoSending": "Uploading… {percent}%",
+  "@photoSending": {
+    "description": "Upload progress.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "photoChecking": "Checking the photo…",
+  "@photoChecking": {
+    "description": "Server processing."
+  },
+  "photoAttaching": "Saving…",
+  "@photoAttaching": {
+    "description": "Attaching to the licence."
+  },
+  "photoRetryAction": "Retry",
+  "@photoRetryAction": {
+    "description": "Retries a failed upload."
+  },
+  "photoUnsupported": "This file type is not supported. Use a JPEG, PNG or WebP photo.",
+  "@photoUnsupported": {
+    "description": "Upload error."
+  },
+  "photoTooLarge": "The photo is too large. Take it again.",
+  "@photoTooLarge": {
+    "description": "Upload error."
+  },
+  "photoUnreadable": "The photo could not be read. Take a new photo.",
+  "@photoUnreadable": {
+    "description": "Upload error."
+  },
+  "photoRefused": "The file was refused by the security check. Take a new photo with the camera.",
+  "@photoRefused": {
+    "description": "Upload error (malware or active content)."
+  },
+  "photoCheckUnavailable": "The photo check is temporarily unavailable. Retry in a few minutes.",
+  "@photoCheckUnavailable": {
+    "description": "Scanner outage."
+  },
+  "photoStillChecking": "Still checking the photo. Retry shortly.",
+  "@photoStillChecking": {
+    "description": "Processing in progress."
+  },
+  "reviewTitle": "Review and submit",
+  "@reviewTitle": {
+    "description": "Review screen title."
+  },
+  "reviewIntro": "Check everything before you submit. You cannot change the details while an officer reviews them.",
+  "@reviewIntro": {
+    "description": "Review screen intro."
+  },
+  "reviewConfirm": "This is my own licence and the details are correct.",
+  "@reviewConfirm": {
+    "description": "Submission confirmation checkbox."
+  },
+  "submitAction": "Submit for review",
+  "@submitAction": {
+    "description": "Submits the licence."
+  },
+  "submitted": "Submitted. We will notify you in the app.",
+  "@submitted": {
+    "description": "Snackbar after submission."
+  },
+  "problemIDENTITY_NOT_VERIFIED": "Verify your identity first",
+  "@problemIDENTITY_NOT_VERIFIED": {
+    "description": "Submission problem."
+  },
+  "problemACCOUNT_NOT_ACTIVE": "Your account is restricted",
+  "@problemACCOUNT_NOT_ACTIVE": {
+    "description": "Submission problem."
+  },
+  "problemLICENSE_EXPIRED": "The licence has expired",
+  "@problemLICENSE_EXPIRED": {
+    "description": "Submission problem."
+  },
+  "problemLICENSE_NOT_YET_ISSUED": "The issue date is in the future",
+  "@problemLICENSE_NOT_YET_ISSUED": {
+    "description": "Submission problem."
+  },
+  "problemFRONT_DOCUMENT_MISSING": "Add a photo of the front",
+  "@problemFRONT_DOCUMENT_MISSING": {
+    "description": "Submission problem."
+  },
+  "problemBACK_DOCUMENT_MISSING": "Add a photo of the back",
+  "@problemBACK_DOCUMENT_MISSING": {
+    "description": "Submission problem."
   }
 }
