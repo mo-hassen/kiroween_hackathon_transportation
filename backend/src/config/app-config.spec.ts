@@ -29,6 +29,8 @@ const productionEnv = {
   HASHING_PEPPER: randomBytes(32).toString('base64'),
   FIELD_ENCRYPTION_KEYS: `prod-1:${randomBytes(32).toString('base64')}`,
   FIELD_ENCRYPTION_ACTIVE_KEY_ID: 'prod-1',
+  // Phase 5: stored documents are encrypted at rest.
+  STORAGE_SSE: 'AES256',
 };
 
 function issuesFor(env: Record<string, string>): string[] {
@@ -307,6 +309,55 @@ describe('loadConfig', () => {
     it('never includes the client key in validation errors', () => {
       const issues = issuesFor({ ...productionEnv, ...esignetEnv, IDENTITY_ESIGNET_SCOPES: 'x' });
       expect(issues.join('\n')).not.toContain(clientKey.slice(0, 40));
+    });
+  });
+
+  describe('documents: scanner and storage (Phase 5)', () => {
+    it('uses the dev scanner in development and fails closed in deployed environments', () => {
+      expect(loadConfig(developmentEnv).documents).toEqual({ scanner: 'dev', clamav: undefined });
+      expect(loadConfig(productionEnv).documents.scanner).toBe('disabled');
+      expect(loadConfig(developmentEnv).storage.sse).toBe('none');
+    });
+
+    it('rejects the dev scanner and unencrypted storage in staging and production', () => {
+      for (const env of ['staging', 'production']) {
+        const issues = issuesFor({
+          ...productionEnv,
+          APP_ENV: env,
+          FILE_SCANNER: 'dev',
+          STORAGE_SSE: 'none',
+        });
+        expect(issues.some((i) => i.startsWith('FILE_SCANNER:'))).toBe(true);
+        expect(issues).toContain(
+          'STORAGE_SSE: server-side encryption is required outside development',
+        );
+      }
+    });
+
+    it('requires a clamd host for ClamAV and a key id for KMS encryption', () => {
+      expect(issuesFor({ ...developmentEnv, FILE_SCANNER: 'clamav' })).toContain(
+        'CLAMAV_HOST: is required when FILE_SCANNER=clamav',
+      );
+      expect(issuesFor({ ...developmentEnv, STORAGE_SSE: 'aws:kms' })).toContain(
+        'STORAGE_SSE_KMS_KEY_ID: is required when STORAGE_SSE=aws:kms',
+      );
+      const config = loadConfig({
+        ...productionEnv,
+        FILE_SCANNER: 'clamav',
+        CLAMAV_HOST: 'clamav.internal',
+      });
+      expect(config.documents.clamav).toEqual({
+        host: 'clamav.internal',
+        port: 3310,
+        timeoutMs: 30_000,
+      });
+    });
+
+    it('requires https for the public storage endpoint outside development', () => {
+      expect(
+        issuesFor({ ...productionEnv, STORAGE_PUBLIC_ENDPOINT: 'http://s3.example.et' }),
+      ).toContain('STORAGE_PUBLIC_ENDPOINT: must use https outside development');
+      expect(loadConfig(developmentEnv).storage.publicEndpoint).toBeUndefined();
     });
   });
 });

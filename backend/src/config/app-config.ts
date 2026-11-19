@@ -8,6 +8,8 @@ import {
   parseEncryptionKeys,
   parseRsaPrivateJwk,
   type AppEnvironment,
+  type FileScannerId,
+  type StorageSseMode,
   type IdentityProviderId,
   type ParsedEnv,
   type SmsProviderId,
@@ -28,6 +30,10 @@ export interface AppConfig {
     readonly forcePathStyle: boolean;
     readonly accessKeyId: string;
     readonly secretAccessKey: string;
+    /** Endpoint written into presigned URLs (what clients can reach). */
+    readonly publicEndpoint: string | undefined;
+    readonly sse: StorageSseMode;
+    readonly sseKmsKeyId: string | undefined;
   };
   readonly cors: { readonly allowedOrigins: readonly string[] };
   readonly apiDocsEnabled: boolean;
@@ -45,6 +51,11 @@ export interface AppConfig {
   };
   readonly sms: { readonly provider: SmsProviderId };
   readonly identity: IdentityConfig;
+  readonly documents: {
+    readonly scanner: FileScannerId;
+    readonly clamav:
+      { readonly host: string; readonly port: number; readonly timeoutMs: number } | undefined;
+  };
 }
 
 export interface EsignetConfig {
@@ -115,6 +126,9 @@ export function loadConfig(source: Record<string, string | undefined>): AppConfi
       forcePathStyle: env.STORAGE_FORCE_PATH_STYLE,
       accessKeyId: env.STORAGE_ACCESS_KEY_ID,
       secretAccessKey: env.STORAGE_SECRET_ACCESS_KEY,
+      publicEndpoint: env.STORAGE_PUBLIC_ENDPOINT ?? env.STORAGE_ENDPOINT,
+      sse: env.STORAGE_SSE,
+      sseKmsKeyId: env.STORAGE_SSE_KMS_KEY_ID,
     },
     cors: { allowedOrigins: Object.freeze([...env.CORS_ALLOWED_ORIGINS]) },
     // API docs are off by default in deployed environments.
@@ -136,6 +150,14 @@ export function loadConfig(source: Record<string, string | undefined>): AppConfi
     // No production SMS provider is integrated: deployed environments fail closed.
     sms: { provider: env.SMS_PROVIDER ?? (isDeployed ? 'disabled' : 'dev') },
     identity: identityConfig(env, isDeployed),
+    // No scanner configured in a deployed environment: uploads fail closed.
+    documents: {
+      scanner: env.FILE_SCANNER ?? (isDeployed ? 'disabled' : 'dev'),
+      clamav:
+        env.CLAMAV_HOST === undefined
+          ? undefined
+          : { host: env.CLAMAV_HOST, port: env.CLAMAV_PORT, timeoutMs: env.CLAMAV_TIMEOUT_MS },
+    },
   });
 }
 

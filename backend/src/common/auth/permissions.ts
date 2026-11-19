@@ -16,6 +16,8 @@ export const Permission = {
   USERS_SUSPEND: 'users.suspend',
   IDENTITY_REVIEW: 'identity.review',
   DOCUMENTS_REVIEW: 'documents.review',
+  // Phase 5: driver licence cases (queue, claim, decisions) and their documents.
+  DRIVERS_REVIEW: 'drivers.review',
   VEHICLES_VERIFY: 'vehicles.verify',
   SUPPORT_TICKETS_MANAGE: 'support_tickets.manage',
   DISPUTES_MANAGE: 'disputes.manage',
@@ -41,6 +43,7 @@ export const ROLE_PERMISSIONS: Readonly<Record<StaffRole, readonly Permission[]>
     Permission.USERS_SUSPEND,
     Permission.IDENTITY_REVIEW,
     Permission.DOCUMENTS_REVIEW,
+    Permission.DRIVERS_REVIEW,
     Permission.VEHICLES_VERIFY,
   ],
   FINANCE: [

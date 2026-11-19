@@ -37,6 +37,16 @@ export const ErrorCode = {
   IDENTITY_VERIFICATION_NOT_ALLOWED: 'IDENTITY_VERIFICATION_NOT_ALLOWED',
   INVALID_STATE_TRANSITION: 'INVALID_STATE_TRANSITION',
   IDENTITY_CONFIRMATION_INVALID: 'IDENTITY_CONFIRMATION_INVALID',
+  // Phase 5: documents and driver verification.
+  DRIVER_PROFILE_REQUIRED: 'DRIVER_PROFILE_REQUIRED',
+  UPLOAD_NOT_FOUND: 'UPLOAD_NOT_FOUND',
+  DOCUMENT_PROCESSING: 'DOCUMENT_PROCESSING',
+  DOCUMENT_SCAN_UNAVAILABLE: 'DOCUMENT_SCAN_UNAVAILABLE',
+  DOCUMENT_NOT_AVAILABLE: 'DOCUMENT_NOT_AVAILABLE',
+  LICENSE_NUMBER_IN_USE: 'LICENSE_NUMBER_IN_USE',
+  DRIVER_SUBMISSION_INCOMPLETE: 'DRIVER_SUBMISSION_INCOMPLETE',
+  REVIEW_CLAIMED_BY_OTHER: 'REVIEW_CLAIMED_BY_OTHER',
+  REVIEW_CLAIM_REQUIRED: 'REVIEW_CLAIM_REQUIRED',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
@@ -71,6 +81,15 @@ const TITLES: Record<ErrorCode, string> = {
   IDENTITY_VERIFICATION_NOT_ALLOWED: 'Identity verification cannot be started now',
   INVALID_STATE_TRANSITION: 'This action is not possible in the current state',
   IDENTITY_CONFIRMATION_INVALID: 'The verification cannot be confirmed from this session',
+  DRIVER_PROFILE_REQUIRED: 'Create a driver profile first',
+  UPLOAD_NOT_FOUND: 'The file has not been uploaded yet',
+  DOCUMENT_PROCESSING: 'The document is being processed',
+  DOCUMENT_SCAN_UNAVAILABLE: 'Documents cannot be checked right now; try again later',
+  DOCUMENT_NOT_AVAILABLE: 'The document cannot be used',
+  LICENSE_NUMBER_IN_USE: 'This licence number is already registered',
+  DRIVER_SUBMISSION_INCOMPLETE: 'The verification request is incomplete',
+  REVIEW_CLAIMED_BY_OTHER: 'Another officer is reviewing this case',
+  REVIEW_CLAIM_REQUIRED: 'Claim the case before deciding it',
 };
 
 const STATUS_TO_CODE: Partial<Record<number, ErrorCode>> = {

@@ -17,6 +17,17 @@ export type SmsProviderId = (typeof SMS_PROVIDERS)[number];
 export const IDENTITY_PROVIDERS = ['dev', 'esignet', 'disabled'] as const;
 export type IdentityProviderId = (typeof IDENTITY_PROVIDERS)[number];
 
+/**
+ * Malware scanners (docs/architecture/07-security-architecture.md §4). `clamav` talks to a
+ * clamd daemon; `dev` only recognises the EICAR test file and is NOT malware protection;
+ * `disabled` fails closed (uploads cannot complete).
+ */
+export const FILE_SCANNERS = ['clamav', 'dev', 'disabled'] as const;
+export type FileScannerId = (typeof FILE_SCANNERS)[number];
+
+export const STORAGE_SSE_MODES = ['none', 'AES256', 'aws:kms'] as const;
+export type StorageSseMode = (typeof STORAGE_SSE_MODES)[number];
+
 /** Browser return target after the callback when none is configured (development/test). */
 export const DEV_IDENTITY_APP_RETURN_URL = 'kiroweenmobility://app/identity/return';
 
@@ -138,6 +149,18 @@ export const envSchema = z
     STORAGE_FORCE_PATH_STYLE: booleanString.default(false),
     STORAGE_ACCESS_KEY_ID: z.string().min(1),
     STORAGE_SECRET_ACCESS_KEY: z.string().min(1),
+    // Endpoint that clients use for presigned URLs (e.g. http://10.0.2.2:58333 from the
+    // emulator). Defaults to STORAGE_ENDPOINT.
+    STORAGE_PUBLIC_ENDPOINT: urlString.optional(),
+    // Server-side encryption of stored documents. Required outside development.
+    STORAGE_SSE: z.enum(STORAGE_SSE_MODES).default('none'),
+    STORAGE_SSE_KMS_KEY_ID: z.string().min(1).optional(),
+
+    // Documents (Phase 5).
+    FILE_SCANNER: z.enum(FILE_SCANNERS).optional(),
+    CLAMAV_HOST: z.string().min(1).optional(),
+    CLAMAV_PORT: z.coerce.number().int().min(1).max(65535).default(3310),
+    CLAMAV_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120_000).default(30_000),
 
     CORS_ALLOWED_ORIGINS: commaList.default([]),
     TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(10).default(0),
@@ -248,6 +271,12 @@ export const envSchema = z
         );
       }
     }
+    if (env.FILE_SCANNER === 'clamav' && env.CLAMAV_HOST === undefined) {
+      issue('CLAMAV_HOST', 'is required when FILE_SCANNER=clamav');
+    }
+    if (env.STORAGE_SSE === 'aws:kms' && env.STORAGE_SSE_KMS_KEY_ID === undefined) {
+      issue('STORAGE_SSE_KMS_KEY_ID', 'is required when STORAGE_SSE=aws:kms');
+    }
     if (env.IDENTITY_PROVIDER === 'esignet') {
       for (const name of [
         'IDENTITY_ESIGNET_ISSUER',
@@ -331,6 +360,21 @@ export const envSchema = z
         'SMS_PROVIDER',
         'the dev SMS adapter is development/test only; no production SMS provider is integrated yet',
       );
+    }
+    if (env.FILE_SCANNER === 'dev') {
+      issue(
+        'FILE_SCANNER',
+        'the dev scanner only detects the EICAR test file; it is not malware protection',
+      );
+    }
+    if (env.STORAGE_SSE === 'none') {
+      issue('STORAGE_SSE', 'server-side encryption is required outside development');
+    }
+    if (
+      env.STORAGE_PUBLIC_ENDPOINT !== undefined &&
+      new URL(env.STORAGE_PUBLIC_ENDPOINT).protocol !== 'https:'
+    ) {
+      issue('STORAGE_PUBLIC_ENDPOINT', 'must use https outside development');
     }
     if (env.IDENTITY_PROVIDER === 'dev') {
       issue(
