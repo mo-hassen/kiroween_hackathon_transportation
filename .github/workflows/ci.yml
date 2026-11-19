@@ -82,6 +82,8 @@ jobs:
         run: npm run test:coverage:auth
       - name: Identity verification coverage (target 90% lines)
         run: npm run test:coverage:identity
+      - name: Documents and driver verification coverage (target 90% lines)
+        run: npm run test:coverage:drivers
       - run: npm run build
       - run: npm run audit:deps
 
@@ -140,6 +142,24 @@ jobs:
       - name: Build release APK (no secrets; debug-signed until Phase 23)
         run: flutter build apk --release --dart-define-from-file=config/production.example.json
 
+  admin:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - run: flutter analyze --fatal-infos
+      - run: flutter test
+      - name: Build web (public config only)
+        run: flutter build web --release --dart-define-from-file=config/production.example.json
   secrets-scan:
     runs-on: ubuntu-24.04
     steps:
