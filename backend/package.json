@@ -27,11 +27,14 @@
     "audit:deps": "npm audit --omit=dev --audit-level=high",
     "test:coverage:auth": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=text-summary --coverage.include='src/common/auth/**' --coverage.include='src/modules/auth/**' --coverage.include='src/modules/me/**' --coverage.include='src/modules/admin/**' --coverage.include='src/common/idempotency/**' --coverage.exclude='**/*.spec.ts' --coverage.thresholds.lines=90",
     "test:coverage:identity": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=text-summary --coverage.include='src/modules/identity/**' --coverage.include='src/providers/identity/**' --coverage.exclude='**/*.spec.ts' --coverage.thresholds.lines=90",
+    "test:coverage:drivers": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=text-summary --coverage.include='src/modules/documents/**' --coverage.include='src/modules/drivers/**' --coverage.include='src/providers/scanner/**' --coverage.exclude='**/*.spec.ts' --coverage.thresholds.lines=90",
     "staff:bootstrap": "node --env-file-if-exists=.env dist/cli/bootstrap-super-admin.js",
-    "identity:expire": "node --env-file-if-exists=.env dist/cli/identity-expire.js"
+    "identity:expire": "node --env-file-if-exists=.env dist/cli/identity-expire.js",
+    "drivers:refresh": "node --env-file-if-exists=.env dist/cli/drivers-refresh.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1170.0",
+    "@aws-sdk/s3-request-presigner": "3.1170.0",
     "@nestjs/common": "12.5.1",
     "@nestjs/core": "12.5.1",
     "@nestjs/platform-express": "12.5.1",
@@ -51,6 +54,7 @@
     "pino-http": "11.0.0",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
+    "sharp": "0.35.5",
     "zod": "4.6.7"
   },
   "devDependencies": {
