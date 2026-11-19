@@ -1,4 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { permissionsFor } from '../../common/auth/permissions.js';
 import { assertVisible, ownedByPrincipal } from '../../common/auth/policy.js';
 import type { Principal } from '../../common/auth/principal.js';
 import { AuditService } from '../../common/audit/audit.service.js';
@@ -50,6 +51,7 @@ export class MeService {
       status: user.status,
       identityStatus: user.identityStatus,
       roles: [...principal.roles],
+      permissions: [...permissionsFor(principal.roles)].sort(),
       createdAt: user.createdAt.toISOString(),
       version: user.version,
     };

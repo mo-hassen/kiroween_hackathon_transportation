@@ -52,6 +52,11 @@ export class MeResponse {
   @ApiProperty() identityStatus!: IdentityStatus;
   @ApiProperty({ type: [String], description: 'Active staff roles (empty for customers)' })
   roles!: StaffRole[];
+  @ApiProperty({
+    type: [String],
+    description: 'Permissions of those roles (for navigation only; the API checks every call)',
+  })
+  permissions!: string[];
   @ApiProperty({ format: 'date-time' }) createdAt!: string;
   @ApiProperty({ description: 'Send as If-Match when updating' }) version!: number;
 }
