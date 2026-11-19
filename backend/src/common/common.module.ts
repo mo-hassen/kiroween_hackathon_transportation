@@ -5,6 +5,7 @@ import { AccessTokenService } from './auth/access-token.service.js';
 import { FieldEncryption } from './crypto/field-encryption.js';
 import { SecretHasher } from './crypto/secret-hasher.js';
 import { IdempotencyService } from './idempotency/idempotency.service.js';
+import { NotificationService } from './notifications/notification.service.js';
 import { OutboxService } from './outbox/outbox.service.js';
 import { RateLimitService } from './rate-limit/rate-limit.service.js';
 
@@ -28,6 +29,7 @@ import { RateLimitService } from './rate-limit/rate-limit.service.js';
     AuditService,
     OutboxService,
     IdempotencyService,
+    NotificationService,
   ],
   exports: [
     SecretHasher,
@@ -37,6 +39,7 @@ import { RateLimitService } from './rate-limit/rate-limit.service.js';
     AuditService,
     OutboxService,
     IdempotencyService,
+    NotificationService,
   ],
 })
 export class CommonModule {}
