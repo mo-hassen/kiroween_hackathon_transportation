@@ -16,10 +16,13 @@ import { CoreModule } from './infrastructure/core.module.js';
 import { RedisService } from './infrastructure/redis/redis.provider.js';
 import { AdminModule } from './modules/admin/admin.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { DocumentsModule } from './modules/documents/documents.module.js';
+import { DriversModule } from './modules/drivers/drivers.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { IdentityModule } from './modules/identity/identity.module.js';
 import { MeModule } from './modules/me/me.module.js';
 import { IdentityProviderModule } from './providers/identity/identity-provider.module.js';
+import { ScannerModule } from './providers/scanner/scanner.module.js';
 import { SmsModule } from './providers/sms/sms.module.js';
 
 export interface AppModuleOptions {
@@ -37,6 +40,7 @@ export class AppModule {
         CommonModule,
         SmsModule.forRoot(config),
         IdentityProviderModule.forRoot(config),
+        ScannerModule.forRoot(config),
         LoggerModule.forRoot({
           pinoHttp: buildPinoHttpParams(config.logLevel, options.logDestination),
         }),
@@ -54,6 +58,8 @@ export class AppModule {
         MeModule,
         AdminModule,
         IdentityModule,
+        DocumentsModule,
+        DriversModule,
       ],
       providers: [
         // Guard order matters: rate limiting, then authentication, then authorization.
