@@ -1,0 +1,441 @@
+{
+  "@@locale": "en",
+  "appTitle": "Kiroween Mobility staff",
+  "@appTitle": {
+    "description": "Browser tab and app bar title."
+  },
+  "signInTitle": "Staff sign-in",
+  "@signInTitle": {
+    "description": "Login screen title."
+  },
+  "phoneLabel": "Phone number",
+  "@phoneLabel": {
+    "description": "Phone field."
+  },
+  "passwordLabel": "Password",
+  "@passwordLabel": {
+    "description": "Password field."
+  },
+  "totpLabel": "Authenticator code",
+  "@totpLabel": {
+    "description": "6-digit TOTP field."
+  },
+  "signInAction": "Sign in",
+  "@signInAction": {
+    "description": "Sign-in button."
+  },
+  "signOutAction": "Sign out",
+  "@signOutAction": {
+    "description": "Sign-out button."
+  },
+  "fieldRequired": "Required",
+  "@fieldRequired": {
+    "description": "Empty required field."
+  },
+  "totpInvalidFormat": "Enter the 6-digit code",
+  "@totpInvalidFormat": {
+    "description": "TOTP format error."
+  },
+  "errorInvalidCredentials": "The phone number, password or code is incorrect.",
+  "@errorInvalidCredentials": {
+    "description": "Generic staff login failure."
+  },
+  "errorNotStaff": "This console is for staff accounts only.",
+  "@errorNotStaff": {
+    "description": "Signed in with a non-staff account."
+  },
+  "sessionExpired": "Your session has ended. Sign in again.",
+  "@sessionExpired": {
+    "description": "Shown after expiry."
+  },
+  "errorNetwork": "Cannot reach the server. Check the connection.",
+  "@errorNetwork": {
+    "description": "Network error."
+  },
+  "errorForbidden": "You do not have permission for this.",
+  "@errorForbidden": {
+    "description": "403."
+  },
+  "errorNotFound": "Not found.",
+  "@errorNotFound": {
+    "description": "404."
+  },
+  "errorConflict": "This changed in the meantime. Reload and try again.",
+  "@errorConflict": {
+    "description": "409 generic."
+  },
+  "errorClaimedByOther": "Another officer is reviewing this case.",
+  "@errorClaimedByOther": {
+    "description": "Claim conflict."
+  },
+  "errorClaimRequired": "Claim the case first (or your claim has expired).",
+  "@errorClaimRequired": {
+    "description": "Claim needed."
+  },
+  "errorIncomplete": "The case no longer meets the requirements: {problems}",
+  "@errorIncomplete": {
+    "description": "Approval blocked; problems are codes.",
+    "placeholders": {
+      "problems": {
+        "type": "String"
+      }
+    }
+  },
+  "errorRateLimited": "Too many requests. Wait a moment.",
+  "@errorRateLimited": {
+    "description": "429."
+  },
+  "errorServer": "Something went wrong. Try again.",
+  "@errorServer": {
+    "description": "5xx."
+  },
+  "retryAction": "Try again",
+  "@retryAction": {
+    "description": "Retry."
+  },
+  "noPermissionTitle": "No review permission",
+  "@noPermissionTitle": {
+    "description": "Staff without drivers.review."
+  },
+  "noPermissionBody": "Your roles do not include driver verification. Ask a super administrator.",
+  "@noPermissionBody": {
+    "description": "Explains missing permission."
+  },
+  "dashboardTitle": "Dashboard",
+  "@dashboardTitle": {
+    "description": "Dashboard title."
+  },
+  "queueTitle": "Driver verification",
+  "@queueTitle": {
+    "description": "Queue title/nav."
+  },
+  "countSubmitted": "Waiting for review",
+  "@countSubmitted": {
+    "description": "Count label."
+  },
+  "countUnderReview": "Under review",
+  "@countUnderReview": {
+    "description": "Count label."
+  },
+  "countApproved": "Approved",
+  "@countApproved": {
+    "description": "Count label."
+  },
+  "countRejected": "Rejected",
+  "@countRejected": {
+    "description": "Count label."
+  },
+  "statusAll": "All",
+  "@statusAll": {
+    "description": "Filter."
+  },
+  "statusSubmitted": "Submitted",
+  "@statusSubmitted": {
+    "description": "Status."
+  },
+  "statusUnderReview": "Under review",
+  "@statusUnderReview": {
+    "description": "Status."
+  },
+  "statusApproved": "Approved",
+  "@statusApproved": {
+    "description": "Status."
+  },
+  "statusRejected": "Rejected",
+  "@statusRejected": {
+    "description": "Status."
+  },
+  "statusExpired": "Expired",
+  "@statusExpired": {
+    "description": "Status."
+  },
+  "statusSuspended": "Suspended",
+  "@statusSuspended": {
+    "description": "Status."
+  },
+  "statusDraft": "Draft",
+  "@statusDraft": {
+    "description": "Status."
+  },
+  "searchLabel": "Name or phone number",
+  "@searchLabel": {
+    "description": "Search field."
+  },
+  "searchAction": "Search",
+  "@searchAction": {
+    "description": "Search button."
+  },
+  "noCases": "No cases.",
+  "@noCases": {
+    "description": "Empty queue."
+  },
+  "pageOf": "Page {page} of {pages}",
+  "@pageOf": {
+    "description": "Pagination.",
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "pages": {
+        "type": "int"
+      }
+    }
+  },
+  "previousPage": "Previous",
+  "@previousPage": {
+    "description": "Pagination."
+  },
+  "nextPage": "Next",
+  "@nextPage": {
+    "description": "Pagination."
+  },
+  "submittedOn": "Submitted {date}",
+  "@submittedOn": {
+    "description": "Case summary.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "claimedByYou": "Claimed by you",
+  "@claimedByYou": {
+    "description": "Claim badge."
+  },
+  "claimedByOther": "Claimed by another officer",
+  "@claimedByOther": {
+    "description": "Claim badge."
+  },
+  "claimAction": "Claim",
+  "@claimAction": {
+    "description": "Claim button."
+  },
+  "releaseAction": "Release",
+  "@releaseAction": {
+    "description": "Release button."
+  },
+  "openAction": "Open",
+  "@openAction": {
+    "description": "Open case."
+  },
+  "caseTitle": "Driver case",
+  "@caseTitle": {
+    "description": "Detail title."
+  },
+  "driverSection": "Driver",
+  "@driverSection": {
+    "description": "Section."
+  },
+  "licenseSection": "Licence",
+  "@licenseSection": {
+    "description": "Section."
+  },
+  "documentsSection": "Documents",
+  "@documentsSection": {
+    "description": "Section."
+  },
+  "historySection": "History",
+  "@historySection": {
+    "description": "Section."
+  },
+  "nameLabel": "Name in the app",
+  "@nameLabel": {
+    "description": "Display name."
+  },
+  "verifiedNameLabel": "Name from verified identity",
+  "@verifiedNameLabel": {
+    "description": "Identity name."
+  },
+  "identityStatusLabel": "Identity status",
+  "@identityStatusLabel": {
+    "description": "Identity status."
+  },
+  "yearsLicensedLabel": "Years licensed",
+  "@yearsLicensedLabel": {
+    "description": "Years."
+  },
+  "subCityLabel": "Home sub-city",
+  "@subCityLabel": {
+    "description": "Sub-city."
+  },
+  "licenseNumberLabel": "Licence number",
+  "@licenseNumberLabel": {
+    "description": "Number."
+  },
+  "categoriesLabel": "Categories (as printed)",
+  "@categoriesLabel": {
+    "description": "Categories."
+  },
+  "issuedOnLabel": "Issued",
+  "@issuedOnLabel": {
+    "description": "Issue date."
+  },
+  "expiresOnLabel": "Expires",
+  "@expiresOnLabel": {
+    "description": "Expiry date."
+  },
+  "authorityLabel": "Issuing authority",
+  "@authorityLabel": {
+    "description": "Authority."
+  },
+  "frontLabel": "Licence front",
+  "@frontLabel": {
+    "description": "Doc label."
+  },
+  "backLabel": "Licence back",
+  "@backLabel": {
+    "description": "Doc label."
+  },
+  "missingDocument": "Not provided",
+  "@missingDocument": {
+    "description": "No document."
+  },
+  "viewDocumentAction": "View",
+  "@viewDocumentAction": {
+    "description": "Open document."
+  },
+  "viewReasonTitle": "Why are you opening this document?",
+  "@viewReasonTitle": {
+    "description": "Reason prompt (audited)."
+  },
+  "viewReasonHint": "At least 10 characters. This is recorded.",
+  "@viewReasonHint": {
+    "description": "Reason hint."
+  },
+  "reasonTooShort": "At least 10 characters",
+  "@reasonTooShort": {
+    "description": "Validation."
+  },
+  "documentLinkExpires": "This preview link expires in 60 seconds and is not saved.",
+  "@documentLinkExpires": {
+    "description": "Preview notice."
+  },
+  "openPdfAction": "Download PDF",
+  "@openPdfAction": {
+    "description": "Open PDF in new tab."
+  },
+  "closeAction": "Close",
+  "@closeAction": {
+    "description": "Close."
+  },
+  "cancelAction": "Cancel",
+  "@cancelAction": {
+    "description": "Cancel."
+  },
+  "approveAction": "Approve",
+  "@approveAction": {
+    "description": "Approve."
+  },
+  "rejectAction": "Reject",
+  "@rejectAction": {
+    "description": "Reject."
+  },
+  "suspendAction": "Suspend driver",
+  "@suspendAction": {
+    "description": "Suspend."
+  },
+  "reinstateAction": "Reinstate driver",
+  "@reinstateAction": {
+    "description": "Reinstate."
+  },
+  "approveTitle": "Approve this driver?",
+  "@approveTitle": {
+    "description": "Dialog."
+  },
+  "approveWarning": "The driver becomes eligible to drive. Confirm each check.",
+  "@approveWarning": {
+    "description": "Dialog warning."
+  },
+  "checkIdentity": "The licence holder matches the verified identity",
+  "@checkIdentity": {
+    "description": "Checklist."
+  },
+  "checkDocuments": "Both images are legible and look genuine",
+  "@checkDocuments": {
+    "description": "Checklist."
+  },
+  "checkDetails": "Number, categories and dates match the images",
+  "@checkDetails": {
+    "description": "Checklist."
+  },
+  "noteLabel": "Note (optional)",
+  "@noteLabel": {
+    "description": "Optional note."
+  },
+  "noteForDriverLabel": "Note for the driver (optional, plain text)",
+  "@noteForDriverLabel": {
+    "description": "Rejection note."
+  },
+  "internalNoteLabel": "Internal note (required, not shown to the driver)",
+  "@internalNoteLabel": {
+    "description": "Suspension note."
+  },
+  "rejectTitle": "Reject this request?",
+  "@rejectTitle": {
+    "description": "Dialog."
+  },
+  "rejectWarning": "The driver sees the reason and must upload new documents.",
+  "@rejectWarning": {
+    "description": "Dialog."
+  },
+  "suspendTitle": "Suspend this driver?",
+  "@suspendTitle": {
+    "description": "Dialog."
+  },
+  "suspendWarning": "The driver immediately becomes ineligible. This is audited.",
+  "@suspendWarning": {
+    "description": "Dialog."
+  },
+  "reinstateTitle": "Reinstate this driver?",
+  "@reinstateTitle": {
+    "description": "Dialog."
+  },
+  "reasonLabel": "Reason",
+  "@reasonLabel": {
+    "description": "Reason dropdown."
+  },
+  "confirmAction": "Confirm",
+  "@confirmAction": {
+    "description": "Confirm."
+  },
+  "decisionSaved": "Decision saved.",
+  "@decisionSaved": {
+    "description": "Snackbar."
+  },
+  "reasonBLURRY": "Image unclear",
+  "@reasonBLURRY": {
+    "description": "Reason code."
+  },
+  "reasonMISMATCH_NAME": "Name does not match",
+  "@reasonMISMATCH_NAME": {
+    "description": "Reason code."
+  },
+  "reasonEXPIRED": "Licence expired",
+  "@reasonEXPIRED": {
+    "description": "Reason code."
+  },
+  "reasonNOT_OWNER": "Not the holder's licence",
+  "@reasonNOT_OWNER": {
+    "description": "Reason code."
+  },
+  "reasonINCOMPLETE": "Incomplete",
+  "@reasonINCOMPLETE": {
+    "description": "Reason code."
+  },
+  "reasonINVALID_LICENSE_DETAILS": "Details do not match the licence",
+  "@reasonINVALID_LICENSE_DETAILS": {
+    "description": "Reason code."
+  },
+  "reasonSUSPECTED_FRAUD": "Suspected fraud",
+  "@reasonSUSPECTED_FRAUD": {
+    "description": "Reason code."
+  },
+  "reasonSAFETY_CONCERN": "Safety concern",
+  "@reasonSAFETY_CONCERN": {
+    "description": "Reason code."
+  },
+  "reasonOTHER": "Other",
+  "@reasonOTHER": {
+    "description": "Reason code."
+  }
+}
