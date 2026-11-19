@@ -30,5 +30,15 @@ return link `kiroweenmobility://app/identity/return` (intent filter in `AndroidM
 carries only the attempt id and a one-time confirmation token, which `IdentityReturnScreen`
 sends back from the same session; never an authorization code, OAuth token or claim. Production needs an https App Link instead [EXTERNAL].
 
+Driver onboarding (Phase 5): `features/driver/` creates the driver profile, takes the licence
+details and uploads the front and back photos. Photos come from the system camera or gallery
+(`image_picker`, resized to 2400 px, JPEG quality 85, no storage permission). The app hashes them
+(SHA-256), asks for a presigned URL, PUTs the bytes straight to storage with a separate Dio client
+(no Authorization header), then asks the API to check them. A failed step resumes where it stopped
+(a scanner outage repeats only the check). Submission needs an explicit confirmation and sends one
+Idempotency-Key per visit. Officer notes are shown as plain text. The screens only show what
+`GET /drivers/me` allows (`editable`, eligibility blockers); the server enforces every rule. With
+the emulator, run `adb reverse tcp:58333 tcp:58333` so presigned storage URLs resolve.
+
 Rules: no hard-coded user-facing strings (a test enforces this for `Text('...')`), no
 `double` for money (use `Money` from `packages/core_shared`), no secrets in `config/*.json`.

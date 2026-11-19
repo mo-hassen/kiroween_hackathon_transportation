@@ -60,8 +60,8 @@ Customer API (mobile). Paths abbreviated; all under `/api/v1`.
 | auth | `POST /auth/otp` · `POST /auth/register` · `POST /auth/login` · `POST /auth/refresh` · `POST /auth/logout` · `POST /auth/password/reset/request` · `POST /auth/password/reset/confirm` |
 | me | `GET/PATCH /me` · `GET /me/sessions` · `DELETE /me/sessions/{id}` · `POST /me/devices/push-token` · `POST /me/close` |
 | identity | `POST /identity/verifications` (returns authorization URL) · `GET /identity/verifications/current` · `GET /identity/verifications/{id}` · `POST /identity/verifications/{id}/confirm` (same-session confirmation, Phase 4) · `POST /identity/verifications/{id}/cancel` · `GET /identity/callback/{provider}` (browser redirect target, not called by app) |
-| documents | `POST /documents` (create upload intent → presigned PUT URL, constraints) · `POST /documents/{id}/complete` · `GET /documents/{id}/url` (short-lived GET URL) · `DELETE /documents/{id}` (only DRAFT) |
-| drivers | `POST /drivers/me` · `GET/PATCH /drivers/me` · `POST /drivers/me/licenses` · `PATCH /drivers/me/licenses/{id}` · `POST /drivers/me/licenses/{id}/submit` · `GET /drivers/me/eligibility` |
+| documents | `POST /documents` (create upload intent → presigned PUT URL, constraints) · `GET /documents` · `GET /documents/{id}` · `POST /documents/{id}/complete` · `GET /documents/{id}/url` (short-lived GET URL) · `DELETE /documents/{id}` (only DRAFT; not implemented in Phase 5) |
+| drivers | `POST /drivers/me` · `GET/PATCH /drivers/me` · `POST /drivers/me/licenses` · `PATCH /drivers/me/licenses/{id}` · `PUT /drivers/me/licenses/{id}/documents/{front\|back}` (Phase 5) · `POST /drivers/me/licenses/{id}/submit` · `GET /drivers/me/eligibility` |
 | owners | `POST /owners/me` · `GET/PATCH /owners/me` · `POST /owners/me/submit` |
 | vehicles | `POST /vehicles` · `GET /vehicles` (mine) · `GET/PATCH /vehicles/{id}` · `POST /vehicles/{id}/documents` · `POST /vehicles/{id}/submit` · `POST /vehicles/{id}/archive` |
 | listings (owner) | `POST /listings` · `GET /listings/mine` · `GET/PATCH /listings/{id}` · `POST /listings/{id}/publish` · `/pause` · `/close` |
@@ -83,7 +83,7 @@ Admin API (`/api/v1/admin/*`, staff tokens only, separate guard; customer tokens
 
 | Area | Endpoints |
 |---|---|
-| reviews | `GET /admin/review-queue?type=` · `POST /admin/reviews/{type}/{id}/claim` · `/approve` · `/reject` |
+| reviews | `GET /admin/review-queue?type=` · `POST /admin/reviews/{type}/{id}/claim` · `/approve` · `/reject`. Phase 5 implements the driver queue as `GET /admin/driver-verifications` (+ `/counts`, `/{id}`) · `POST …/{id}/claim` · `/release` · `/approve` · `/reject` · `/suspend` · `/reinstate` · `GET …/{id}/documents/{documentId}/url?reason=` (permission `drivers.review`) |
 | identity | `GET /admin/identity-verifications/{id}` (logged) · `POST …/require-reverification` · `/suspend` |
 | users | `GET /admin/users` · `GET /admin/users/{id}` · `POST /admin/users/{id}/suspend` · `/reinstate` |
 | vehicles/listings | `POST /admin/vehicles/{id}/suspend` · `/reinstate` · `GET /admin/assignments` |
