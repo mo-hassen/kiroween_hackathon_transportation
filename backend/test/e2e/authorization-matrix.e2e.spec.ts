@@ -12,6 +12,13 @@ import {
   type Tokens,
   uniquePhone,
 } from '../helpers/auth-helpers.js';
+import {
+  LICENSE_DETAILS,
+  licenseJpeg,
+  preparedDriver,
+  uniqueLicenseNumber,
+  uploadDocument,
+} from '../helpers/document-helpers.js';
 import { startVerification } from '../helpers/identity-helpers.js';
 import { collectRoutes } from '../helpers/routes.js';
 import { createTestApp, type TestApp } from '../helpers/test-app.js';
@@ -40,6 +47,12 @@ interface Fixtures {
   otherCustomerVerificationId: string;
   /** A SUPPORT staff member that the super admin may manage. */
   managedStaffId: string;
+  /** Phase 5: otherCustomer's draft licence and an AVAILABLE licence image. */
+  otherCustomerLicenseId: string;
+  otherCustomerDocumentId: string;
+  /** A submitted driver case (another driver) and its front image. */
+  caseId: string;
+  caseDocumentId: string;
 }
 
 interface Row {
@@ -223,6 +236,204 @@ const ROWS: Row[] = [
   },
 ];
 
+/** Both customers get driver profiles; otherCustomer a draft licence; plus a submitted case. */
+async function driverFixtures(
+  app: TestApp['app'],
+  customer: Tokens,
+  other: Tokens,
+): Promise<
+  Pick<Fixtures, 'otherCustomerLicenseId' | 'otherCustomerDocumentId' | 'caseId' | 'caseDocumentId'>
+> {
+  for (const tokens of [customer, other]) {
+    await http(app).post('/api/v1/drivers/me').set(bearer(tokens)).send({}).expect(201);
+  }
+  const licence = await http(app)
+    .post('/api/v1/drivers/me/licenses')
+    .set(bearer(other))
+    .send({ ...LICENSE_DETAILS, licenseNumber: uniqueLicenseNumber() })
+    .expect(201);
+  const documentId = await uploadDocument(app, other, await licenseJpeg(), 'DRIVER_LICENSE_FRONT');
+  const driver = await preparedDriver(app, { submit: true });
+  return {
+    otherCustomerLicenseId: licence.body.data.id as string,
+    otherCustomerDocumentId: documentId,
+    caseId: driver.licenseId,
+    caseDocumentId: driver.frontId,
+  };
+}
+
+const sha = 'a'.repeat(64);
+const DRIVER_ROUTE = (customer: number, otherCustomer: number): Record<Actor, number> => ({
+  anonymous: 401,
+  customer,
+  otherCustomer,
+  support: 404,
+  verificationOfficer: 404,
+  finance: 404,
+  superAdmin: 404,
+});
+const driverReviewer = (ok: number): Record<Actor, number> => ({
+  anonymous: 401,
+  customer: 404,
+  otherCustomer: 404,
+  support: 403,
+  verificationOfficer: ok,
+  finance: 403,
+  superAdmin: 403,
+});
+
+const PHASE5_ROWS: Row[] = [
+  {
+    route: 'POST documents',
+    call: (a) =>
+      a.post('/api/v1/documents').send({
+        purpose: 'DRIVER_LICENSE_FRONT',
+        mimeType: 'image/jpeg',
+        sizeBytes: 100,
+        sha256: sha,
+      }),
+    expect: DRIVER_ROUTE(201, 201),
+  },
+  {
+    route: 'GET documents/:id',
+    call: (a, fx) => a.get(`/api/v1/documents/${fx.otherCustomerDocumentId}`),
+    expect: DRIVER_ROUTE(404, 200),
+  },
+  {
+    route: 'POST documents/:id/complete',
+    call: (a, fx) => a.post(`/api/v1/documents/${fx.otherCustomerDocumentId}/complete`),
+    expect: DRIVER_ROUTE(404, 200),
+  },
+  {
+    route: 'GET documents/:id/url',
+    call: (a, fx) => a.get(`/api/v1/documents/${fx.otherCustomerDocumentId}/url`),
+    expect: DRIVER_ROUTE(404, 200),
+  },
+  {
+    route: 'POST drivers/me',
+    call: (a) => a.post('/api/v1/drivers/me').send({}),
+    expect: DRIVER_ROUTE(200, 200),
+  },
+  {
+    route: 'GET drivers/me',
+    call: (a) => a.get('/api/v1/drivers/me'),
+    expect: DRIVER_ROUTE(200, 200),
+  },
+  {
+    route: 'PATCH drivers/me',
+    call: (a) => a.patch('/api/v1/drivers/me').set('If-Match', '0').send({}),
+    expect: DRIVER_ROUTE(200, 200),
+  },
+  {
+    route: 'GET drivers/me/eligibility',
+    call: (a) => a.get('/api/v1/drivers/me/eligibility'),
+    expect: DRIVER_ROUTE(200, 200),
+  },
+  {
+    // customer has none yet (201); otherCustomer already has one (409).
+    route: 'POST drivers/me/licenses',
+    call: (a) =>
+      a
+        .post('/api/v1/drivers/me/licenses')
+        .send({ ...LICENSE_DETAILS, licenseNumber: uniqueLicenseNumber() }),
+    expect: DRIVER_ROUTE(201, 409),
+  },
+  {
+    route: 'PATCH drivers/me/licenses/:id',
+    call: (a, fx) =>
+      a
+        .patch(`/api/v1/drivers/me/licenses/${fx.otherCustomerLicenseId}`)
+        .set('If-Match', '999')
+        .send({ ...LICENSE_DETAILS, licenseNumber: uniqueLicenseNumber() }),
+    expect: DRIVER_ROUTE(404, 409),
+  },
+  {
+    route: 'PUT drivers/me/licenses/:id/documents/:side',
+    call: (a, fx) =>
+      a
+        .put(`/api/v1/drivers/me/licenses/${fx.otherCustomerLicenseId}/documents/front`)
+        .send({ documentId: fx.otherCustomerDocumentId }),
+    expect: DRIVER_ROUTE(404, 200),
+  },
+  {
+    // 422 for the owner: identity not verified, back image missing.
+    route: 'POST drivers/me/licenses/:id/submit',
+    call: (a, fx) =>
+      a
+        .post(`/api/v1/drivers/me/licenses/${fx.otherCustomerLicenseId}/submit`)
+        .set('Idempotency-Key', randomUUID()),
+    expect: DRIVER_ROUTE(404, 422),
+  },
+  {
+    route: 'GET admin/driver-verifications',
+    call: (a) => a.get('/api/v1/admin/driver-verifications'),
+    expect: driverReviewer(200),
+  },
+  {
+    route: 'GET admin/driver-verifications/counts',
+    call: (a) => a.get('/api/v1/admin/driver-verifications/counts'),
+    expect: driverReviewer(200),
+  },
+  {
+    route: 'GET admin/driver-verifications/:id',
+    call: (a, fx) => a.get(`/api/v1/admin/driver-verifications/${fx.caseId}`),
+    expect: driverReviewer(200),
+  },
+  {
+    route: 'POST admin/driver-verifications/:id/claim',
+    call: (a, fx) => a.post(`/api/v1/admin/driver-verifications/${fx.caseId}/claim`),
+    expect: driverReviewer(200),
+  },
+  {
+    // After the claim above: the officer holds it.
+    route: 'GET admin/driver-verifications/:id/documents/:documentId/url',
+    call: (a, fx) =>
+      a
+        .get(`/api/v1/admin/driver-verifications/${fx.caseId}/documents/${fx.caseDocumentId}/url`)
+        .query({ reason: 'Authorization matrix check' }),
+    expect: driverReviewer(200),
+  },
+  {
+    route: 'POST admin/driver-verifications/:id/release',
+    call: (a, fx) => a.post(`/api/v1/admin/driver-verifications/${fx.caseId}/release`),
+    expect: driverReviewer(200),
+  },
+  {
+    // 409 for the officer: released above, so not claimed.
+    route: 'POST admin/driver-verifications/:id/approve',
+    call: (a, fx) =>
+      a
+        .post(`/api/v1/admin/driver-verifications/${fx.caseId}/approve`)
+        .send({ identityMatches: true, documentsLegible: true, detailsMatch: true }),
+    expect: driverReviewer(409),
+  },
+  {
+    route: 'POST admin/driver-verifications/:id/reject',
+    call: (a, fx) =>
+      a
+        .post(`/api/v1/admin/driver-verifications/${fx.caseId}/reject`)
+        .send({ reasonCode: 'BLURRY' }),
+    expect: driverReviewer(409),
+  },
+  {
+    route: 'POST admin/driver-verifications/:id/suspend',
+    call: (a, fx) =>
+      a
+        .post(`/api/v1/admin/driver-verifications/${fx.caseId}/suspend`)
+        .send({ reasonCode: 'OTHER', note: 'Authorization matrix check' }),
+    expect: driverReviewer(409),
+  },
+  {
+    route: 'POST admin/driver-verifications/:id/reinstate',
+    call: (a, fx) =>
+      a
+        .post(`/api/v1/admin/driver-verifications/${fx.caseId}/reinstate`)
+        .send({ note: 'Authorization matrix check' }),
+    expect: driverReviewer(409),
+  },
+];
+ROWS.push(...PHASE5_ROWS);
+
 const normalizeRoute = (route: string) => route.replace(/:[a-z]+/g, ':param');
 
 describe('authorization matrix', () => {
@@ -250,6 +461,7 @@ describe('authorization matrix', () => {
       otherCustomerVerificationId: (await startVerification(app, other.tokens)).body.data
         .verification.id as string,
       managedStaffId: managed.userId,
+      ...(await driverFixtures(app, customer.tokens, other.tokens)),
     };
   });
   afterAll(async () => {
