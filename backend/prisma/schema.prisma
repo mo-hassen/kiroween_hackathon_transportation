@@ -144,6 +144,13 @@ model User {
   rolesRevoked          StaffRoleAssignment[]  @relation("StaffRoleRevoker")
   identityVerifications IdentityVerification[] @relation("IdentityVerificationSubject")
   identityReviews       IdentityVerification[] @relation("IdentityVerificationReviewer")
+  documents             Document[]             @relation("DocumentOwner")
+  documentsReviewed     Document[]             @relation("DocumentReviewer")
+  driverProfile         DriverProfile?
+  licenseClaims         DriverLicense[]        @relation("DriverLicenseClaimer")
+  licenseDecisions      DriverLicense[]        @relation("DriverLicenseDecider")
+  driverReviewEvents    DriverReviewEvent[]
+  notifications         Notification[]
 
   @@map("users")
 }
@@ -383,4 +390,232 @@ model IdentityVerification {
   @@index([sessionExpiresAt], map: "identity_verifications_pending_expiry_idx")
   @@index([validUntil], map: "identity_verifications_verified_validity_idx")
   @@map("identity_verifications")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 5: documents, driver profiles and driving-licence verification.
+// docs/architecture/03-database-schema.md (documents, drivers) and 07 §4.
+// ---------------------------------------------------------------------------
+
+// Extensible: later phases add OWNER_*, VEHICLE_*, DISPUTE_EVIDENCE with ALTER TYPE.
+enum DocumentPurpose {
+  DRIVER_LICENSE_FRONT
+  DRIVER_LICENSE_BACK
+}
+
+// Upload and processing lifecycle (separate from the review decision).
+enum DocumentUploadStatus {
+  // Intent created; waiting for the client to PUT the object.
+  PENDING_UPLOAD
+  // Object stored; processing not finished (a transient failure, e.g. scanner down). Retryable.
+  UPLOADED
+  // Claimed by a completion request (recovered after a timeout if the process died).
+  PROCESSING
+  // Validated, re-encoded and scanned clean. The only status that can be downloaded.
+  AVAILABLE
+  // Failed validation (size, checksum, type, malformed). Terminal.
+  INVALID
+  // The malware scanner reported a detection. Terminal.
+  INFECTED
+  DELETED
+}
+
+// Shared review workflow (02 §3.3).
+enum ReviewStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  EXPIRED
+  SUSPENDED
+}
+
+enum DriverEligibility {
+  INELIGIBLE
+  ELIGIBLE
+  SUSPENDED
+}
+
+// [ASSUMPTION] The eleven Addis Ababa sub-cities (03 "addis_sub_cities").
+enum AddisSubCity {
+  ADDIS_KETEMA
+  AKAKY_KALITI
+  ARADA
+  BOLE
+  GULLELE
+  KIRKOS
+  KOLFE_KERANIO
+  LIDETA
+  NIFAS_SILK_LAFTO
+  YEKA
+  LEMI_KURA
+}
+
+// Officer decision reasons (08 §7). Shown to the driver as localized text.
+enum ReviewReasonCode {
+  BLURRY
+  MISMATCH_NAME
+  EXPIRED
+  NOT_OWNER
+  INCOMPLETE
+  INVALID_LICENSE_DETAILS
+  SUSPECTED_FRAUD
+  SAFETY_CONCERN
+  OTHER
+}
+
+// A private file. The client uploads to upload_key (presigned PUT); the server validates,
+// re-encodes and scans it, and only then writes storage_key, the sole downloadable copy.
+model Document {
+  id                String               @id @default(uuid(7)) @db.Uuid
+  ownerUserId       String               @map("owner_user_id") @db.Uuid
+  purpose           DocumentPurpose
+  // Server-generated keys (incoming/{uuid}, documents/{yyyy}/{mm}/{uuid}); never client input.
+  uploadKey         String               @unique @map("upload_key")
+  storageKey        String?              @unique @map("storage_key")
+  declaredMimeType  String               @map("declared_mime_type")
+  declaredSizeBytes Int                  @map("declared_size_bytes")
+  // SHA-256 (hex) of the uploaded bytes, declared by the client and verified by the server.
+  sha256            String
+  // Detected type, size and SHA-256 of the processed (stored) object.
+  mimeType          String?              @map("mime_type")
+  sizeBytes         Int?                 @map("size_bytes")
+  storedSha256      String?              @map("stored_sha256")
+  uploadStatus      DocumentUploadStatus @default(PENDING_UPLOAD) @map("upload_status")
+  reviewStatus      ReviewStatus         @default(DRAFT) @map("review_status")
+  failureCode       String?              @map("failure_code")
+  uploadExpiresAt   DateTime             @map("upload_expires_at") @db.Timestamptz(6)
+  processingAt      DateTime?            @map("processing_at") @db.Timestamptz(6)
+  processedAt       DateTime?            @map("processed_at") @db.Timestamptz(6)
+  scanEngine        String?              @map("scan_engine")
+  expiresOn         DateTime?            @map("expires_on") @db.Date
+  reviewedById      String?              @map("reviewed_by") @db.Uuid
+  reviewedAt        DateTime?            @map("reviewed_at") @db.Timestamptz(6)
+  createdAt         DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version           Int                  @default(0)
+
+  owner       User                   @relation("DocumentOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  reviewedBy  User?                  @relation("DocumentReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
+  licenseLink DriverLicenseDocument?
+
+  @@index([ownerUserId, createdAt(sort: Desc)])
+  // Partial (WHERE upload_status IN (PENDING_UPLOAD, UPLOADED, PROCESSING)) in SQL: cleanup.
+  @@index([uploadExpiresAt], map: "documents_unfinished_idx")
+  // Partial (WHERE review_status = APPROVED) in SQL: expiry sweeps.
+  @@index([expiresOn], map: "documents_approved_expiry_idx")
+  @@map("documents")
+}
+
+model DriverProfile {
+  id                String            @id @default(uuid(7)) @db.Uuid
+  userId            String            @unique @map("user_id") @db.Uuid
+  // Cached result of the eligibility rule (02 §3.5); recomputed on every relevant change
+  // and re-evaluated whenever it matters. Never client-settable.
+  eligibilityStatus DriverEligibility @default(INELIGIBLE) @map("eligibility_status")
+  yearsLicensed     Int?              @map("years_licensed") @db.SmallInt
+  bio               String?
+  homeSubCity       AddisSubCity?     @map("home_sub_city")
+  suspendedReason   ReviewReasonCode? @map("suspended_reason")
+  suspendedAt       DateTime?         @map("suspended_at") @db.Timestamptz(6)
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version           Int               @default(0)
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  license DriverLicense?
+
+  @@map("driver_profiles")
+}
+
+// The driving licence and its verification case (one per driver profile in Phase 5).
+model DriverLicense {
+  id                 String            @id @default(uuid(7)) @db.Uuid
+  driverProfileId    String            @unique @map("driver_profile_id") @db.Uuid
+  // AES-256-GCM, associated data binds it to this row. Never logged.
+  licenseNumberEnc   Bytes             @map("license_number_enc")
+  // Keyed HMAC of the normalized number: uniqueness across accounts (S-1).
+  licenseNumberHmac  String            @unique @map("license_number_hmac")
+  // Last 4 characters, for masked display only.
+  licenseNumberLast4 String            @map("license_number_last4")
+  // [LEGAL] Official Ethiopian category codes are not confirmed (12, L-4): free codes.
+  categories         String[]
+  issuedOn           DateTime          @map("issued_on") @db.Date
+  expiresOn          DateTime          @map("expires_on") @db.Date
+  issuingAuthority   String            @map("issuing_authority")
+  reviewStatus       ReviewStatus      @default(DRAFT) @map("review_status")
+  submittedAt        DateTime?         @map("submitted_at") @db.Timestamptz(6)
+  claimedById        String?           @map("claimed_by") @db.Uuid
+  claimExpiresAt     DateTime?         @map("claim_expires_at") @db.Timestamptz(6)
+  decidedById        String?           @map("decided_by") @db.Uuid
+  decidedAt          DateTime?         @map("decided_at") @db.Timestamptz(6)
+  decisionReasonCode ReviewReasonCode? @map("decision_reason_code")
+  // Optional note shown to the driver with a rejection (plain text, never rendered as HTML).
+  decisionNote       String?           @map("decision_note")
+  createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version            Int               @default(0)
+
+  driverProfile DriverProfile           @relation(fields: [driverProfileId], references: [id], onDelete: Restrict)
+  claimedBy     User?                   @relation("DriverLicenseClaimer", fields: [claimedById], references: [id], onDelete: Restrict)
+  decidedBy     User?                   @relation("DriverLicenseDecider", fields: [decidedById], references: [id], onDelete: Restrict)
+  documents     DriverLicenseDocument[]
+  events        DriverReviewEvent[]
+
+  @@index([reviewStatus, submittedAt])
+  @@map("driver_licenses")
+}
+
+// Link table (03 "driver_license_documents"): a document belongs to at most one licence.
+model DriverLicenseDocument {
+  driverLicenseId String          @map("driver_license_id") @db.Uuid
+  documentId      String          @unique @map("document_id") @db.Uuid
+  purpose         DocumentPurpose
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  license  DriverLicense @relation(fields: [driverLicenseId], references: [id], onDelete: Cascade)
+  document Document      @relation(fields: [documentId], references: [id], onDelete: Restrict)
+
+  @@id([driverLicenseId, purpose])
+  @@map("driver_license_documents")
+}
+
+// Append-only review history of a driver licence case (trigger forbids UPDATE/DELETE).
+model DriverReviewEvent {
+  id              String            @id @default(uuid(7)) @db.Uuid
+  driverLicenseId String            @map("driver_license_id") @db.Uuid
+  actorUserId     String?           @map("actor_user_id") @db.Uuid
+  action          String
+  fromStatus      ReviewStatus?     @map("from_status")
+  toStatus        ReviewStatus      @map("to_status")
+  reasonCode      ReviewReasonCode? @map("reason_code")
+  note            String?
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  license DriverLicense @relation(fields: [driverLicenseId], references: [id], onDelete: Restrict)
+  actor   User?         @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([driverLicenseId, createdAt])
+  @@map("driver_review_events")
+}
+
+// Thin in-app notifications (10 §1). Delivery (push/SMS) and the list API are Phase 15.
+model Notification {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  recipientUserId String    @map("recipient_user_id") @db.Uuid
+  eventType       String    @map("event_type")
+  dedupeKey       String    @map("dedupe_key")
+  titleKey        String    @map("title_key")
+  bodyKey         String    @map("body_key")
+  params          Json      @default("{}")
+  deepLink        String?   @map("deep_link")
+  readAt          DateTime? @map("read_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  recipient User @relation(fields: [recipientUserId], references: [id], onDelete: Restrict)
+
+  @@unique([recipientUserId, dedupeKey])
+  @@index([recipientUserId, createdAt(sort: Desc)])
+  @@map("notifications")
 }
