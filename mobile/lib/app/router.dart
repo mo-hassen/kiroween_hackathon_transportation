@@ -20,6 +20,10 @@ import '../features/auth/presentation/verify_device_screen.dart';
 import '../features/identity/presentation/identity_return_screen.dart';
 import '../features/identity/presentation/identity_screen.dart';
 import '../features/not_found/not_found_screen.dart';
+import '../features/owner/presentation/owner_details_screen.dart';
+import '../features/owner/presentation/owner_documents_screen.dart';
+import '../features/owner/presentation/owner_review_screen.dart';
+import '../features/owner/presentation/owner_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/welcome/welcome_screen.dart';
 import 'routes.dart';
@@ -109,6 +113,10 @@ GoRouter buildRouter({
     GoRoute(path: AppRoutes.driverLicense, builder: (_, _) => const LicenseFormScreen()),
     GoRoute(path: AppRoutes.driverPhotos, builder: (_, _) => const LicensePhotosScreen()),
     GoRoute(path: AppRoutes.driverReview, builder: (_, _) => const LicenseReviewScreen()),
+    GoRoute(path: AppRoutes.owner, builder: (_, _) => const OwnerScreen()),
+    GoRoute(path: AppRoutes.ownerDetails, builder: (_, _) => const OwnerDetailsScreen()),
+    GoRoute(path: AppRoutes.ownerDocuments, builder: (_, _) => const OwnerDocumentsScreen()),
+    GoRoute(path: AppRoutes.ownerReview, builder: (_, _) => const OwnerReviewScreen()),
     // Browser return: confirms the provider result from this session, then shows the status.
     GoRoute(
       path: AppRoutes.identityReturn,

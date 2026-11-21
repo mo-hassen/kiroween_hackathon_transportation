@@ -24,6 +24,12 @@ abstract final class AppRoutes {
   static const driverPhotos = '/driver/license/photos';
   static const driverReview = '/driver/license/review';
 
+  /// Owner onboarding (Phase 6).
+  static const owner = '/owner';
+  static const ownerDetails = '/owner/details';
+  static const ownerDocuments = '/owner/documents';
+  static const ownerReview = '/owner/review';
+
   /// Reachable without a session.
   static const signedOutRoutes = {welcome, login, loginVerify, register, forgotPassword};
 
@@ -42,5 +48,9 @@ abstract final class AppRoutes {
     driverLicense,
     driverPhotos,
     driverReview,
+    owner,
+    ownerDetails,
+    ownerDocuments,
+    ownerReview,
   };
 }

@@ -1036,5 +1036,218 @@
   "problemBACK_DOCUMENT_MISSING": "Add a photo of the back",
   "@problemBACK_DOCUMENT_MISSING": {
     "description": "Submission problem."
+  },
+  "ownerTitle": "Owner",
+  "@ownerTitle": {
+    "description": "Owner screen title and account menu entry."
+  },
+  "ownerMenuSubtitle": "Owner verification for you or your organization",
+  "@ownerMenuSubtitle": {
+    "description": "Account menu subtitle."
+  },
+  "ownerIntroTitle": "Become a verified vehicle owner",
+  "@ownerIntroTitle": {
+    "description": "Owner intro title."
+  },
+  "ownerIntroBody": "Only verified owners can register vehicles. Tell us whether you own vehicles yourself or represent an organization. Verification officers review your request; organizations are approved by two different officers.",
+  "@ownerIntroBody": {
+    "description": "Owner intro body."
+  },
+  "ownerTypeQuestion": "Who owns the vehicles?",
+  "@ownerTypeQuestion": {
+    "description": "Owner type choice."
+  },
+  "ownerTypeIndividual": "Myself (individual)",
+  "@ownerTypeIndividual": {
+    "description": "Owner type option."
+  },
+  "ownerTypeIndividualHint": "Needs only your verified identity.",
+  "@ownerTypeIndividualHint": {
+    "description": "Owner type hint."
+  },
+  "ownerTypeOrganization": "An organization I represent",
+  "@ownerTypeOrganization": {
+    "description": "Owner type option."
+  },
+  "ownerTypeOrganizationHint": "Needs the TIN certificate, the business licence and a letter authorizing you.",
+  "@ownerTypeOrganizationHint": {
+    "description": "Owner type hint."
+  },
+  "ownerTypeRowLabel": "Owner type",
+  "@ownerTypeRowLabel": {
+    "description": "Summary label."
+  },
+  "ownerTypeIndividualShort": "Individual",
+  "@ownerTypeIndividualShort": {
+    "description": "Owner type, short."
+  },
+  "ownerTypeOrganizationShort": "Organization",
+  "@ownerTypeOrganizationShort": {
+    "description": "Owner type, short."
+  },
+  "ownerTypeLocked": "The owner type can no longer be changed for this request.",
+  "@ownerTypeLocked": {
+    "description": "Shown when the type is locked."
+  },
+  "ownerDetailsTitle": "Owner details",
+  "@ownerDetailsTitle": {
+    "description": "Owner details screen title."
+  },
+  "organizationNameLabel": "Organization name",
+  "@organizationNameLabel": {
+    "description": "Field."
+  },
+  "organizationNameInvalid": "Enter 2 to 200 characters",
+  "@organizationNameInvalid": {
+    "description": "Field error."
+  },
+  "tinLabel": "TIN",
+  "@tinLabel": {
+    "description": "Field."
+  },
+  "tinHelperNew": "Taxpayer identification number, as printed",
+  "@tinHelperNew": {
+    "description": "Field helper."
+  },
+  "tinHelperKeep": "Leave empty to keep {masked}",
+  "@tinHelperKeep": {
+    "description": "Field helper when a TIN is stored.",
+    "placeholders": {
+      "masked": {
+        "type": "String"
+      }
+    }
+  },
+  "tinInvalid": "Use 4 to 20 letters and digits",
+  "@tinInvalid": {
+    "description": "Field error."
+  },
+  "tinInUse": "This TIN is already registered to another account. Contact support if it is yours.",
+  "@tinInUse": {
+    "description": "Duplicate TIN."
+  },
+  "ownerDocumentsTitle": "Organization documents",
+  "@ownerDocumentsTitle": {
+    "description": "Documents screen title."
+  },
+  "ownerDocumentsIntro": "Photograph each paper document flat, in good light, with all text readable. Photos only.",
+  "@ownerDocumentsIntro": {
+    "description": "Documents guidance."
+  },
+  "docTin": "TIN certificate",
+  "@docTin": {
+    "description": "Owner document."
+  },
+  "docBusinessLicense": "Business licence",
+  "@docBusinessLicense": {
+    "description": "Owner document."
+  },
+  "docRepresentativeLetter": "Letter authorizing you to represent the organization",
+  "@docRepresentativeLetter": {
+    "description": "Owner document."
+  },
+  "ownerDetailsAction": "Owner details",
+  "@ownerDetailsAction": {
+    "description": "Hub action."
+  },
+  "ownerDocumentsAction": "Organization documents",
+  "@ownerDocumentsAction": {
+    "description": "Hub action."
+  },
+  "ownerReviewAction": "Review and submit",
+  "@ownerReviewAction": {
+    "description": "Hub action."
+  },
+  "ownerStatusUnverified": "Not submitted yet",
+  "@ownerStatusUnverified": {
+    "description": "Owner status."
+  },
+  "ownerStatusPending": "Submitted. Verification officers are reviewing your request.",
+  "@ownerStatusPending": {
+    "description": "Owner status."
+  },
+  "ownerStatusVerified": "Verified owner",
+  "@ownerStatusVerified": {
+    "description": "Owner status."
+  },
+  "ownerVerifiedBody": "You are a verified owner. Vehicle registration will be added to the app in a later update.",
+  "@ownerVerifiedBody": {
+    "description": "Approved guidance."
+  },
+  "ownerStatusRejected": "Not approved",
+  "@ownerStatusRejected": {
+    "description": "Owner status."
+  },
+  "ownerRejectedBody": "Correct the details if needed, upload new documents and submit again.",
+  "@ownerRejectedBody": {
+    "description": "Rejected guidance."
+  },
+  "ownerStatusSuspended": "Owner account suspended",
+  "@ownerStatusSuspended": {
+    "description": "Owner status."
+  },
+  "ownerSuspendedBody": "You cannot use owner features. Contact support for details.",
+  "@ownerSuspendedBody": {
+    "description": "Suspended guidance."
+  },
+  "ownerStatusExpired": "Verification expired",
+  "@ownerStatusExpired": {
+    "description": "Owner status."
+  },
+  "ownerExpiredBody": "Your identity verification expired. Verify your identity again, then submit again.",
+  "@ownerExpiredBody": {
+    "description": "Expired guidance."
+  },
+  "ownerStatusReverification": "Verification needed again",
+  "@ownerStatusReverification": {
+    "description": "Owner status."
+  },
+  "ownerReverificationBody": "Verify your identity again, then submit your owner request again.",
+  "@ownerReverificationBody": {
+    "description": "Re-verification guidance."
+  },
+  "ownerStatusUnknown": "Status unavailable",
+  "@ownerStatusUnknown": {
+    "description": "Unknown owner status."
+  },
+  "ownerReviewIntro": "Check everything. You cannot change it while officers review your request.",
+  "@ownerReviewIntro": {
+    "description": "Review intro."
+  },
+  "ownerReviewConfirmIndividual": "I own the vehicles I will register.",
+  "@ownerReviewConfirmIndividual": {
+    "description": "Confirmation checkbox."
+  },
+  "ownerReviewConfirmOrganization": "I am authorized to represent this organization, and the details are correct.",
+  "@ownerReviewConfirmOrganization": {
+    "description": "Confirmation checkbox."
+  },
+  "ownerSubmitted": "Submitted. We will notify you in the app.",
+  "@ownerSubmitted": {
+    "description": "Snackbar."
+  },
+  "ownerProblemORGANIZATION_DETAILS_MISSING": "Add the organization name and TIN",
+  "@ownerProblemORGANIZATION_DETAILS_MISSING": {
+    "description": "Submission problem."
+  },
+  "ownerProblemTIN_DOCUMENT_MISSING": "Add the TIN certificate",
+  "@ownerProblemTIN_DOCUMENT_MISSING": {
+    "description": "Submission problem."
+  },
+  "ownerProblemBUSINESS_LICENSE_MISSING": "Add the business licence",
+  "@ownerProblemBUSINESS_LICENSE_MISSING": {
+    "description": "Submission problem."
+  },
+  "ownerProblemREPRESENTATIVE_LETTER_MISSING": "Add the authorization letter",
+  "@ownerProblemREPRESENTATIVE_LETTER_MISSING": {
+    "description": "Submission problem."
+  },
+  "reasonINVALID_ORGANIZATION_DETAILS": "The organization details do not match the documents",
+  "@reasonINVALID_ORGANIZATION_DETAILS": {
+    "description": "Decision reason."
+  },
+  "reasonREPRESENTATIVE_NOT_AUTHORIZED": "The letter does not authorize you to represent the organization",
+  "@reasonREPRESENTATIVE_NOT_AUTHORIZED": {
+    "description": "Decision reason."
   }
 }

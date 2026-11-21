@@ -67,6 +67,13 @@ class AccountScreen extends ConsumerWidget {
                 onTap: () => context.push(AppRoutes.driver),
               ),
               ListTile(
+                leading: const Icon(Icons.business_outlined),
+                title: Text(l10n.ownerTitle),
+                subtitle: Text(l10n.ownerMenuSubtitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push(AppRoutes.owner),
+              ),
+              ListTile(
                 leading: const Icon(Icons.devices_outlined),
                 title: Text(l10n.devicesTitle),
                 trailing: const Icon(Icons.chevron_right),
