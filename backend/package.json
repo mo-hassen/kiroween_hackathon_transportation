@@ -30,7 +30,9 @@
     "test:coverage:drivers": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=text-summary --coverage.include='src/modules/documents/**' --coverage.include='src/modules/drivers/**' --coverage.include='src/providers/scanner/**' --coverage.exclude='**/*.spec.ts' --coverage.thresholds.lines=90",
     "staff:bootstrap": "node --env-file-if-exists=.env dist/cli/bootstrap-super-admin.js",
     "identity:expire": "node --env-file-if-exists=.env dist/cli/identity-expire.js",
-    "drivers:refresh": "node --env-file-if-exists=.env dist/cli/drivers-refresh.js"
+    "drivers:refresh": "node --env-file-if-exists=.env dist/cli/drivers-refresh.js",
+    "owners:refresh": "node --env-file-if-exists=.env dist/cli/owners-refresh.js",
+    "test:coverage:owners": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=text-summary --coverage.include='src/modules/owners/**' --coverage.exclude='**/*.spec.ts' --coverage.thresholds.lines=90"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1170.0",
@@ -74,5 +76,8 @@
     "typescript-eslint": "8.73.0",
     "unplugin-swc": "2.0.0",
     "vitest": "5.1.0"
+  },
+  "overrides": {
+    "effect": "3.22.5"
   }
 }
