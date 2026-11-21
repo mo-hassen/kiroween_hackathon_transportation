@@ -7,6 +7,11 @@ import { verifyIdentity } from './identity-helpers.js';
 export type Purpose =
   | 'DRIVER_LICENSE_FRONT'
   | 'DRIVER_LICENSE_BACK'
+  | 'VEHICLE_REGISTRATION'
+  | 'VEHICLE_OWNERSHIP'
+  | 'VEHICLE_INSURANCE'
+  | 'VEHICLE_INSPECTION'
+  | 'VEHICLE_PHOTO'
   | 'OWNER_TIN'
   | 'OWNER_BUSINESS_LICENSE'
   | 'OWNER_REPRESENTATIVE_LETTER';

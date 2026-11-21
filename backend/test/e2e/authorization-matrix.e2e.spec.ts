@@ -27,6 +27,12 @@ import {
   uniqueTin,
   uploadOwnerDocument,
 } from '../helpers/owner-helpers.js';
+import {
+  preparedVehicle,
+  vehicleBody,
+  VEHICLE_APPROVAL,
+  verifiedOwner,
+} from '../helpers/vehicle-helpers.js';
 import { collectRoutes } from '../helpers/routes.js';
 import { createTestApp, type TestApp } from '../helpers/test-app.js';
 
@@ -64,6 +70,9 @@ interface Fixtures {
   otherCustomerOwnerDocumentId: string;
   ownerCaseId: string;
   ownerCaseDocumentId: string;
+  /** Phase 7: a submitted vehicle of a verified owner (a stranger to both customers), and its photo. */
+  vehicleId: string;
+  vehicleDocumentId: string;
 }
 
 interface Row {
@@ -592,6 +601,129 @@ const PHASE6_ROWS: Row[] = [
 ];
 ROWS.push(...PHASE6_ROWS);
 
+/** Phase 7. The vehicle belongs to a third, verified owner; both customers are strangers. */
+async function vehicleFixtures(
+  app: TestApp['app'],
+  officer: Tokens,
+): Promise<Pick<Fixtures, 'vehicleId' | 'vehicleDocumentId'>> {
+  const owner = await verifiedOwner(app, officer);
+  const vehicle = await preparedVehicle(app, owner.tokens, { submit: true });
+  return { vehicleId: vehicle.id, vehicleDocumentId: vehicle.documents.PHOTO_FRONT! };
+}
+const vehicleReviewer = verificationOfficerOnly;
+const vehicleDecision =
+  (path: string, body: object) => (a: ReturnType<typeof http>, fx: Fixtures) =>
+    a
+      .post(`/api/v1/admin/vehicle-verifications/${fx.vehicleId}/${path}`)
+      .set('Idempotency-Key', randomUUID())
+      .send(body);
+const PHASE7_ROWS: Row[] = [
+  {
+    // Both customers have an owner profile that is not verified by now (or none yet): 409.
+    route: 'POST vehicles',
+    call: (a) => a.post('/api/v1/vehicles').send(vehicleBody()),
+    expect: customersOnly(409, 409),
+  },
+  {
+    route: 'GET vehicles',
+    call: (a) => a.get('/api/v1/vehicles'),
+    expect: customersOnly(200, 200),
+  },
+  {
+    route: 'GET vehicles/:id',
+    call: (a, fx) => a.get(`/api/v1/vehicles/${fx.vehicleId}`),
+    expect: customersOnly(404, 404),
+  },
+  {
+    route: 'PATCH vehicles/:id',
+    call: (a, fx) =>
+      a.patch(`/api/v1/vehicles/${fx.vehicleId}`).set('If-Match', '0').send({ color: 'Red' }),
+    expect: customersOnly(404, 404),
+  },
+  {
+    route: 'PUT vehicles/:id/evidence/:slot',
+    call: (a, fx) =>
+      a
+        .put(`/api/v1/vehicles/${fx.vehicleId}/evidence/PHOTO_FRONT`)
+        .send({ documentId: fx.otherCustomerDocumentId }),
+    expect: customersOnly(404, 404),
+  },
+  {
+    route: 'GET vehicles/:id/status',
+    call: (a, fx) => a.get(`/api/v1/vehicles/${fx.vehicleId}/status`),
+    expect: customersOnly(404, 404),
+  },
+  {
+    route: 'POST vehicles/:id/submit',
+    call: (a, fx) =>
+      a.post(`/api/v1/vehicles/${fx.vehicleId}/submit`).set('Idempotency-Key', randomUUID()),
+    expect: customersOnly(404, 404),
+  },
+  {
+    route: 'POST vehicles/:id/archive',
+    call: (a, fx) => a.post(`/api/v1/vehicles/${fx.vehicleId}/archive`),
+    expect: customersOnly(404, 404),
+  },
+  {
+    route: 'GET admin/vehicle-verifications',
+    call: (a) => a.get('/api/v1/admin/vehicle-verifications'),
+    expect: vehicleReviewer(200),
+  },
+  {
+    route: 'GET admin/vehicle-verifications/counts',
+    call: (a) => a.get('/api/v1/admin/vehicle-verifications/counts'),
+    expect: vehicleReviewer(200),
+  },
+  {
+    route: 'GET admin/vehicle-verifications/:id',
+    call: (a, fx) => a.get(`/api/v1/admin/vehicle-verifications/${fx.vehicleId}`),
+    expect: vehicleReviewer(200),
+  },
+  {
+    route: 'POST admin/vehicle-verifications/:id/claim',
+    call: (a, fx) => a.post(`/api/v1/admin/vehicle-verifications/${fx.vehicleId}/claim`),
+    expect: vehicleReviewer(200),
+  },
+  {
+    // After the claim above: the officer holds it.
+    route: 'GET admin/vehicle-verifications/:id/documents/:documentId/url',
+    call: (a, fx) =>
+      a
+        .get(
+          `/api/v1/admin/vehicle-verifications/${fx.vehicleId}/documents/${fx.vehicleDocumentId}/url`,
+        )
+        .query({ reason: 'Authorization matrix check' }),
+    expect: vehicleReviewer(200),
+  },
+  {
+    route: 'POST admin/vehicle-verifications/:id/release',
+    call: (a, fx) => a.post(`/api/v1/admin/vehicle-verifications/${fx.vehicleId}/release`),
+    expect: vehicleReviewer(200),
+  },
+  {
+    // 409 for the officer below: released above, so not claimed (or not APPROVED/SUSPENDED).
+    route: 'POST admin/vehicle-verifications/:id/approve',
+    call: vehicleDecision('approve', VEHICLE_APPROVAL),
+    expect: vehicleReviewer(409),
+  },
+  {
+    route: 'POST admin/vehicle-verifications/:id/reject',
+    call: vehicleDecision('reject', { reasonCode: 'BLURRY' }),
+    expect: vehicleReviewer(409),
+  },
+  {
+    route: 'POST admin/vehicle-verifications/:id/suspend',
+    call: vehicleDecision('suspend', { reasonCode: 'OTHER', note: 'Authorization matrix check' }),
+    expect: vehicleReviewer(409),
+  },
+  {
+    route: 'POST admin/vehicle-verifications/:id/reinstate',
+    call: vehicleDecision('reinstate', { note: 'Authorization matrix check' }),
+    expect: vehicleReviewer(409),
+  },
+];
+ROWS.push(...PHASE7_ROWS);
+
 const normalizeRoute = (route: string) => route.replace(/:[a-z]+/g, ':param');
 
 describe('authorization matrix', () => {
@@ -606,12 +738,13 @@ describe('authorization matrix', () => {
     const other = await registerCustomer(app);
     const spare = await login(app, other.phone, other.password, other.device);
     const managed = await seedStaff(app, ['SUPPORT']);
+    const officerTokens = await staffLogin(app, await seedStaff(app, ['VERIFICATION_OFFICER']));
     fixtures = {
       tokens: {
         customer: customer.tokens,
         otherCustomer: other.tokens,
         support: await staffLogin(app, await seedStaff(app, ['SUPPORT'])),
-        verificationOfficer: await staffLogin(app, await seedStaff(app, ['VERIFICATION_OFFICER'])),
+        verificationOfficer: officerTokens,
         finance: await staffLogin(app, await seedStaff(app, ['FINANCE'])),
         superAdmin: await staffLogin(app, await seedStaff(app, ['SUPER_ADMIN'])),
       },
@@ -621,6 +754,7 @@ describe('authorization matrix', () => {
       managedStaffId: managed.userId,
       ...(await driverFixtures(app, customer.tokens, other.tokens)),
       ...(await ownerFixtures(app, other.tokens)),
+      ...(await vehicleFixtures(app, officerTokens)),
     };
   });
   afterAll(async () => {

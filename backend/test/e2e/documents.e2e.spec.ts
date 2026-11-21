@@ -209,7 +209,7 @@ describe('validation', () => {
       [{ ...base, mimeType: 'text/html' }, 'IS_IN'],
       [{ ...base, mimeType: 'image/jpeg', sizeBytes: 10_485_761 }, 'MAX'],
       [{ ...base, mimeType: 'image/jpeg', sha256: 'abc' }, 'MATCHES'],
-      [{ ...base, mimeType: 'image/jpeg', purpose: 'VEHICLE_PHOTO' }, 'IS_IN'],
+      [{ ...base, mimeType: 'image/jpeg', purpose: 'VEHICLE_HOLOGRAM' }, 'IS_IN'],
       [{ ...base, mimeType: 'image/jpeg', storageKey: '../../etc/passwd' }, 'UNKNOWN_FIELD'],
     ] as const) {
       const res = await http(app())
