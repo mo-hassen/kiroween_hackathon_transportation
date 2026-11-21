@@ -23,13 +23,17 @@ OwnerCaseSummary ownerSummary({
   firstApprovedByMe: firstByMe,
 );
 
-OwnerCaseDetail ownerDetail(OwnerCaseSummary s) => OwnerCaseDetail(
+/// The TIN the fake server holds (tests type it as officers would read it).
+const storedTin = '0012345678';
+
+OwnerCaseDetail ownerDetail(OwnerCaseSummary s, {bool tinChecked = false}) => OwnerCaseDetail(
   summary: s,
   representativePhone: '+251911000002',
   accountStatus: 'ACTIVE',
   identityStatus: 'VERIFIED',
   identityVerifiedName: 'Abebe Kebede',
-  tinMasked: s.isOrganization ? '••••6789' : null,
+  tinMasked: s.isOrganization ? '••••5678' : null,
+  tinCheckedByMe: tinChecked,
   firstApprovedAt: s.awaitingSecondApproval ? DateTime.utc(2026, 11, 19, 10) : null,
   firstApprovalNote: null,
   verifiedAt: null,
@@ -72,6 +76,9 @@ final class FakeOwnerReviewApi implements OwnerReviewApi {
 
   List<OwnerCaseSummary> cases;
   final calls = <String>[];
+
+  /// Cases this (fake) officer has a matching TIN check for.
+  final tinChecked = <String>{};
   ApiFailure? actionFailure;
   OwnerCounts countsResponse = const {
     'PENDING_INDIVIDUAL': 2,
@@ -110,7 +117,16 @@ final class FakeOwnerReviewApi implements OwnerReviewApi {
   }
 
   @override
-  Future<OwnerCaseDetail> detail(String id) async => ownerDetail(_find(id));
+  Future<OwnerCaseDetail> detail(String id) async =>
+      ownerDetail(_find(id), tinChecked: tinChecked.contains(id));
+
+  @override
+  Future<bool> checkTin(String caseId, {required String tin, required String reason}) async {
+    await _action('tin:$caseId:$reason');
+    final matches = tin.replaceAll(RegExp(r'[\s\-/.]'), '') == storedTin;
+    if (matches) tinChecked.add(caseId);
+    return matches;
+  }
 
   @override
   Future<void> claim(String id) async {
@@ -142,6 +158,8 @@ final class FakeOwnerReviewApi implements OwnerReviewApi {
   @override
   Future<void> firstApproval(String id, {String? note}) async {
     await _action('first:$id');
+    // The second officer needs their own check (the fake plays both officers).
+    tinChecked.remove(id);
     _replace(ownerSummary(id: id, awaitingSecond: true, firstByMe: true));
   }
 

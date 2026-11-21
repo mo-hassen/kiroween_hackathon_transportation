@@ -24,6 +24,23 @@ Future<void> confirmChecks(WidgetTester tester) async {
   }
 }
 
+/// Opens the TIN check dialog, types [tin] and a reason, confirms.
+Future<void> checkTinInUi(WidgetTester tester, String tin) async {
+  await tester.tap(find.text('Check full TIN'));
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byKey(const ValueKey('tin-input')), tin);
+  await tester.enterText(
+    find.byKey(const ValueKey('tin-reason')),
+    'Comparing with the certificate',
+  );
+  await tester.pump();
+  await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+  await tester.pumpAndSettle();
+}
+
+bool enabled(WidgetTester tester, String label) =>
+    tester.widget<FilledButton>(find.widgetWithText(FilledButton, label)).onPressed != null;
+
 FilledButton confirmButton(WidgetTester tester) =>
     tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Confirm'));
 
@@ -81,10 +98,24 @@ void main() {
       await tester.tap(find.text('Claim'));
       await tester.pumpAndSettle();
       expect(find.text('Owner case'), findsOneWidget);
-      expect(find.text('••••6789'), findsOneWidget);
+      expect(find.text('••••5678'), findsOneWidget);
       expect(find.text('Approve owner'), findsNothing);
       expect(find.text('Give second approval'), findsNothing);
 
+      // Approval stays disabled until this officer confirmed the full TIN.
+      expect(enabled(tester, 'Record first approval'), isFalse);
+      expect(
+        find.text('Check the full TIN against the certificate before approving.'),
+        findsOneWidget,
+      );
+      await checkTinInUi(tester, '0012-345-678');
+      expect(find.text('The TIN on the certificate matches the stored TIN.'), findsOneWidget);
+      expect(
+        find.text('0012-345-678'),
+        findsNothing,
+        reason: 'the typed TIN is not kept on screen',
+      );
+      expect(enabled(tester, 'Record first approval'), isTrue);
       await tester.tap(find.text('Record first approval'));
       await tester.pumpAndSettle();
       expect(
@@ -118,6 +149,8 @@ void main() {
     await tester.tap(find.text('Claim'));
     await tester.pumpAndSettle();
     expect(find.text('Record first approval'), findsNothing);
+    expect(enabled(tester, 'Give second approval'), isFalse);
+    await checkTinInUi(tester, '0012345678');
     await tester.tap(find.text('Give second approval'));
     await tester.pumpAndSettle();
     expect(find.textContaining('You are the second officer'), findsOneWidget);
@@ -250,6 +283,76 @@ void main() {
       contains('suspend:own-1:SUSPECTED_FRAUD:Two complaints confirmed by support'),
     );
     expect(find.text('Reinstate owner'), findsOneWidget);
+  });
+
+  testWidgets('a wrong TIN shows "does not match"; results disappear after 60 s and on leaving', (
+    tester,
+  ) async {
+    final owners = FakeOwnerReviewApi(cases: [ownerSummary(claimedByMe: true)]);
+    await pumpAdmin(
+      tester,
+      auth: FakeStaffAuthApi(me: staffMe(permissions: both)),
+      owners: owners,
+    );
+    await signIn(tester);
+    await openOwners(tester);
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    // The dialog needs a valid TIN format and a 10-character reason.
+    await tester.tap(find.text('Check full TIN'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('tin-input')), '12#');
+    await tester.enterText(find.byKey(const ValueKey('tin-reason')), 'too short');
+    await tester.pump();
+    expect(find.text('Use 4 to 20 letters and digits'), findsOneWidget);
+    expect(confirmButton(tester).onPressed, isNull);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    await checkTinInUi(tester, '9999999999');
+    expect(find.text('The TIN on the certificate does NOT match the stored TIN.'), findsOneWidget);
+    expect(owners.calls, contains('tin:own-1:Comparing with the certificate'));
+    expect(enabled(tester, 'Record first approval'), isFalse);
+    await tester.pump(const Duration(seconds: 61));
+    expect(find.byKey(const ValueKey('tin-result')), findsNothing);
+
+    await checkTinInUi(tester, '0012345678');
+    expect(find.text('You confirmed the full TIN for this submission'), findsOneWidget);
+    expect(find.byKey(const ValueKey('tin-result')), findsOneWidget);
+    // Leaving the case hides the result.
+    await openOwners(tester);
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('tin-result')), findsNothing);
+  });
+
+  testWidgets('no TIN check action without the claim', (tester) async {
+    final owners = FakeOwnerReviewApi(cases: [ownerSummary(claimedByOther: true)]);
+    await pumpAdmin(
+      tester,
+      auth: FakeStaffAuthApi(me: staffMe(permissions: both)),
+      owners: owners,
+    );
+    await signIn(tester);
+    await openOwners(tester);
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    expect(find.text('Check full TIN'), findsNothing);
+  });
+
+  test('HttpOwnerReviewApi.checkTin posts the typed TIN once and reads only the result', () async {
+    final adapter = FakeHttpAdapter([
+      respond({
+        'data': {'matches': true, 'checkedAt': '2026-11-21T09:00:00Z'},
+      }, 200),
+    ]);
+    final dio = Dio(BaseOptions(baseUrl: 'http://api.test/api/v1'))..httpClientAdapter = adapter;
+    final matches = await HttpOwnerReviewApi(ApiClient(dio))
+        .checkTin('o1', tin: '0012345678', reason: 'r' * 12);
+    expect(matches, isTrue);
+    expect(adapter.requests.single.path, '/admin/owner-verifications/o1/tin-check');
+    expect(adapter.requests.single.data, {'tin': '0012345678', 'reason': 'r' * 12});
   });
 
   test(
