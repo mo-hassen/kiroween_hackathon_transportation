@@ -22,6 +22,7 @@ import { HealthModule } from './modules/health/health.module.js';
 import { IdentityModule } from './modules/identity/identity.module.js';
 import { MeModule } from './modules/me/me.module.js';
 import { OwnersModule } from './modules/owners/owners.module.js';
+import { VehiclesModule } from './modules/vehicles/vehicles.module.js';
 import { IdentityProviderModule } from './providers/identity/identity-provider.module.js';
 import { ScannerModule } from './providers/scanner/scanner.module.js';
 import { SmsModule } from './providers/sms/sms.module.js';
@@ -62,6 +63,7 @@ export class AppModule {
         DocumentsModule,
         DriversModule,
         OwnersModule,
+        VehiclesModule,
       ],
       providers: [
         // Guard order matters: rate limiting, then authentication, then authorization.

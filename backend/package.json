@@ -32,7 +32,9 @@
     "identity:expire": "node --env-file-if-exists=.env dist/cli/identity-expire.js",
     "drivers:refresh": "node --env-file-if-exists=.env dist/cli/drivers-refresh.js",
     "owners:refresh": "node --env-file-if-exists=.env dist/cli/owners-refresh.js",
-    "test:coverage:owners": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=text-summary --coverage.include='src/modules/owners/**' --coverage.exclude='**/*.spec.ts' --coverage.thresholds.lines=90"
+    "vehicles:refresh": "node --env-file-if-exists=.env dist/cli/vehicles-refresh.js",
+    "test:coverage:owners": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=text-summary --coverage.include='src/modules/owners/**' --coverage.exclude='**/*.spec.ts' --coverage.thresholds.lines=90",
+    "test:coverage:vehicles": "vitest run --coverage --coverage.provider=v8 --coverage.reporter=text-summary --coverage.include='src/modules/vehicles/**' --coverage.exclude='**/*.spec.ts' --coverage.thresholds.lines=90"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1170.0",
