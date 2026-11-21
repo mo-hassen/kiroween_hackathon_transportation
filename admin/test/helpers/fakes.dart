@@ -7,6 +7,9 @@ import 'package:kiroween_admin/core/config.dart';
 import 'package:kiroween_admin/core/session.dart';
 import 'package:kiroween_admin/features/drivers/case_detail_screen.dart';
 import 'package:kiroween_admin/features/drivers/driver_review_api.dart';
+import 'package:kiroween_admin/features/owners/owner_review_api.dart';
+
+import 'owner_fakes.dart';
 
 final testConfig = AdminConfig.parse(
   environment: 'development',
@@ -198,6 +201,7 @@ Future<ProviderContainer> pumpAdmin(
   WidgetTester tester, {
   required FakeStaffAuthApi auth,
   FakeDriverReviewApi? review,
+  FakeOwnerReviewApi? owners,
   FakeDocumentViewer? viewer,
 }) async {
   tester.view.physicalSize = const Size(1400, 1000);
@@ -208,6 +212,7 @@ Future<ProviderContainer> pumpAdmin(
       adminConfigProvider.overrideWithValue(testConfig),
       staffAuthApiProvider.overrideWithValue(auth),
       driverReviewApiProvider.overrideWithValue(review ?? FakeDriverReviewApi()),
+      ownerReviewApiProvider.overrideWithValue(owners ?? FakeOwnerReviewApi()),
       documentViewerProvider.overrideWithValue(viewer ?? FakeDocumentViewer()),
     ],
   );
