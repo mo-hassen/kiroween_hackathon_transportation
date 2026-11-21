@@ -1,6 +1,6 @@
 # Phase 6 Report: Owner Verification
 
-Date: 2026-11-21
+Date: 2026-11-21 (updated after the final security review)
 Scope: Phase 6 only (`docs/architecture/13-implementation-plan.md`, row 6: owner profiles (individual/organization), owner verification and review). Phase 7 (vehicles) has not started.
 Status: **implemented, awaiting human review.** Phase 6 is not approved and has no completion tag.
 
@@ -17,7 +17,9 @@ Both exit criteria are proven by automated tests:
 - **Self-approval is impossible.** Staff accounts cannot hold owner profiles. The service refuses the owner as reviewer. The `owner_profiles_guard` trigger refuses the owner, and anyone who is not an active VERIFICATION_OFFICER, as claimer, first approver, verifier or decider (`owner-db-constraints`, `owners.e2e`).
 - **Cross-owner document access is prevented.** Another customer gets 404 for metadata, completion, download and attach. An officer cannot open a document through a case it does not belong to. The database refuses links to another user's document (`owners.e2e`, the authorization matrix, `owner-db-constraints`, container smoke test).
 
-Tests: **957 automated tests pass**, against a corrected Phase 5 baseline of 868 (§14). The Docker image was rebuilt, and the container smoke test ran against it with ClamAV.
+**Final security fix (§6.1).** The first version asked officers to confirm the TIN against the certificate while showing them only the last four digits, so the check could not actually be done. Officers now type the TIN they read on the certificate, and the server compares it with the stored HMAC. The stored TIN is never decrypted or returned. Each approving officer must have their own matching check for the current submission before an organization approval is accepted. **[IMPL]**
+
+Tests: **967 automated tests pass**, against a corrected Phase 5 baseline of 868 (§14). The Docker image was rebuilt. The four-eyes flow was run against it with two synthetic officers: **29/29 checks PASS** (§16.1). The Android device test is **NOT RUN** (§16.2).
 
 ## 2. Scope
 
@@ -97,9 +99,9 @@ Also new:
 |---|---|
 | Customer | `POST /owners/me` (201, or 200 if it exists) · `GET /owners/me` · `PATCH /owners/me` (If-Match) · `GET /owners/me/status` · `PUT /owners/me/documents/{tin\|business-license\|representative-letter}` · `POST /owners/me/submit` (Idempotency-Key) |
 | Documents | unchanged routes; new purposes `OWNER_TIN`, `OWNER_BUSINESS_LICENSE`, `OWNER_REPRESENTATIVE_LETTER` |
-| Officer (`owners.review`) | `GET /admin/owner-verifications` (status, ownerType, awaitingSecondApproval, q, page, limit ≤ 50) · `GET …/counts` · `GET …/{id}` (audited) · `POST …/{id}/claim` · `…/release` · `…/approve` · `…/first-approval` · `…/second-approval` · `…/reject` · `…/suspend` · `…/reinstate` (decisions need an Idempotency-Key) · `GET …/{id}/documents/{documentId}/url?reason=` |
+| Officer (`owners.review`) | `GET /admin/owner-verifications` (status, ownerType, awaitingSecondApproval, q, page, limit ≤ 50) · `GET …/counts` · `GET …/{id}` (audited) · `POST …/{id}/claim` · `…/release` · `…/approve` · `…/first-approval` · `…/second-approval` · `…/reject` · `…/suspend` · `…/reinstate` (decisions need an Idempotency-Key) · `POST …/{id}/tin-check` (§6.1) · `GET …/{id}/documents/{documentId}/url?reason=` |
 
-- New error codes: `OWNER_PROFILE_REQUIRED, TIN_IN_USE, OWNER_SUBMISSION_INCOMPLETE, FIRST_APPROVAL_REQUIRED, SECOND_APPROVER_REQUIRED`.
+- New error codes: `OWNER_PROFILE_REQUIRED, TIN_IN_USE, OWNER_SUBMISSION_INCOMPLETE, FIRST_APPROVAL_REQUIRED, SECOND_APPROVER_REQUIRED, TIN_CHECK_REQUIRED`.
 - Unknown fields are rejected (400 `UNKNOWN_FIELD`; tested with `verificationStatus`, `verified`, `reviewerId`, `eligibilityStatus` and `firstApprovedById`).
 - List responses carry no TIN, document or phone data (test).
 - All routes are in OpenAPI.
@@ -109,8 +111,49 @@ Also new:
 - **Normalization** [ASSUMPTION]: upper case, with spaces, hyphens, slashes and dots removed, then 4–20 letters and digits. **No official Ethiopian TIN format is assumed** [LEGAL].
 - **Encryption:** `tin_enc` is AES-256-GCM with the Phase 3 field keys and AAD `owner_profiles.tin_enc:{id}`. A test shows that decrypting it with another row's AAD fails.
 - **Duplicates:** `tin_hmac` is HMAC-SHA-256 with a new dedicated purpose `tin` and is UNIQUE in the database. A duplicate returns `409 TIN_IN_USE`, through both create and update, and writes the audit row `owner.duplicate_tin_detected` without the TIN. The response does not reveal the other account.
-- **Display:** `tin_last4` gives masked display (`••••1234`). The full TIN is returned by no API, including the officer case detail; officers compare the masked TIN with the TIN certificate.
+- **Display:** `tin_last4` gives masked display (`••••1234`). The full TIN is returned by no API, including to officers. Officers verify it with the server-side TIN check (§6.1).
 - **No leaks:** `tin` was already a redacted log key. Tests confirm that the TIN is absent from responses, audit rows, outbox payloads, notification rows and logs. Profile-update audits record field names only.
+
+### 6.1 How officers verify the full TIN [IMPL]
+
+**Problem found in review.** Approval required `organizationDetailsMatch: true`, but officers could see only `••••1234`. They could not compare the full TIN with the certificate, so the check rested on the officer's word alone.
+
+**Options considered.**
+
+| Option | Exposure | Verifies the full TIN | Chosen |
+|---|---|---|---|
+| A. Reveal endpoint: decrypt and return the TIN to the claim holder, show it for 60 s | The full TIN travels to the browser and the officer's screen; it can be screenshotted, cached in memory or shoulder-surfed. Each reveal is a data disclosure | Yes | No |
+| B. **Server-side check**: the officer types the TIN from the certificate; the server normalizes it, computes the HMAC and compares it in constant time with `tin_hmac`; it returns only `matches: true/false` | The stored TIN never leaves the database, not even decrypted in memory. The officer only re-types what they are already looking at | Yes: equality of the full normalized value | **Yes** |
+| C. Last-4 comparison only (status quo) | Lowest | No | No |
+
+B gives the same assurance as A, because the officer must still read the full TIN on the certificate, and it adds no new disclosure. A typo gives "no match", and the officer can try again. Each officer is limited to 10 checks per case per hour, so the check cannot be used to search for TINs; it could not reveal anything anyway, since the officer already sees the certificate.
+
+**Implementation.**
+- **Route:** `POST /admin/owner-verifications/{id}/tin-check` with body `{tin, reason}`; the reason is 10–500 characters; unknown fields are rejected.
+  - Requires `owners.review` (VERIFICATION_OFFICER only) and the **active claim** on a PENDING organization case.
+  - An expired claim, no claim or someone else's claim gets 409 `REVIEW_CLAIM_REQUIRED`. Individual cases, never-submitted cases and unknown ids get 404. Customers, including the owner, get 404; other staff get 403; anonymous callers get 401.
+  - An invalid format gets 400 `tin`/`INVALID_FORMAT`; the value is never echoed.
+  - The response is `{matches, checkedAt}` with `Cache-Control: no-store`, like every API response.
+- **Audit:** every check writes `owner.tin_checked_by_staff` with the officer, the reason and `changes: {matches}`. The typed and stored TIN are never written.
+- **Approvals:** both `/first-approval` and `/second-approval` require a **matching check by the approving officer since the current submission** (`409 TIN_CHECK_REQUIRED`). Officer A's check does not count for officer B, and a check made before a rejection does not count after a resubmission.
+- **Case detail:** returns `tinCheckedByMe`. Queue, case detail, notifications, outbox and logs never contain the TIN (tested).
+- **Admin console:** a "Check full TIN" dialog, only for the claim holder. The result ("matches" / "does NOT match") is shown for **60 seconds**, then cleared, and also cleared when the officer leaves the case. The typed value lives only in the dialog and is not shown afterwards. Approval buttons stay disabled until the officer has a matching check. Nothing goes to browser storage.
+- **Encryption and HMAC are unchanged** (AES-256-GCM with row AAD; HMAC purpose `tin`; UNIQUE).
+
+**Tests:**
+- Backend (`owners.e2e`, 6 new tests):
+  - authorized claimed officer: match and no-match, `no-store`;
+  - missing, short and invalid reasons and formats, with nothing audited;
+  - SUPPORT, FINANCE and SUPER_ADMIN get 403; the owner and another customer get 404; anonymous gets 401;
+  - no claim, another officer's claim and an expired claim;
+  - individual and unknown cases;
+  - the audit row contents;
+  - the TIN is absent from queue, detail, audit, outbox, notifications and logs;
+  - rate limit (429 on the 11th check);
+  - a check from before a resubmission does not count;
+  - expired-claim takeover.
+- Matrix: one new row.
+- Admin (3 new tests): approvals disabled until checked, match and no-match texts, the result hidden after 60 s and when leaving the case, input validation, no action without the claim, request shape.
 
 ## 7. Document handling [IMPL]
 
@@ -160,7 +203,7 @@ The existing `admin/` app has been extended:
 
 - **Audit actions:**
   - Owner: `owner.profile_created`, `owner.profile_updated`, `owner.document_attached`, `owner.document_replaced`, `owner.verification_submitted`, `owner.duplicate_tin_detected`.
-  - Officer: `owner.case_viewed`, `owner.review_claimed`, `owner.review_released`, `owner.first_approval_recorded`, `owner.second_approval_completed`, `owner.approved`, `owner.rejected`, `owner.suspended`, `owner.reinstated`.
+  - Officer: `owner.case_viewed`, `owner.tin_checked_by_staff` (reason and result only), `owner.review_claimed`, `owner.review_released`, `owner.first_approval_recorded`, `owner.second_approval_completed`, `owner.approved`, `owner.rejected`, `owner.suspended`, `owner.reinstated`.
   - System: `owner.verification_expired`, `owner.reverification_required`.
   - Plus the existing `document.viewed_by_staff`.
 - **Outbox events:** `owner.profile_created`, `owner.verification_submitted`, `owner.first_approval_recorded`, `owner.approved`, `owner.rejected`, `owner.suspended`, `owner.reinstated`, `owner.verification_expired`, `owner.reverification_required`.
@@ -187,6 +230,8 @@ Verified: `prisma validate`; `db:drift` ("No difference detected"); migration fr
 
 | Threat | Control | Proof |
 |---|---|---|
+| An officer approves without checking the full TIN | `TIN_CHECK_REQUIRED`: a matching server-side check by the approving officer for this submission | e2e, container |
+| TIN disclosure to staff | Never decrypted for staff; compare-only, rate-limited, audited (result only) | e2e, container |
 | Owner approves themselves | Staff cannot hold profiles; service 404; trigger refuses the owner and non-officers in every reviewer column | db-constraints, e2e |
 | One officer verifies an organization alone | Service rule, claim refusal for the first approver, `owner_profiles_four_eyes_chk` | unit, e2e, db |
 | Officer lacking the role, or locked | `is_active_verification_officer` (role not revoked, account ACTIVE) | db |
@@ -215,11 +260,13 @@ Each suite is counted once. Coverage runs are not added to the totals.
 | Suite | Phase 5 (corrected) | Phase 6 | Added |
 |---|---|---|---|
 | Backend unit (`npm test`) | 278 | **290** | +12 |
-| Backend integration and HTTP (`npm run test:integration`) | 321 (+2 opt-in skipped) | **374** (+2 opt-in skipped) | +53 |
+| Backend integration and HTTP (`npm run test:integration`) | 321 (+2 opt-in skipped) | **381** (+2 opt-in skipped) | +60 |
 | Shared Dart (`dart test`) | 62 | **62** | 0 |
 | Flutter mobile | 187 | **200** | +13 |
-| Flutter admin | 20 | **31** | +11 |
-| **Total** | **868** | **957** | **+89** |
+| Flutter admin | 20 | **34** | +14 |
+| **Total** | **868** | **967** | **+99** |
+
+Final run after the TIN fix, 2026-11-21. The first Phase 6 version had 957; the fix adds 10 (6 owner e2e, 1 matrix row, 3 admin).
 
 - The two opt-in ClamAV tests (`CLAMAV_TEST_HOST`) passed separately against the compose clamd: 2/2.
 - New backend tests:
@@ -234,7 +281,7 @@ Each suite is counted once. Coverage runs are not added to the totals.
 
 | Scope | Lines | Statements | Branches | Functions | Gate |
 |---|---|---|---|---|---|
-| Owners (`src/modules/owners`, new) | **96.27%** (388/403) | 93.56% | 85.9% | 96.87% | ≥ 90%: PASS |
+| Owners (`src/modules/owners`, new) | **96.5%** (414/429) | 93.92% | 87.53% | 96.96% | ≥ 90%: PASS |
 | Documents, drivers, scanner | **95.21%** (617/648) | 92.82% | 86.11% | 97.79% | PASS |
 | Auth | **97.5%** (743/762) | 94.57% | 84.23% | 97.86% | PASS |
 | Identity | **95.63%** (658/688) | 92.57% | 83.88% | 96.4% | PASS |
@@ -249,7 +296,7 @@ Each suite is counted once. Coverage runs are not added to the totals.
 | `npm audit --omit=dev --audit-level=high` and full audit | PASS (0 vulnerabilities), after the change below |
 | Android debug APK | PASS |
 | Admin `flutter build web` (development, production example) | PASS / PASS |
-| Docker `--build migrate api` with `--profile scanner` | PASS. Running image `sha256:ae2328f2d7fc…`, health `healthy`, `dist/modules/owners` present, `FILE_SCANNER=clamav`, `effect` 3.22.5 |
+| Docker `--build migrate api` with `--profile scanner` | PASS. First build `sha256:ae2328f2d7fc…`; after the TIN fix the running image is `sha256:d69d79716ce2…`, health `healthy`, `dist/modules/owners` present, `FILE_SCANNER=clamav`, `effect` 3.22.5 |
 | Migrations in the container | `20261119090000_owner_enum_values`, `20261119090100_owner_verification` applied |
 | Readiness | `{"database":"up","redis":"up","storage":"up"}` |
 | Gitleaks working tree and history (93 commits) | PASS (no leaks) |
@@ -270,7 +317,51 @@ Each suite is counted once. Coverage runs are not added to the totals.
 - admin queue: anonymous 401, customer 404;
 - ClamAV outage for an owner document → 503 and UPLOADED; after clamd restarts → AVAILABLE.
 
-**Not run against the container:** the officer and four-eyes flow. It needs two TOTP-enrolled officer accounts, which the dev database does not have (the only staff account is a super admin whose credentials I do not hold). The flow is covered end to end by `owners.e2e` against real PostgreSQL, Redis and SeaweedFS.
+### 16.1 Four-eyes flow against the container: PASS (29/29)
+
+- **Image:** rebuilt with the TIN check: `sha256:d69d79716ce2…`, health `healthy`.
+- **Officers:** the dev database's only staff account is a super admin whose credentials are not available, so the create-staff and activation flow could not be driven. Instead, `C:\tmp\seed-officers.mjs` ran **inside the api container**. It used the API's own password hashing and field encryption to create two **synthetic** ACTIVE VERIFICATION_OFFICER accounts ("Synthetic Officer A/B"). This seeding bypasses the activation flow; everything after it goes through the real API. Each officer then logged in through the real `/auth/staff/login` with password and a computed TOTP code.
+- **Script:** `C:\tmp\phase6-fourEyes.mjs`, plain HTTP against `localhost:3000`, synthetic customers.
+  - **Steps 1–3:** an organization owner registered (dev SMS inbox), verified the identity through the dev provider (consent page, callback, same-session confirm), uploaded three JPEGs (all AVAILABLE, scanned by ClamAV) and submitted (PENDING).
+  - **Step 4:** A claims and opens the TIN certificate through a 60-second URL.
+  - **TIN check:** A's first approval without a TIN check gets 409 `TIN_CHECK_REQUIRED`; a wrong TIN gives `matches:false`; the correct TIN gives `matches:true`, with no TIN in the response and `no-store`.
+  - **Steps 5–6:** A records the first approval; the owner stays **PENDING**.
+  - **Step 7:** A's second approval gets 409 `SECOND_APPROVER_REQUIRED`; A's re-claim gets 409 `SECOND_APPROVER_REQUIRED`.
+  - **Steps 8–9:** B claims. B sees the masked TIN only, A's first approval, and `tinCheckedByMe:false`. B opens all three documents. A's TIN check does not count for B (409 `TIN_CHECK_REQUIRED`).
+  - **Steps 10–11:** B checks the TIN and gives the second approval; the owner is **VERIFIED**.
+  - **Duplicates:** the same Idempotency-Key is replayed (`Idempotent-Replayed: true`); a new second approval gets 409.
+  - **Rejection between the stages:** B rejects after A's first approval (`REPRESENTATIVE_NOT_AUTHORIZED` with a note). The owner sees REJECTED with the reason and note, and the first approval is discarded.
+  - **Expired claim:** B cannot take a live claim. After `claim_expires_at` is moved into the past in the dev database (simulated, synthetic case), B takes over; A can then neither check the TIN nor decide (409 `REVIEW_CLAIM_REQUIRED`).
+  - **Concurrent second approvals:** of three parallel requests, exactly one gets 200 and two get 409; the owner is VERIFIED once.
+  - **No leaks:** the case's audit rows and the API logs of the last 15 minutes contain none of the four test TINs.
+- **Admin web UI:** the same flow **in the browser** was **NOT RUN**: no browser automation is available here. The admin screens are covered by widget tests (§14). To try it by hand, run the console (`admin/README.md`) and sign in with each synthetic officer; their phone numbers, passwords and TOTP secrets are in `C:\tmp\officers.json`, outside the repository, dev only.
+
+### 16.2 Android device test: NOT RUN
+
+- **Prepared:**
+  - The phone `R5CX22MAH4H` was connected (`adb devices`).
+  - The ports were forwarded (`adb reverse tcp:3000`, `tcp:58333`).
+  - A debug APK with `API_BASE_URL=http://localhost:3000` was built and installed (**Success**).
+  - Two synthetic customers with verified identities were created, and three test images were placed in `/sdcard/Pictures`.
+- **Why it stopped:**
+  - When the scripted test started, the phone showed the notification shade with personal notifications. After the shade was closed, the app was on a "Confirm it's you" sign-in screen that the script had not reached: someone was using the phone at the same time.
+  - To avoid interfering with a person using the device, I stopped. No owner screens were exercised on the device.
+  - Device testing has **not** passed; only the build and installation did.
+- **To run it later** (repository root, compose stack running):
+  ```sh
+  adb devices
+  adb reverse tcp:3000 tcp:3000
+  adb reverse tcp:58333 tcp:58333
+  cd mobile
+  flutter run --dart-define-from-file=C:/tmp/mobile-device.json   # API_BASE_URL=http://localhost:3000
+  ```
+  Then:
+  1. Create an account (read the code at `http://localhost:3000/api/v1/dev/sms/messages?phone=09…`), then Account → Identity verification → "Approve as…" in the browser.
+  2. Account → Owner → Start → Myself → Save → Review and submit → tick the box → Submit. Expect "Submitted. Verification officers are reviewing your request."
+  3. With a second account: Owner → An organization I represent → name and TIN → Save → Organization documents → choose three photos (camera or gallery), watching the progress. To test retry, stop clamd during an upload (`docker stop kiroween-mobility-clamav-1`), then start it again and tap Retry.
+  4. Submit, then in the staff console as officer A: claim, check the TIN, first approval. Expect the app to still show Pending.
+  5. Reject as officer B (with a reason and note). Expect the reason and note in the app; correct the request, upload new photos and resubmit.
+  6. Approve as A (TIN check, first approval) and then as B (TIN check, second approval). Expect "Verified owner".
 
 ## 17. Architecture deviations
 
@@ -279,6 +370,7 @@ Each suite is counted once. Coverage runs are not added to the totals.
 | `POST /owners/me/submit` and profile routes only (04) | Plus `GET /owners/me/status` and `PUT /owners/me/documents/{slot}` | Needed for the documents and blockers |
 | Generic `/admin/reviews/{type}` (04) | `/admin/owner-verifications/...` | Same choice as Phase 5 |
 | Single approval in the shared review workflow | Organizations need two approvals by different officers | 08 §7 four-eyes [ASSUMPTION] |
+| An officer "verifies" the TIN | A server-side TIN check: the officer types it, the server says match / no match; the TIN is never revealed | §6.1 |
 | `owner_profiles` columns (03) | Plus `tin_last4`, claim, first-approval, verifier and decision columns | Masked display, claims, four-eyes, audit trail |
 | Document purposes `OWNER_TIN`, `OWNER_BUSINESS_LICENSE` (03) | Plus `OWNER_REPRESENTATIVE_LETTER` | 08 §7 lists the letter |
 | Officers "view" documents | Organization documents are images only (no PDF) | The PDF check is a heuristic, not a sanitizer |
@@ -303,7 +395,7 @@ Each suite is counted once. Coverage runs are not added to the totals.
 
 ## 20. Remaining limitations
 
-1. The officer four-eyes flow was not run against the Docker container (§16); it is covered by end-to-end tests.
+1. The admin web UI was not driven in a browser (the four-eyes flow passed through the real API in the container, §16.1). The Android device test was not run (§16.2).
 2. No scheduler runs `owners:refresh` or `drivers:refresh`.
 3. No multi-user organizations and no transfer of an organization to another representative.
 4. A rejection forces new uploads of all three documents, even if only one was wrong.
@@ -316,22 +408,24 @@ Each suite is counted once. Coverage runs are not added to the totals.
 |---|---|
 | Backend format, lint, typecheck, build | PASS |
 | `prisma validate`, drift, migrations from empty database | PASS |
-| Backend unit 290, integration 374 (+2 opt-in, passed separately) | PASS |
-| Coverage: owners 96.27%, drivers 95.21%, auth 97.5%, identity 95.63% lines | PASS |
+| Backend unit 290, integration 381 (+2 opt-in, passed separately) | PASS |
+| TIN verification (server-side check, required for organization approvals) | PASS |
+| Coverage: owners 96.5%, drivers 95.21%, auth 97.5%, identity 95.63% lines | PASS |
 | `npm audit` (prod and full) | PASS (after the `effect` override) |
 | Mobile format, analyze `--fatal-infos`, tests (200), debug APK | PASS |
-| Admin format, analyze `--fatal-infos`, tests (31), web builds (dev and production) | PASS |
+| Admin format, analyze `--fatal-infos`, tests (34), web builds (dev and production) | PASS |
 | Shared Dart format, analyze, tests (62) | PASS |
 | Docker rebuild, migrations, health, readiness, storage and Redis | PASS |
 | Owner upload, cross-owner access and ClamAV smoke tests | PASS |
-| Officer four-eyes flow in the container | NOT RUN (no enrolled officers; covered by e2e) |
-| Device test | NOT RUN |
+| Officer four-eyes flow in the container (API, two synthetic officers) | PASS (29/29) |
+| The same flow in the admin web UI in a browser | NOT RUN (no browser automation) |
+| Android device test | NOT RUN (device in use; APK installed; steps in §16.2) |
 | Gitleaks working tree and history | PASS |
 | `osv-scanner` for Dart | NOT RUN (tool not installed) |
 
 **Overall: Phase 6 passes every gate that could run here.** Both exit criteria are covered by automated tests at the service, HTTP and database levels.
 
 Recommended next steps:
-1. Review this report, especially §4 (the four-eyes design), §6 (TIN handling), §14 (the Phase 5 count correction) and §16 (the `effect` override).
-2. Run the officer flow by hand in the staff console with two officer accounts.
+1. Review this report, especially §4 (the four-eyes design), §6 and §6.1 (TIN handling and the TIN check), §14 (the Phase 5 count correction) and §16 (the `effect` override).
+2. Run the Android device test (§16.2) and the officer flow in the browser console.
 3. Then Phase 7 (vehicles), only after approval.
