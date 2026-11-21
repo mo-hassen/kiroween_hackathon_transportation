@@ -545,6 +545,15 @@ const PHASE6_ROWS: Row[] = [
     expect: ownerReviewer(200),
   },
   {
+    // The officer holds the claim here (claimed above): the check runs (200).
+    route: 'POST admin/owner-verifications/:id/tin-check',
+    call: (a, fx) =>
+      a
+        .post(`/api/v1/admin/owner-verifications/${fx.ownerCaseId}/tin-check`)
+        .send({ tin: '0000000000', reason: 'Authorization matrix check' }),
+    expect: ownerReviewer(200),
+  },
+  {
     route: 'POST admin/owner-verifications/:id/release',
     call: (a, fx) => a.post(`/api/v1/admin/owner-verifications/${fx.ownerCaseId}/release`),
     expect: ownerReviewer(200),

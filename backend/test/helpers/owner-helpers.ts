@@ -167,3 +167,21 @@ export async function claimOwner(
     .set(bearer(tokens))
     .expect(expect);
 }
+
+export const TIN_CHECK_REASON = 'Comparing the TIN with the certificate';
+
+/** The officer types the TIN read on the certificate; returns the HTTP response. */
+export async function checkTin(
+  app: NestExpressApplication,
+  tokens: Tokens,
+  ownerId: string,
+  tin: string,
+  expect = 200,
+  reason = TIN_CHECK_REASON,
+) {
+  return http(app)
+    .post(adminOwner(`/${ownerId}/tin-check`))
+    .set(bearer(tokens))
+    .send({ tin, reason })
+    .expect(expect);
+}

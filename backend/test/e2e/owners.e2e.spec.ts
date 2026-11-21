@@ -19,6 +19,7 @@ import {
   adminOwner,
   attachAllOwnerDocuments,
   attachOwnerDocument,
+  checkTin,
   claimOwner,
   decide,
   INDIVIDUAL_APPROVAL,
@@ -498,7 +499,23 @@ describe('officer review', () => {
       409,
     );
     expect(early.body.code).toBe('FIRST_APPROVAL_REQUIRED');
-
+    // Officer A must confirm the full TIN against the certificate first.
+    const unchecked = await decide(
+      app(),
+      officerA,
+      owner.profileId,
+      'first-approval',
+      ORG_APPROVAL,
+      409,
+    );
+    expect(unchecked.body.code).toBe('TIN_CHECK_REQUIRED');
+    expect((await checkTin(app(), officerA, owner.profileId, '9999999999')).body.data.matches).toBe(
+      false,
+    );
+    await decide(app(), officerA, owner.profileId, 'first-approval', ORG_APPROVAL, 409);
+    expect((await checkTin(app(), officerA, owner.profileId, owner.tin!)).body.data.matches).toBe(
+      true,
+    );
     const first = await decide(app(), officerA, owner.profileId, 'first-approval', ORG_APPROVAL);
     expect(first.body.data).toMatchObject({
       verificationStatus: 'PENDING',
@@ -533,6 +550,17 @@ describe('officer review', () => {
     expect(unclaimed.body.code).toBe('REVIEW_CLAIM_REQUIRED');
     await claimOwner(app(), officerB, owner.profileId);
     await decide(app(), officerB, owner.profileId, 'first-approval', ORG_APPROVAL, 409);
+    // Officer A's check does not count for officer B (independent review).
+    const notOwnCheck = await decide(
+      app(),
+      officerB,
+      owner.profileId,
+      'second-approval',
+      ORG_APPROVAL,
+      409,
+    );
+    expect(notOwnCheck.body.code).toBe('TIN_CHECK_REQUIRED');
+    await checkTin(app(), officerB, owner.profileId, owner.tin!);
     const second = await decide(app(), officerB, owner.profileId, 'second-approval', ORG_APPROVAL);
     expect(second.body.data.verificationStatus).toBe('VERIFIED');
     expect(await profileRow(owner.profileId)).toMatchObject({
@@ -620,8 +648,10 @@ describe('officer review', () => {
   it('concurrent second approvals and replays verify the organization exactly once', async () => {
     const owner = await preparedOwner(app(), { submit: true });
     await claimOwner(app(), officerA, owner.profileId);
+    await checkTin(app(), officerA, owner.profileId, owner.tin!);
     await decide(app(), officerA, owner.profileId, 'first-approval', ORG_APPROVAL);
     await claimOwner(app(), officerB, owner.profileId);
+    await checkTin(app(), officerB, owner.profileId, owner.tin!);
     const key = randomUUID();
     const results = await Promise.all(
       [key, randomUUID()].map((k) =>
@@ -671,8 +701,10 @@ describe('officer review', () => {
   it('reject with a reason; the owner corrects, uploads new documents and resubmits', async () => {
     const owner = await preparedOwner(app(), { submit: true });
     await claimOwner(app(), officerA, owner.profileId);
+    await checkTin(app(), officerA, owner.profileId, owner.tin!);
     await decide(app(), officerA, owner.profileId, 'first-approval', ORG_APPROVAL);
     await claimOwner(app(), officerB, owner.profileId);
+    await checkTin(app(), officerB, owner.profileId, owner.tin!);
     await decide(app(), officerB, owner.profileId, 'reject', {}, 400);
     await decide(app(), officerB, owner.profileId, 'reject', { reasonCode: 'SAFETY_CONCERN' }, 400);
     await decide(app(), officerB, owner.profileId, 'reject', {
@@ -738,6 +770,7 @@ describe('officer review', () => {
 
     const org = await preparedOwner(app(), { submit: true });
     await claimOwner(app(), officerA, org.profileId);
+    await checkTin(app(), officerA, org.profileId, org.tin!);
     await decide(app(), officerA, org.profileId, 'first-approval', ORG_APPROVAL);
     await prisma.user.update({ where: { id: org.userId }, data: { status: 'SUSPENDED' } });
     await claimOwner(app(), officerB, org.profileId);
@@ -934,5 +967,172 @@ describe('owner and driver together', () => {
     expect(driver).toMatchObject({ yearsLicensed: 3, license: null });
     expect(driver.eligibility.status).toBe('INELIGIBLE');
     await complete(app(), customer.tokens, randomUUID(), 404);
+  });
+});
+
+describe('TIN check (officers confirm the full TIN without it being revealed)', () => {
+  it('the claim holder checks the typed TIN; only the result is returned and audited', async () => {
+    const owner = await preparedOwner(app(), { submit: true });
+    await claimOwner(app(), officerA, owner.profileId);
+    const typed = `${owner.tin!.slice(0, 3)}-${owner.tin!.slice(3)}`;
+    const ok = await checkTin(app(), officerA, owner.profileId, typed);
+    expect(ok.body.data).toEqual({ matches: true, checkedAt: expect.any(String) });
+    expect(ok.headers['cache-control']).toBe('no-store');
+    expect(json(ok.body)).not.toContain(owner.tin);
+    const wrong = await checkTin(app(), officerA, owner.profileId, '1234567890');
+    expect(wrong.body.data.matches).toBe(false);
+    const audits = await prisma.auditLog.findMany({
+      where: { targetId: owner.profileId, action: 'owner.tin_checked_by_staff' },
+      orderBy: { seq: 'asc' },
+    });
+    expect(audits.map((a) => [a.actorUserId, a.reason, a.changes])).toEqual([
+      [officerAId, 'Comparing the TIN with the certificate', { matches: true }],
+      [officerAId, 'Comparing the TIN with the certificate', { matches: false }],
+    ]);
+    // The TIN (stored or typed) appears in no response, audit row, outbox row or log.
+    const queue = await http(app()).get(adminOwner('')).set(bearer(officerA)).expect(200);
+    const detail = await http(app())
+      .get(adminOwner(`/${owner.profileId}`))
+      .set(bearer(officerA))
+      .expect(200);
+    expect(detail.body.data).toMatchObject({
+      tinMasked: `••••${owner.tin!.slice(-4)}`,
+      tinCheckedByMe: true,
+    });
+    const allAudit = await prisma.auditLog.findMany({ where: { targetId: owner.profileId } });
+    const outbox = await prisma.outboxEvent.findMany({ where: { aggregateId: owner.profileId } });
+    const notes = await prisma.notification.findMany({ where: { recipientUserId: owner.userId } });
+    for (const text of [
+      json(queue.body),
+      json(detail.body),
+      json(allAudit),
+      json(outbox),
+      json(notes),
+      testApp.logs(),
+    ]) {
+      expect(text).not.toContain(owner.tin);
+      expect(text).not.toContain('1234567890');
+    }
+  });
+
+  it('needs a valid reason and a TIN in a valid format', async () => {
+    const owner = await preparedOwner(app(), { submit: true });
+    await claimOwner(app(), officerA, owner.profileId);
+    const url = adminOwner(`/${owner.profileId}/tin-check`);
+    await http(app()).post(url).set(bearer(officerA)).send({ tin: owner.tin }).expect(400);
+    await http(app())
+      .post(url)
+      .set(bearer(officerA))
+      .send({ tin: owner.tin, reason: 'short' })
+      .expect(400);
+    const bad = await http(app())
+      .post(url)
+      .set(bearer(officerA))
+      .send({ tin: '12#', reason: 'Comparing the TIN with the certificate' })
+      .expect(400);
+    expect(bad.body.errors).toEqual([{ field: 'tin', code: 'INVALID_FORMAT' }]);
+    expect(json(bad.body)).not.toContain('12#');
+    await http(app())
+      .post(url)
+      .set(bearer(officerA))
+      .send({ tin: owner.tin, reason: 'Comparing the TIN', extra: 1 })
+      .expect(400);
+    expect(
+      await prisma.auditLog.count({
+        where: { targetId: owner.profileId, action: 'owner.tin_checked_by_staff' },
+      }),
+    ).toBe(0);
+  });
+
+  it('refuses staff without owners.review, customers, non-holders and expired claims', async () => {
+    const owner = await preparedOwner(app(), { submit: true });
+    const tin = owner.tin!;
+    // No claim yet.
+    expect((await checkTin(app(), officerA, owner.profileId, tin, 409)).body.code).toBe(
+      'REVIEW_CLAIM_REQUIRED',
+    );
+    await claimOwner(app(), officerA, owner.profileId);
+    // Another officer without the claim.
+    expect((await checkTin(app(), officerB, owner.profileId, tin, 409)).body.code).toBe(
+      'REVIEW_CLAIM_REQUIRED',
+    );
+    for (const role of ['SUPPORT', 'FINANCE', 'SUPER_ADMIN'] as const) {
+      const tokens = await staffLogin(app(), await seedStaff(app(), [role]));
+      await checkTin(app(), tokens, owner.profileId, tin, 403);
+    }
+    // The owner, another customer and anonymous callers.
+    await checkTin(app(), owner.tokens, owner.profileId, tin, 404);
+    const other = await preparedOwner(app(), { verified: false });
+    await checkTin(app(), other.tokens, owner.profileId, tin, 404);
+    await http(app())
+      .post(adminOwner(`/${owner.profileId}/tin-check`))
+      .send({ tin, reason: 'x'.repeat(12) })
+      .expect(401);
+    // An expired claim no longer allows it.
+    await prisma.ownerProfile.update({
+      where: { id: owner.profileId },
+      data: { claimExpiresAt: new Date(Date.now() - 1000) },
+    });
+    expect((await checkTin(app(), officerA, owner.profileId, tin, 409)).body.code).toBe(
+      'REVIEW_CLAIM_REQUIRED',
+    );
+    // Individuals have no TIN; unknown cases are 404.
+    const person = await preparedOwner(app(), { type: 'INDIVIDUAL', submit: true });
+    await claimOwner(app(), officerA, person.profileId);
+    await checkTin(app(), officerA, person.profileId, tin, 404);
+    await checkTin(app(), officerA, randomUUID(), tin, 404);
+    expect(
+      await prisma.auditLog.count({
+        where: { targetId: owner.profileId, action: 'owner.tin_checked_by_staff' },
+      }),
+    ).toBe(0);
+  });
+
+  it('is rate-limited per officer and case', async () => {
+    const owner = await preparedOwner(app(), { submit: true });
+    await claimOwner(app(), officerA, owner.profileId);
+    for (let i = 0; i < 10; i++) await checkTin(app(), officerA, owner.profileId, '1111111111');
+    await checkTin(app(), officerA, owner.profileId, owner.tin!, 429);
+  });
+
+  it('a TIN check from an earlier submission does not count after a resubmission', async () => {
+    const owner = await preparedOwner(app(), { submit: true });
+    await claimOwner(app(), officerA, owner.profileId);
+    await checkTin(app(), officerA, owner.profileId, owner.tin!);
+    await decide(app(), officerA, owner.profileId, 'reject', { reasonCode: 'BLURRY' });
+    await attachAllOwnerDocuments(app(), owner.tokens);
+    await submitOwner(app(), owner.tokens);
+    await claimOwner(app(), officerA, owner.profileId);
+    const res = await decide(app(), officerA, owner.profileId, 'first-approval', ORG_APPROVAL, 409);
+    expect(res.body.code).toBe('TIN_CHECK_REQUIRED');
+  });
+});
+
+describe('expired claims', () => {
+  it('another officer takes over an expired claim; the former holder can no longer decide', async () => {
+    const owner = await preparedOwner(app(), { submit: true });
+    await claimOwner(app(), officerA, owner.profileId);
+    expect((await claimOwner(app(), officerB, owner.profileId, 409)).body.code).toBe(
+      'REVIEW_CLAIMED_BY_OTHER',
+    );
+    await prisma.ownerProfile.update({
+      where: { id: owner.profileId },
+      data: { claimExpiresAt: new Date(Date.now() - 1000) },
+    });
+    const taken = await claimOwner(app(), officerB, owner.profileId);
+    expect(taken.body.data.claimedByMe).toBe(true);
+    const late = await decide(
+      app(),
+      officerA,
+      owner.profileId,
+      'first-approval',
+      ORG_APPROVAL,
+      409,
+    );
+    expect(late.body.code).toBe('REVIEW_CLAIM_REQUIRED');
+    const history = await prisma.ownerReviewEvent.findMany({
+      where: { ownerProfileId: owner.profileId },
+    });
+    expect(history.map((e) => e.action)).toContain('claim_taken_over');
   });
 });
