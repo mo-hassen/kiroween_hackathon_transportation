@@ -19,7 +19,7 @@ Both exit criteria are proven by automated tests:
 
 **Final security fix (§6.1).** The first version asked officers to confirm the TIN against the certificate while showing them only the last four digits, so the check could not actually be done. Officers now type the TIN they read on the certificate, and the server compares it with the stored HMAC. The stored TIN is never decrypted or returned. Each approving officer must have their own matching check for the current submission before an organization approval is accepted. **[IMPL]**
 
-Tests: **967 automated tests pass**, against a corrected Phase 5 baseline of 868 (§14). The Docker image was rebuilt. The four-eyes flow was run against it with two synthetic officers: **29/29 checks PASS** (§16.1). The Android device test is **NOT RUN** (§16.2).
+Tests: **967 automated tests pass**, against a corrected Phase 5 baseline of 868 (§14). The Docker image was rebuilt. The four-eyes flow was run against it with two synthetic officers: **29/29 checks PASS** (§16.1). The Android device test **passed** for the individual and organization flows (§16.2, gallery only, no camera).
 
 ## 2. Scope
 
@@ -336,32 +336,32 @@ Final run after the TIN fix, 2026-11-21. The first Phase 6 version had 957; the 
   - **No leaks:** the case's audit rows and the API logs of the last 15 minutes contain none of the four test TINs.
 - **Admin web UI:** the same flow **in the browser** was **NOT RUN**: no browser automation is available here. The admin screens are covered by widget tests (§14). To try it by hand, run the console (`admin/README.md`) and sign in with each synthetic officer; their phone numbers, passwords and TOTP secrets are in `C:\tmp\officers.json`, outside the repository, dev only.
 
-### 16.2 Android device test: NOT RUN
+### 16.2 Android device test: PASS (with limits)
 
-- **Prepared:**
-  - The phone `R5CX22MAH4H` was connected (`adb devices`).
-  - The ports were forwarded (`adb reverse tcp:3000`, `tcp:58333`).
-  - A debug APK with `API_BASE_URL=http://localhost:3000` was built and installed (**Success**).
-  - Two synthetic customers with verified identities were created, and three test images were placed in `/sdcard/Pictures`.
-- **Why it stopped:**
-  - When the scripted test started, the phone showed the notification shade with personal notifications. After the shade was closed, the app was on a "Confirm it's you" sign-in screen that the script had not reached: someone was using the phone at the same time.
-  - To avoid interfering with a person using the device, I stopped. No owner screens were exercised on the device.
-  - Device testing has **not** passed; only the build and installation did.
-- **To run it later** (repository root, compose stack running):
-  ```sh
-  adb devices
-  adb reverse tcp:3000 tcp:3000
-  adb reverse tcp:58333 tcp:58333
-  cd mobile
-  flutter run --dart-define-from-file=C:/tmp/mobile-device.json   # API_BASE_URL=http://localhost:3000
-  ```
-  Then:
-  1. Create an account (read the code at `http://localhost:3000/api/v1/dev/sms/messages?phone=09…`), then Account → Identity verification → "Approve as…" in the browser.
-  2. Account → Owner → Start → Myself → Save → Review and submit → tick the box → Submit. Expect "Submitted. Verification officers are reviewing your request."
-  3. With a second account: Owner → An organization I represent → name and TIN → Save → Organization documents → choose three photos (camera or gallery), watching the progress. To test retry, stop clamd during an upload (`docker stop kiroween-mobility-clamav-1`), then start it again and tap Retry.
-  4. Submit, then in the staff console as officer A: claim, check the TIN, first approval. Expect the app to still show Pending.
-  5. Reject as officer B (with a reason and note). Expect the reason and note in the app; correct the request, upload new photos and resubmit.
-  6. Approve as A (TIN check, first approval) and then as B (TIN check, second approval). Expect "Verified owner".
+Run on the phone `R5CX22MAH4H` against the Docker stack with ClamAV: debug APK with `API_BASE_URL=http://localhost:3000`, `adb reverse` for ports 3000 and 58333. The UI was driven with `adb` (taps, typing, `uiautomator` dumps), not by hand. Two **synthetic** customers with verified identities were used. Officers A and B (the synthetic officers of §16.1) acted through the real API.
+
+| Step | Result |
+|---|---|
+| Sign in on a new device (password + SMS code from the dev inbox) | PASS |
+| **Individual:** Account → Owner → intro → "Myself" → save → review and submit with the confirmation | PASS; "Submitted. Verification officers are reviewing your request."; the server shows INDIVIDUAL / PENDING |
+| Officer A approves the individual | PASS; after a refresh the app shows "Verified owner" |
+| **Organization:** name and TIN entered; after saving the TIN shows masked (`••••6677`) and three missing documents are listed | PASS |
+| Document selection from the gallery (three images) with progress and server check | PASS: each shows "Uploaded and checked". The server holds three AVAILABLE documents scanned by `clamav`, with no EXIF |
+| **Upload retry:** ClamAV stopped, then the letter uploaded | PASS: the app shows "The photo check is temporarily unavailable. Retry in a few minutes." and a Retry button. After ClamAV restarted, Retry completed the upload; the server holds exactly one letter document (no duplicate) |
+| Submission | PASS; PENDING on the phone and on the server |
+| Officer A's TIN check and first approval | PASS; the phone still shows Pending |
+| Officer B rejects (`REPRESENTATIVE_NOT_AUTHORIZED`, note "The letter is not signed") | PASS; the app shows "Not approved", the reason, the officer's note as plain text, the guidance, and all three documents as needing replacement |
+| **Correction:** three new documents uploaded, resubmitted | PASS; PENDING again; the old decision is cleared |
+| A first approval (TIN check) and B second approval (TIN check) | PASS; the app shows "Verified owner" for the organization |
+| History on the server | created → submitted → claimed → first_approval → claimed → rejected → submitted → claimed → first_approval → claimed → second_approval (VERIFIED) |
+| The device-test TIN in the API logs and audit rows | 0 occurrences |
+
+Limits:
+- **Camera not tested.** Only the gallery picker was used, so "Take photo" was not exercised.
+- **Not covered on the device:** suspended, expired and re-verification-required statuses (covered by widget tests), and Amharic (covered by a widget test).
+- **Personal photos.** The system photo picker lists the whole library. I did not look at the picker screenshots (deleted) and selected only the three newest items, which were my test images. I verified this afterwards: the stored images' colours match the generated test images, and they have no EXIF.
+- **A sign-in typing mistake** (my password text went into the phone field once) was an automation problem and not an app defect. The phone field accepts digits only.
+- **An earlier attempt** found the phone in use by another person, so it was stopped without any test taps (see the previous version of this report's history).
 
 ## 17. Architecture deviations
 
@@ -395,11 +395,11 @@ Final run after the TIN fix, 2026-11-21. The first Phase 6 version had 957; the 
 
 ## 20. Remaining limitations
 
-1. The admin web UI was not driven in a browser (the four-eyes flow passed through the real API in the container, §16.1). The Android device test was not run (§16.2).
+1. The admin web UI was not driven in a browser (the four-eyes flow passed through the real API in the container, §16.1). The Android device test passed except for the camera path and some statuses (§16.2).
 2. No scheduler runs `owners:refresh` or `drivers:refresh`.
 3. No multi-user organizations and no transfer of an organization to another representative.
 4. A rejection forces new uploads of all three documents, even if only one was wrong.
-5. No device test of the mobile owner flow (no phone was attached during this phase).
+5. The camera path and the suspended, expired and re-verification statuses were not tested on the device (§16.2).
 6. Notification delivery and the notification list are Phase 15.
 
 ## 21. Quality-gate summary
@@ -419,7 +419,7 @@ Final run after the TIN fix, 2026-11-21. The first Phase 6 version had 957; the 
 | Owner upload, cross-owner access and ClamAV smoke tests | PASS |
 | Officer four-eyes flow in the container (API, two synthetic officers) | PASS (29/29) |
 | The same flow in the admin web UI in a browser | NOT RUN (no browser automation) |
-| Android device test | NOT RUN (device in use; APK installed; steps in §16.2) |
+| Android device test (individual, organization, uploads, retry, rejection and correction, approval) | PASS (gallery only; camera, suspended and expired statuses not run on the device) |
 | Gitleaks working tree and history | PASS |
 | `osv-scanner` for Dart | NOT RUN (tool not installed) |
 
@@ -427,5 +427,5 @@ Final run after the TIN fix, 2026-11-21. The first Phase 6 version had 957; the 
 
 Recommended next steps:
 1. Review this report, especially §4 (the four-eyes design), §6 and §6.1 (TIN handling and the TIN check), §14 (the Phase 5 count correction) and §16 (the `effect` override).
-2. Run the Android device test (§16.2) and the officer flow in the browser console.
+2. Try the officer flow in the browser console and the camera path on the phone.
 3. Then Phase 7 (vehicles), only after approval.
