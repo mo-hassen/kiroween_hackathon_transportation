@@ -1,7 +1,13 @@
 # Admin web console (staff)
 
-Flutter Web, Material 3, Riverpod 3, GoRouter, Dio. Phase 5 scope: the driver licence
-verification queue for `VERIFICATION_OFFICER` staff (permission `drivers.review`).
+Flutter Web, Material 3, Riverpod 3, GoRouter, Dio. For `VERIFICATION_OFFICER` staff: the driver
+licence queue (Phase 5, `drivers.review`) and the owner verification queue (Phase 6,
+`owners.review`). Each area is shown only with its permission; the API checks again.
+
+Owner review: individuals need one approval. Organizations need "Record first approval" by one
+officer and "Give second approval" by a different officer; the first officer sees the case as
+"You gave the first approval" and has no second-approval or claim action. Decisions send a fresh
+`Idempotency-Key`. The TIN is shown masked only.
 
 ```sh
 flutter pub get                                         # also generates l10n

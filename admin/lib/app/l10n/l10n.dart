@@ -21,7 +21,12 @@ String failureText(AppLocalizations l10n, ApiFailure failure) {
     case 'REVIEW_CLAIM_REQUIRED':
       return l10n.errorClaimRequired;
     case 'DRIVER_SUBMISSION_INCOMPLETE':
+    case 'OWNER_SUBMISSION_INCOMPLETE':
       return l10n.errorIncomplete(failure.fieldCodes.join(', '));
+    case 'SECOND_APPROVER_REQUIRED':
+      return l10n.errorSecondApprover;
+    case 'FIRST_APPROVAL_REQUIRED':
+      return l10n.errorFirstApprovalRequired;
   }
   return switch (failure.kind) {
     FailureKind.network => l10n.errorNetwork,
@@ -42,6 +47,10 @@ String statusText(AppLocalizations l10n, String status) => switch (status) {
   'EXPIRED' => l10n.statusExpired,
   'SUSPENDED' => l10n.statusSuspended,
   'DRAFT' => l10n.statusDraft,
+  'PENDING' => l10n.statusPending,
+  'VERIFIED' => l10n.statusVerified,
+  'UNVERIFIED' => l10n.statusUnverified,
+  'REVERIFICATION_REQUIRED' => l10n.statusReverification,
   _ => status,
 };
 
@@ -54,5 +63,16 @@ String reasonText(AppLocalizations l10n, String code) => switch (code) {
   'INVALID_LICENSE_DETAILS' => l10n.reasonINVALID_LICENSE_DETAILS,
   'SUSPECTED_FRAUD' => l10n.reasonSUSPECTED_FRAUD,
   'SAFETY_CONCERN' => l10n.reasonSAFETY_CONCERN,
+  'INVALID_ORGANIZATION_DETAILS' => l10n.reasonINVALID_ORGANIZATION_DETAILS,
+  'REPRESENTATIVE_NOT_AUTHORIZED' => l10n.reasonREPRESENTATIVE_NOT_AUTHORIZED,
   _ => l10n.reasonOTHER,
+};
+
+String ownerTypeText(AppLocalizations l10n, String type) =>
+    type == 'ORGANIZATION' ? l10n.ownerTypeOrganization : l10n.ownerTypeIndividual;
+
+String ownerDocumentText(AppLocalizations l10n, String purpose) => switch (purpose) {
+  'OWNER_TIN' => l10n.docOWNER_TIN,
+  'OWNER_BUSINESS_LICENSE' => l10n.docOWNER_BUSINESS_LICENSE,
+  _ => l10n.docOWNER_REPRESENTATIVE_LETTER,
 };

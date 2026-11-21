@@ -7,8 +7,10 @@ import 'package:uuid/uuid.dart';
 import 'api.dart';
 import 'config.dart';
 
-/// Permission needed for every screen of this Phase 5 console (backend: drivers.review).
+/// Permissions for the review areas (backend: drivers.review, owners.review). Navigation only:
+/// the API checks the permission on every call.
 const driversReviewPermission = 'drivers.review';
+const ownersReviewPermission = 'owners.review';
 
 final class StaffProfile {
   const StaffProfile({required this.displayName, required this.roles, required this.permissions});
@@ -26,6 +28,8 @@ final class StaffProfile {
   final List<String> permissions;
 
   bool get canReviewDrivers => permissions.contains(driversReviewPermission);
+  bool get canReviewOwners => permissions.contains(ownersReviewPermission);
+  bool get canReviewAnything => canReviewDrivers || canReviewOwners;
 }
 
 sealed class StaffSession {

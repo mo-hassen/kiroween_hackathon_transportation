@@ -7,17 +7,23 @@ import '../features/dashboard/dashboard_screen.dart';
 import '../features/drivers/case_detail_screen.dart';
 import '../features/drivers/queue_screen.dart';
 import '../features/login/login_screen.dart';
+import '../features/owners/owner_case_screen.dart';
+import '../features/owners/owner_queue_screen.dart';
 import 'shell.dart';
 
-/// Pure redirect rule (tested directly). Every staff route needs a session; the review
-/// screens also need drivers.review. The API enforces both again on every call.
+/// Pure redirect rule (tested directly). Every staff route needs a session and at least one
+/// review permission; /drivers needs drivers.review and /owners needs owners.review. The API
+/// enforces the same again on every call.
 String? staffRedirect(StaffSession session, Uri location) {
   final path = location.path;
   final atLogin = path == '/login';
   final atNoPermission = path == '/no-permission';
   if (session is! SignedIn) return atLogin ? null : '/login';
-  if (!session.profile.canReviewDrivers) return atNoPermission ? null : '/no-permission';
+  final profile = session.profile;
+  if (!profile.canReviewAnything) return atNoPermission ? null : '/no-permission';
   if (atLogin || atNoPermission) return '/';
+  if (path.startsWith('/drivers') && !profile.canReviewDrivers) return '/';
+  if (path.startsWith('/owners') && !profile.canReviewOwners) return '/';
   return null;
 }
 
@@ -44,6 +50,20 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: ':id',
                 builder: (_, state) => CaseDetailScreen(caseId: state.pathParameters['id']!),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/owners',
+            builder: (_, state) => OwnerQueueScreen(
+              initialStatus: state.uri.queryParameters['status'],
+              initialType: state.uri.queryParameters['ownerType'],
+              awaitingSecond: state.uri.queryParameters['awaitingSecondApproval'] == 'true',
+            ),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (_, state) => OwnerCaseScreen(caseId: state.pathParameters['id']!),
               ),
             ],
           ),

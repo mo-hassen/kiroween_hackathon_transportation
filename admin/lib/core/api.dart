@@ -67,8 +67,19 @@ final class ApiClient {
   Future<T> get<T>(String path, T Function(Object? data) decode, {Map<String, Object?>? query}) =>
       _send(() => _dio.get<Object?>(path, queryParameters: query), decode);
 
-  Future<T> post<T>(String path, T Function(Object? data) decode, {Object? body}) =>
-      _send(() => _dio.post<Object?>(path, data: body), decode);
+  Future<T> post<T>(
+    String path,
+    T Function(Object? data) decode, {
+    Object? body,
+    Map<String, String>? headers,
+  }) => _send(
+    () => _dio.post<Object?>(
+      path,
+      data: body,
+      options: headers == null ? null : Options(headers: headers),
+    ),
+    decode,
+  );
 
   Future<T> _send<T>(
     Future<Response<Object?>> Function() call,

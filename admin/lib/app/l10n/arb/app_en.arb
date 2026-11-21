@@ -97,9 +97,9 @@
   "@noPermissionTitle": {
     "description": "Staff without drivers.review."
   },
-  "noPermissionBody": "Your roles do not include driver verification. Ask a super administrator.",
+  "noPermissionBody": "Your roles do not include driver or owner verification. Ask a super administrator.",
   "@noPermissionBody": {
-    "description": "Explains missing permission."
+    "description": "Staff without drivers.review or owners.review."
   },
   "dashboardTitle": "Dashboard",
   "@dashboardTitle": {
@@ -437,5 +437,233 @@
   "reasonOTHER": "Other",
   "@reasonOTHER": {
     "description": "Reason code."
+  },
+  "ownersQueueTitle": "Owner verification",
+  "@ownersQueueTitle": {
+    "description": "Navigation and owner queue title."
+  },
+  "driverDashboardSection": "Driver verification",
+  "@driverDashboardSection": {
+    "description": "Dashboard section."
+  },
+  "ownerDashboardSection": "Owner verification",
+  "@ownerDashboardSection": {
+    "description": "Dashboard section."
+  },
+  "countPendingIndividual": "Individuals waiting",
+  "@countPendingIndividual": {
+    "description": "Dashboard count."
+  },
+  "countPendingOrganization": "Organizations waiting",
+  "@countPendingOrganization": {
+    "description": "Dashboard count: no first approval yet."
+  },
+  "countAwaitingSecond": "Awaiting second approval",
+  "@countAwaitingSecond": {
+    "description": "Dashboard count."
+  },
+  "countVerified": "Verified",
+  "@countVerified": {
+    "description": "Dashboard count."
+  },
+  "statusPending": "Pending",
+  "@statusPending": {
+    "description": "Owner status."
+  },
+  "statusVerified": "Verified",
+  "@statusVerified": {
+    "description": "Owner status."
+  },
+  "statusUnverified": "Not submitted",
+  "@statusUnverified": {
+    "description": "Owner status."
+  },
+  "statusReverification": "Re-verification required",
+  "@statusReverification": {
+    "description": "Owner status."
+  },
+  "ownerTypeAll": "All types",
+  "@ownerTypeAll": {
+    "description": "Owner type filter."
+  },
+  "ownerTypeIndividual": "Individual",
+  "@ownerTypeIndividual": {
+    "description": "Owner type."
+  },
+  "ownerTypeOrganization": "Organization",
+  "@ownerTypeOrganization": {
+    "description": "Owner type."
+  },
+  "filterAwaitingSecond": "Awaiting second approval only",
+  "@filterAwaitingSecond": {
+    "description": "Queue filter."
+  },
+  "searchOwnerLabel": "Name, organization or phone",
+  "@searchOwnerLabel": {
+    "description": "Owner queue search."
+  },
+  "awaitingSecondBadge": "Needs a second officer's approval",
+  "@awaitingSecondBadge": {
+    "description": "Case badge."
+  },
+  "firstApprovedByYouBadge": "You gave the first approval",
+  "@firstApprovedByYouBadge": {
+    "description": "Case badge."
+  },
+  "ownerCaseTitle": "Owner case",
+  "@ownerCaseTitle": {
+    "description": "Owner case detail title."
+  },
+  "representativeSection": "Account holder / representative",
+  "@representativeSection": {
+    "description": "Case section."
+  },
+  "organizationSection": "Organization",
+  "@organizationSection": {
+    "description": "Case section."
+  },
+  "ownerTypeLabel": "Owner type",
+  "@ownerTypeLabel": {
+    "description": "Field label."
+  },
+  "organizationNameLabel": "Organization name",
+  "@organizationNameLabel": {
+    "description": "Field label."
+  },
+  "tinLabel": "TIN (masked)",
+  "@tinLabel": {
+    "description": "Field label; the full TIN is never shown."
+  },
+  "accountStatusLabel": "Account status",
+  "@accountStatusLabel": {
+    "description": "Field label."
+  },
+  "docOWNER_TIN": "TIN certificate",
+  "@docOWNER_TIN": {
+    "description": "Owner document."
+  },
+  "docOWNER_BUSINESS_LICENSE": "Business licence",
+  "@docOWNER_BUSINESS_LICENSE": {
+    "description": "Owner document."
+  },
+  "docOWNER_REPRESENTATIVE_LETTER": "Authorized-representative letter",
+  "@docOWNER_REPRESENTATIVE_LETTER": {
+    "description": "Owner document."
+  },
+  "noDocumentsRequired": "No owner documents are required for individuals.",
+  "@noDocumentsRequired": {
+    "description": "Individual owner case."
+  },
+  "approvalsSection": "Approvals",
+  "@approvalsSection": {
+    "description": "Case section."
+  },
+  "firstApprovalLabel": "First approval",
+  "@firstApprovalLabel": {
+    "description": "Field label."
+  },
+  "firstApprovalNone": "Not yet",
+  "@firstApprovalNone": {
+    "description": "No first approval."
+  },
+  "verifiedAtLabel": "Verified",
+  "@verifiedAtLabel": {
+    "description": "Field label."
+  },
+  "approveOwnerAction": "Approve owner",
+  "@approveOwnerAction": {
+    "description": "Individual approval button."
+  },
+  "firstApprovalAction": "Record first approval",
+  "@firstApprovalAction": {
+    "description": "Organization step 1."
+  },
+  "secondApprovalAction": "Give second approval",
+  "@secondApprovalAction": {
+    "description": "Organization step 2."
+  },
+  "suspendOwnerAction": "Suspend owner",
+  "@suspendOwnerAction": {
+    "description": "Button."
+  },
+  "reinstateOwnerAction": "Reinstate owner",
+  "@reinstateOwnerAction": {
+    "description": "Button."
+  },
+  "approveOwnerTitle": "Approve this owner?",
+  "@approveOwnerTitle": {
+    "description": "Dialog title."
+  },
+  "firstApprovalTitle": "Record the first approval?",
+  "@firstApprovalTitle": {
+    "description": "Dialog title."
+  },
+  "firstApprovalWarning": "The owner stays pending. A different officer must give the second approval.",
+  "@firstApprovalWarning": {
+    "description": "Dialog text."
+  },
+  "secondApprovalTitle": "Give the second approval?",
+  "@secondApprovalTitle": {
+    "description": "Dialog title."
+  },
+  "secondApprovalWarning": "You are the second officer. The organization becomes verified.",
+  "@secondApprovalWarning": {
+    "description": "Dialog text."
+  },
+  "checkIndividualIdentity": "The account holder is the verified identity",
+  "@checkIndividualIdentity": {
+    "description": "Approval check."
+  },
+  "checkRepresentativeIdentity": "The representative is the verified identity",
+  "@checkRepresentativeIdentity": {
+    "description": "Approval check."
+  },
+  "checkOrganizationDocuments": "All three documents are legible and look genuine",
+  "@checkOrganizationDocuments": {
+    "description": "Approval check."
+  },
+  "checkOrganizationDetails": "Organization name and TIN match the documents",
+  "@checkOrganizationDetails": {
+    "description": "Approval check."
+  },
+  "checkRepresentativeAuthorized": "The letter authorizes this representative",
+  "@checkRepresentativeAuthorized": {
+    "description": "Approval check."
+  },
+  "rejectOwnerTitle": "Reject this owner request?",
+  "@rejectOwnerTitle": {
+    "description": "Dialog title."
+  },
+  "rejectOwnerWarning": "The owner sees the reason and must correct the request.",
+  "@rejectOwnerWarning": {
+    "description": "Dialog text."
+  },
+  "suspendOwnerTitle": "Suspend this owner?",
+  "@suspendOwnerTitle": {
+    "description": "Dialog title."
+  },
+  "suspendOwnerWarning": "The owner can no longer use owner features. This is audited.",
+  "@suspendOwnerWarning": {
+    "description": "Dialog text."
+  },
+  "reinstateOwnerTitle": "Reinstate this owner?",
+  "@reinstateOwnerTitle": {
+    "description": "Dialog title."
+  },
+  "errorSecondApprover": "A different officer must give the second approval.",
+  "@errorSecondApprover": {
+    "description": "Error."
+  },
+  "errorFirstApprovalRequired": "Record the first approval first.",
+  "@errorFirstApprovalRequired": {
+    "description": "Error."
+  },
+  "reasonINVALID_ORGANIZATION_DETAILS": "Organization details do not match",
+  "@reasonINVALID_ORGANIZATION_DETAILS": {
+    "description": "Reason."
+  },
+  "reasonREPRESENTATIVE_NOT_AUTHORIZED": "Representative not authorized",
+  "@reasonREPRESENTATIVE_NOT_AUTHORIZED": {
+    "description": "Reason."
   }
 }

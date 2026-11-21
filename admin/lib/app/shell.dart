@@ -16,8 +16,17 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final session = ref.watch(staffSessionProvider);
-    final name = session is SignedIn ? session.profile.displayName : null;
-    final selected = location.startsWith('/drivers') ? 1 : 0;
+    final profile = session is SignedIn ? session.profile : null;
+    final name = profile?.displayName;
+    // Only the areas this staff member may use (the router and the API check again).
+    final areas = <(String, IconData, String)>[
+      ('/', Icons.dashboard_outlined, l10n.dashboardTitle),
+      if (profile?.canReviewDrivers ?? false) ('/drivers', Icons.badge_outlined, l10n.queueTitle),
+      if (profile?.canReviewOwners ?? false)
+        ('/owners', Icons.business_outlined, l10n.ownersQueueTitle),
+    ];
+    final match = areas.indexWhere((a) => a.$1 != '/' && location.startsWith(a.$1));
+    final selected = match < 0 ? 0 : match;
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.appTitle),
@@ -39,16 +48,10 @@ class AppShell extends ConsumerWidget {
           NavigationRail(
             selectedIndex: selected,
             labelType: NavigationRailLabelType.all,
-            onDestinationSelected: (index) => context.go(index == 0 ? '/' : '/drivers'),
+            onDestinationSelected: (index) => context.go(areas[index].$1),
             destinations: [
-              NavigationRailDestination(
-                icon: const Icon(Icons.dashboard_outlined),
-                label: Text(l10n.dashboardTitle),
-              ),
-              NavigationRailDestination(
-                icon: const Icon(Icons.badge_outlined),
-                label: Text(l10n.queueTitle),
-              ),
+              for (final (_, icon, label) in areas)
+                NavigationRailDestination(icon: Icon(icon), label: Text(label)),
             ],
           ),
           const VerticalDivider(width: 1),
@@ -59,7 +62,7 @@ class AppShell extends ConsumerWidget {
   }
 }
 
-/// Shown to staff without drivers.review (e.g. SUPER_ADMIN, SUPPORT, FINANCE in Phase 5).
+/// Shown to staff without drivers.review or owners.review (e.g. SUPER_ADMIN, SUPPORT, FINANCE).
 class NoPermissionScreen extends ConsumerWidget {
   const NoPermissionScreen({super.key});
 
