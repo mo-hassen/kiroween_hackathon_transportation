@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/auth/session_controller.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_failure.dart';
+import '../../documents/document_upload.dart';
 
 Map<String, Object?> _map(Object? value) => (value! as Map).cast<String, Object?>();
 DateTime? _date(Object? value) => value is String ? DateTime.parse(value) : null;
@@ -288,7 +289,7 @@ final class UploadIntent {
 
 /// `/drivers/me` and `/documents`. The server decides every transition; the app only
 /// shows what the response allows (e.g. [DriverLicense.editable]).
-abstract interface class DriverApi {
+abstract interface class DriverApi implements DocumentUploadApi {
   /// Null when the user has not started driver onboarding (404).
   Future<DriverProfile?> profile();
 
@@ -303,15 +304,6 @@ abstract interface class DriverApi {
   Future<DriverLicense> attach(String licenseId, LicenseSide side, String documentId);
 
   Future<DriverLicense> submit(String licenseId, {required String idempotencyKey});
-
-  Future<UploadIntent> createUpload({
-    required String purpose,
-    required String mimeType,
-    required int sizeBytes,
-    required String sha256,
-  });
-
-  Future<DocumentInfo> completeUpload(String documentId);
 }
 
 final class HttpDriverApi implements DriverApi {

@@ -1,12 +1,12 @@
 import 'dart:typed_data';
 
-import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_failure.dart';
+import '../../documents/document_upload.dart';
 import 'driver_api.dart';
 
 /// Same limit as the API (10 MB per document). Photos are compressed well below it.
@@ -138,10 +138,9 @@ final objectUploaderProvider = Provider<ObjectUploader>((ref) => DioObjectUpload
 
 enum UploadStage { sending, checking, attaching }
 
-/// One licence photo upload: intent, PUT to storage, server check, attach to the licence.
-///
-/// A job remembers how far it got, so [run] after a failure resumes there (e.g. the scanner
-/// was briefly unavailable: only the check is repeated, the bytes are not sent again).
+/// One licence photo upload: the shared document upload (intent, PUT, server check), then
+/// attach to the licence. A job remembers how far it got, so [run] after a failure resumes
+/// there (e.g. the scanner was briefly unavailable: only the check is repeated).
 final class LicenseUploadJob {
   LicenseUploadJob({
     required this.api,
@@ -149,59 +148,25 @@ final class LicenseUploadJob {
     required this.licenseId,
     required this.side,
     required this.photo,
-  });
+  }) : _upload = DocumentUploadJob(
+         api: api,
+         uploader: uploader,
+         purpose: side.purpose,
+         photo: photo,
+       );
 
   final DriverApi api;
   final ObjectUploader uploader;
   final String licenseId;
   final LicenseSide side;
   final PickedPhoto photo;
-
-  String? _documentId;
-  bool _sent = false;
-  bool _checked = false;
+  final DocumentUploadJob _upload;
 
   Future<DriverLicense> run({
     required void Function(UploadStage stage, double progress) onProgress,
   }) async {
-    if (_documentId == null || !_sent) {
-      onProgress(UploadStage.sending, 0);
-      final intent = await api.createUpload(
-        purpose: side.purpose,
-        mimeType: photo.mimeType,
-        sizeBytes: photo.bytes.length,
-        sha256: sha256.convert(photo.bytes).toString(),
-      );
-      _documentId = intent.document.id;
-      await uploader.put(
-        intent.url,
-        intent.headers,
-        photo.bytes,
-        onProgress: (value) => onProgress(UploadStage.sending, value),
-      );
-      _sent = true;
-    }
-    if (!_checked) {
-      onProgress(UploadStage.checking, 1);
-      final DocumentInfo document;
-      try {
-        document = await api.completeUpload(_documentId!);
-      } on ConflictFailure catch (failure) {
-        // The bytes never reached storage (or the upload window passed): send them again.
-        if (failure.code == 'UPLOAD_NOT_FOUND') _sent = false;
-        rethrow;
-      }
-      switch (document.status) {
-        case UploadStatus.available:
-          _checked = true;
-        case UploadStatus.invalid || UploadStatus.infected:
-          // The stored upload is unusable: a retry must start with a new photo.
-          throw PhotoRejected(document.failureCode ?? 'MALFORMED_FILE');
-        default:
-          throw const ServerFailure(code: 'DOCUMENT_PROCESSING');
-      }
-    }
+    final documentId = await _upload.run(onProgress: onProgress);
     onProgress(UploadStage.attaching, 1);
-    return api.attach(licenseId, side, _documentId!);
+    return api.attach(licenseId, side, documentId);
   }
 }
