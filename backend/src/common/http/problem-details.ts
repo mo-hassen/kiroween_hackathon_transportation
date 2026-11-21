@@ -54,6 +54,11 @@ export const ErrorCode = {
   FIRST_APPROVAL_REQUIRED: 'FIRST_APPROVAL_REQUIRED',
   SECOND_APPROVER_REQUIRED: 'SECOND_APPROVER_REQUIRED',
   TIN_CHECK_REQUIRED: 'TIN_CHECK_REQUIRED',
+  // Phase 7: vehicles.
+  OWNER_NOT_VERIFIED: 'OWNER_NOT_VERIFIED',
+  PLATE_IN_USE: 'PLATE_IN_USE',
+  VIN_IN_USE: 'VIN_IN_USE',
+  VEHICLE_SUBMISSION_INCOMPLETE: 'VEHICLE_SUBMISSION_INCOMPLETE',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
@@ -103,6 +108,10 @@ const TITLES: Record<ErrorCode, string> = {
   FIRST_APPROVAL_REQUIRED: 'A first approval is required before the second approval',
   SECOND_APPROVER_REQUIRED: 'A different verification officer must give the second approval',
   TIN_CHECK_REQUIRED: 'Check the TIN against the certificate before approving',
+  OWNER_NOT_VERIFIED: 'Your owner profile must be verified first',
+  PLATE_IN_USE: 'This plate number is already registered',
+  VIN_IN_USE: 'This VIN is already registered',
+  VEHICLE_SUBMISSION_INCOMPLETE: 'The vehicle is not ready for verification',
 };
 
 const STATUS_TO_CODE: Partial<Record<number, ErrorCode>> = {

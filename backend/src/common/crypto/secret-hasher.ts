@@ -2,7 +2,7 @@ import { createHash, createHmac, hkdfSync, timingSafeEqual } from 'node:crypto';
 
 /** Separate HMAC keys per purpose, derived from one server pepper with HKDF. */
 export type HashPurpose =
-  'otp' | 'ticket' | 'idempotency' | 'subject' | 'identity' | 'license' | 'tin';
+  'otp' | 'ticket' | 'idempotency' | 'subject' | 'identity' | 'license' | 'tin' | 'vin';
 
 /**
  * Keyed hashing for low-entropy or identifying values (OTP codes, phone numbers in

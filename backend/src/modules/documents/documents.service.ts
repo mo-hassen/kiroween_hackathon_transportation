@@ -148,6 +148,19 @@ export class DocumentsService {
       }
       return;
     }
+    if (purpose.startsWith('VEHICLE_')) {
+      // Only a verified owner registers vehicles; nothing is stored for anyone else.
+      const owner = await this.prisma.ownerProfile.findUnique({
+        where: { userId },
+        select: { verificationStatus: true },
+      });
+      if (owner === null)
+        throw new DomainError(ErrorCode.OWNER_PROFILE_REQUIRED, HttpStatus.CONFLICT);
+      if (owner.verificationStatus !== 'VERIFIED') {
+        throw new DomainError(ErrorCode.OWNER_NOT_VERIFIED, HttpStatus.CONFLICT);
+      }
+      return;
+    }
     if (purpose.startsWith('DRIVER_LICENSE_')) {
       const profile = await this.prisma.driverProfile.findUnique({
         where: { userId },
@@ -468,6 +481,37 @@ export async function assertAttachableToOwner(
     document.uploadStatus !== 'AVAILABLE' ||
     document.reviewStatus !== 'DRAFT' ||
     (document.ownerLink !== null && document.ownerLink.ownerProfileId !== ownerProfileId)
+  ) {
+    throw new DomainError(ErrorCode.DOCUMENT_NOT_AVAILABLE, HttpStatus.CONFLICT);
+  }
+}
+
+/**
+ * Rejects anything an owner may not attach to a vehicle slot. Someone else's document is 404;
+ * a document already linked to a different vehicle (or used elsewhere) is 409, so a photo of
+ * vehicle A can never become evidence for vehicle B.
+ */
+export async function assertAttachableToVehicle(
+  tx: Tx,
+  userId: string,
+  documentId: string,
+  purpose: DocumentPurpose,
+  vehicleId: string,
+  slot: string,
+): Promise<void> {
+  const document = await tx.document.findUnique({
+    where: { id: documentId },
+    include: { vehicleLink: true, licenseLink: true, ownerLink: true },
+  });
+  if (document === null || document.ownerUserId !== userId) throw notFound();
+  const link = document.vehicleLink;
+  if (
+    document.purpose !== purpose ||
+    document.uploadStatus !== 'AVAILABLE' ||
+    document.reviewStatus !== 'DRAFT' ||
+    document.licenseLink !== null ||
+    document.ownerLink !== null ||
+    (link !== null && (link.vehicleId !== vehicleId || link.slot !== slot))
   ) {
     throw new DomainError(ErrorCode.DOCUMENT_NOT_AVAILABLE, HttpStatus.CONFLICT);
   }

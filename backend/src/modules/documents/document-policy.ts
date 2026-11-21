@@ -36,6 +36,12 @@ export const PURPOSE_POLICIES: Readonly<Record<DocumentPurpose, PurposePolicy>> 
     mimeTypes: IMAGE_TYPES,
     maxBytes: 10 * MB,
   },
+  // Phase 7: vehicle evidence. Images only; photos are limited to 5 MB (07 §4).
+  VEHICLE_REGISTRATION: { accountTypes: ['CUSTOMER'], mimeTypes: IMAGE_TYPES, maxBytes: 10 * MB },
+  VEHICLE_OWNERSHIP: { accountTypes: ['CUSTOMER'], mimeTypes: IMAGE_TYPES, maxBytes: 10 * MB },
+  VEHICLE_INSURANCE: { accountTypes: ['CUSTOMER'], mimeTypes: IMAGE_TYPES, maxBytes: 10 * MB },
+  VEHICLE_INSPECTION: { accountTypes: ['CUSTOMER'], mimeTypes: IMAGE_TYPES, maxBytes: 10 * MB },
+  VEHICLE_PHOTO: { accountTypes: ['CUSTOMER'], mimeTypes: IMAGE_TYPES, maxBytes: 5 * MB },
 });
 
 export const DOCUMENT_LIMITS = Object.freeze({
