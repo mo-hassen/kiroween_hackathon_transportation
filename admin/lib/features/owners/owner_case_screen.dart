@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -28,7 +30,42 @@ class _OwnerCaseScreenState extends ConsumerState<OwnerCaseScreen> {
   String? _actionError;
   bool _busy = false;
 
+  /// Result of the last TIN check; shown briefly, never the TIN itself.
+  bool? _tinResult;
+  Timer? _tinResultTimer;
+
+  /// How long a TIN check result stays on screen.
+  static const tinResultVisible = Duration(seconds: 60);
+
   OwnerReviewApi get _api => ref.read(ownerReviewApiProvider);
+
+  @override
+  void dispose() {
+    // Leaving the case hides the result.
+    _tinResultTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _checkTin() async {
+    final input = await showDialog<({String tin, String reason})>(
+      context: context,
+      builder: (_) => const TinCheckDialog(),
+    );
+    if (input == null || !mounted) return;
+    setState(() => _actionError = null);
+    try {
+      final matches = await _api.checkTin(widget.caseId, tin: input.tin, reason: input.reason);
+      if (!mounted) return;
+      _tinResultTimer?.cancel();
+      setState(() => _tinResult = matches);
+      _tinResultTimer = Timer(tinResultVisible, () {
+        if (mounted) setState(() => _tinResult = null);
+      });
+      await _load();
+    } on ApiFailure catch (failure) {
+      if (mounted) setState(() => _actionError = failureText(context.l10n, failure));
+    }
+  }
 
   @override
   void initState() {
@@ -146,8 +183,9 @@ class _OwnerCaseScreenState extends ConsumerState<OwnerCaseScreen> {
       OwnerDecisionKind kind, {
       bool tonal = false,
       bool outlined = false,
+      bool enabled = true,
     }) {
-      final onPressed = _busy ? null : () => _decide(kind);
+      final onPressed = _busy || !enabled ? null : () => _decide(kind);
       if (outlined) return OutlinedButton(onPressed: onPressed, child: Text(label));
       if (tonal) return FilledButton.tonal(onPressed: onPressed, child: Text(label));
       return FilledButton(onPressed: onPressed, child: Text(label));
@@ -182,10 +220,23 @@ class _OwnerCaseScreenState extends ConsumerState<OwnerCaseScreen> {
             if (reviewing) ...[
               if (!s.isOrganization)
                 button(l10n.approveOwnerAction, OwnerDecisionKind.approveIndividual),
+              if (s.isOrganization)
+                OutlinedButton(
+                  onPressed: _busy ? null : _checkTin,
+                  child: Text(l10n.tinCheckAction),
+                ),
               if (s.isOrganization && !s.awaitingSecondApproval)
-                button(l10n.firstApprovalAction, OwnerDecisionKind.firstApproval),
+                button(
+                  l10n.firstApprovalAction,
+                  OwnerDecisionKind.firstApproval,
+                  enabled: detail.tinCheckedByMe,
+                ),
               if (s.isOrganization && s.awaitingSecondApproval && !s.firstApprovedByMe)
-                button(l10n.secondApprovalAction, OwnerDecisionKind.secondApproval),
+                button(
+                  l10n.secondApprovalAction,
+                  OwnerDecisionKind.secondApproval,
+                  enabled: detail.tinCheckedByMe,
+                ),
               button(l10n.rejectAction, OwnerDecisionKind.reject, tonal: true),
               OutlinedButton(
                 onPressed: _busy ? null : () => _run(() => _api.release(widget.caseId)),
@@ -198,6 +249,20 @@ class _OwnerCaseScreenState extends ConsumerState<OwnerCaseScreen> {
               button(l10n.reinstateOwnerAction, OwnerDecisionKind.reinstate),
           ],
         ),
+        if (reviewing && s.isOrganization && !detail.tinCheckedByMe) ...[
+          const SizedBox(height: 8),
+          Text(l10n.tinCheckRequired),
+        ],
+        if (_tinResult != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            _tinResult! ? l10n.tinMatches : l10n.tinDoesNotMatch,
+            key: const ValueKey('tin-result'),
+            style: TextStyle(
+              color: _tinResult! ? theme.colorScheme.primary : theme.colorScheme.error,
+            ),
+          ),
+        ],
         if (_actionError != null) ...[
           const SizedBox(height: 12),
           Text(_actionError!, style: TextStyle(color: theme.colorScheme.error)),
@@ -214,6 +279,7 @@ class _OwnerCaseScreenState extends ConsumerState<OwnerCaseScreen> {
           section(l10n.organizationSection, [
             field(l10n.organizationNameLabel, s.organizationName),
             field(l10n.tinLabel, detail.tinMasked),
+            if (detail.tinCheckedByMe) Text(l10n.tinCheckedByYou),
           ]),
         section(l10n.documentsSection, [
           if (detail.documents.isEmpty) Text(l10n.noDocumentsRequired),
@@ -266,6 +332,85 @@ class _OwnerCaseScreenState extends ConsumerState<OwnerCaseScreen> {
               ),
             ),
         ]),
+      ],
+    );
+  }
+}
+
+/// Asks for the TIN as printed on the certificate and a reason. The typed TIN is kept only in
+/// this dialog's controller and sent once; nothing is stored in the browser.
+class TinCheckDialog extends StatefulWidget {
+  const TinCheckDialog({super.key});
+
+  @override
+  State<TinCheckDialog> createState() => _TinCheckDialogState();
+}
+
+class _TinCheckDialogState extends State<TinCheckDialog> {
+  final _tin = TextEditingController();
+  final _reason = TextEditingController();
+
+  @override
+  void dispose() {
+    _tin.dispose();
+    _reason.dispose();
+    super.dispose();
+  }
+
+  static final _tinPattern = RegExp(r'^[A-Z0-9]{4,20}$');
+
+  bool get _tinValid =>
+      _tinPattern.hasMatch(_tin.text.toUpperCase().replaceAll(RegExp(r'[\s\-/.]'), ''));
+
+  bool get _valid => _tinValid && _reason.text.trim().length >= 10;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return AlertDialog(
+      title: Text(l10n.tinCheckTitle),
+      content: SizedBox(
+        width: 460,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l10n.tinCheckHint),
+            const SizedBox(height: 12),
+            TextField(
+              key: const ValueKey('tin-input'),
+              controller: _tin,
+              autofocus: true,
+              autocorrect: false,
+              enableSuggestions: false,
+              maxLength: 40,
+              decoration: InputDecoration(
+                labelText: l10n.tinCheckInputLabel,
+                errorText: _tin.text.isEmpty || _tinValid ? null : l10n.tinInvalidFormat,
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+            TextField(
+              key: const ValueKey('tin-reason'),
+              controller: _reason,
+              maxLength: 500,
+              decoration: InputDecoration(
+                labelText: l10n.reasonLabel,
+                helperText: l10n.viewReasonHint,
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancelAction)),
+        FilledButton(
+          onPressed: _valid
+              ? () => Navigator.pop(context, (tin: _tin.text.trim(), reason: _reason.text.trim()))
+              : null,
+          child: Text(l10n.confirmAction),
+        ),
       ],
     );
   }

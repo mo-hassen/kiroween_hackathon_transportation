@@ -27,6 +27,8 @@ String failureText(AppLocalizations l10n, ApiFailure failure) {
       return l10n.errorSecondApprover;
     case 'FIRST_APPROVAL_REQUIRED':
       return l10n.errorFirstApprovalRequired;
+    case 'TIN_CHECK_REQUIRED':
+      return l10n.tinCheckRequired;
   }
   return switch (failure.kind) {
     FailureKind.network => l10n.errorNetwork,

@@ -665,5 +665,41 @@
   "reasonREPRESENTATIVE_NOT_AUTHORIZED": "Representative not authorized",
   "@reasonREPRESENTATIVE_NOT_AUTHORIZED": {
     "description": "Reason."
+  },
+  "tinCheckAction": "Check full TIN",
+  "@tinCheckAction": {
+    "description": "Button on an organization case."
+  },
+  "tinCheckTitle": "Check the TIN against the certificate",
+  "@tinCheckTitle": {
+    "description": "Dialog title."
+  },
+  "tinCheckHint": "Type the TIN exactly as printed on the certificate. The stored TIN is never shown; you only see whether it matches. Every check is recorded.",
+  "@tinCheckHint": {
+    "description": "Dialog text."
+  },
+  "tinCheckInputLabel": "TIN on the certificate",
+  "@tinCheckInputLabel": {
+    "description": "Field label."
+  },
+  "tinInvalidFormat": "Use 4 to 20 letters and digits",
+  "@tinInvalidFormat": {
+    "description": "Field error."
+  },
+  "tinMatches": "The TIN on the certificate matches the stored TIN.",
+  "@tinMatches": {
+    "description": "Check result (shown briefly)."
+  },
+  "tinDoesNotMatch": "The TIN on the certificate does NOT match the stored TIN.",
+  "@tinDoesNotMatch": {
+    "description": "Check result (shown briefly)."
+  },
+  "tinCheckedByYou": "You confirmed the full TIN for this submission",
+  "@tinCheckedByYou": {
+    "description": "Case status line."
+  },
+  "tinCheckRequired": "Check the full TIN against the certificate before approving.",
+  "@tinCheckRequired": {
+    "description": "Hint and error."
   }
 }

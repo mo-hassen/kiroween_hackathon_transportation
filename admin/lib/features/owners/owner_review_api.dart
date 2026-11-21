@@ -89,6 +89,7 @@ final class OwnerCaseDetail {
     required this.identityStatus,
     required this.identityVerifiedName,
     required this.tinMasked,
+    required this.tinCheckedByMe,
     required this.firstApprovedAt,
     required this.firstApprovalNote,
     required this.verifiedAt,
@@ -105,6 +106,7 @@ final class OwnerCaseDetail {
     identityStatus: json['identityStatus']! as String,
     identityVerifiedName: json['identityVerifiedName'] as String?,
     tinMasked: json['tinMasked'] as String?,
+    tinCheckedByMe: json['tinCheckedByMe'] as bool? ?? false,
     firstApprovedAt: _date(json['firstApprovedAt']),
     firstApprovalNote: json['firstApprovalNote'] as String?,
     verifiedAt: _date(json['verifiedAt']),
@@ -128,6 +130,9 @@ final class OwnerCaseDetail {
   final String identityStatus;
   final String? identityVerifiedName;
   final String? tinMasked;
+
+  /// This officer confirmed the full TIN for the current submission (server-side check).
+  final bool tinCheckedByMe;
   final DateTime? firstApprovedAt;
   final String? firstApprovalNote;
   final DateTime? verifiedAt;
@@ -162,6 +167,10 @@ abstract interface class OwnerReviewApi {
 
   /// A 60-second URL; the server records the access with [reason].
   Future<Uri> documentUrl(String caseId, String documentId, {required String reason});
+
+  /// Whether [tin] (typed from the certificate) equals the stored TIN. The stored TIN is
+  /// never returned. Audited with [reason]; claim holder only.
+  Future<bool> checkTin(String caseId, {required String tin, required String reason});
 }
 
 final class HttpOwnerReviewApi implements OwnerReviewApi {
@@ -252,6 +261,14 @@ final class HttpOwnerReviewApi implements OwnerReviewApi {
   @override
   Future<void> reinstate(String id, {required String note}) =>
       _decide(id, 'reinstate', {'note': note});
+
+  @override
+  Future<bool> checkTin(String caseId, {required String tin, required String reason}) =>
+      _client.post(
+        '$_base/${Uri.encodeComponent(caseId)}/tin-check',
+        (data) => asMap(data)['matches']! as bool,
+        body: {'tin': tin, 'reason': reason},
+      );
 
   @override
   Future<Uri> documentUrl(String caseId, String documentId, {required String reason}) =>

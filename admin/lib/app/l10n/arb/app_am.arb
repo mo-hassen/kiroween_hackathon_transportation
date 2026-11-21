@@ -161,5 +161,14 @@
   "errorSecondApprover": "ሁለተኛውን ማጽደቅ ሌላ ሰራተኛ መስጠት አለበት።",
   "errorFirstApprovalRequired": "መጀመሪያ የመጀመሪያውን ማጽደቅ ይመዝግቡ።",
   "reasonINVALID_ORGANIZATION_DETAILS": "የድርጅቱ መረጃ አይዛመድም",
-  "reasonREPRESENTATIVE_NOT_AUTHORIZED": "ተወካዩ አልተፈቀደለትም"
+  "reasonREPRESENTATIVE_NOT_AUTHORIZED": "ተወካዩ አልተፈቀደለትም",
+  "tinCheckAction": "ሙሉ የግብር መለያ ቁጥር ያረጋግጡ",
+  "tinCheckTitle": "የግብር መለያ ቁጥሩን ከሰርተፊኬቱ ጋር ያረጋግጡ",
+  "tinCheckHint": "የግብር መለያ ቁጥሩን በሰርተፊኬቱ ላይ እንደታተመው በትክክል ይጻፉ። የተቀመጠው ቁጥር አይታይም፤ የሚዛመድ መሆኑን ብቻ ያያሉ። እያንዳንዱ ፍተሻ ይመዘገባል።",
+  "tinCheckInputLabel": "በሰርተፊኬቱ ላይ ያለው የግብር መለያ ቁጥር",
+  "tinInvalidFormat": "ከ4 እስከ 20 ፊደላትና ቁጥሮች ይጠቀሙ",
+  "tinMatches": "በሰርተፊኬቱ ላይ ያለው ቁጥር ከተቀመጠው ጋር ይዛመዳል።",
+  "tinDoesNotMatch": "በሰርተፊኬቱ ላይ ያለው ቁጥር ከተቀመጠው ጋር አይዛመድም።",
+  "tinCheckedByYou": "ለዚህ ጥያቄ ሙሉውን የግብር መለያ ቁጥር አረጋግጠዋል",
+  "tinCheckRequired": "ከማጽደቅዎ በፊት ሙሉውን የግብር መለያ ቁጥር ከሰርተፊኬቱ ጋር ያረጋግጡ።"
 }
