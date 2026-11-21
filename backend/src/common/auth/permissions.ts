@@ -18,6 +18,8 @@ export const Permission = {
   DOCUMENTS_REVIEW: 'documents.review',
   // Phase 5: driver licence cases (queue, claim, decisions) and their documents.
   DRIVERS_REVIEW: 'drivers.review',
+  // Phase 6: owner verification cases (queue, claim, four-eyes decisions) and their documents.
+  OWNERS_REVIEW: 'owners.review',
   VEHICLES_VERIFY: 'vehicles.verify',
   SUPPORT_TICKETS_MANAGE: 'support_tickets.manage',
   DISPUTES_MANAGE: 'disputes.manage',
@@ -44,6 +46,7 @@ export const ROLE_PERMISSIONS: Readonly<Record<StaffRole, readonly Permission[]>
     Permission.IDENTITY_REVIEW,
     Permission.DOCUMENTS_REVIEW,
     Permission.DRIVERS_REVIEW,
+    Permission.OWNERS_REVIEW,
     Permission.VEHICLES_VERIFY,
   ],
   FINANCE: [

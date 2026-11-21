@@ -47,6 +47,12 @@ export const ErrorCode = {
   DRIVER_SUBMISSION_INCOMPLETE: 'DRIVER_SUBMISSION_INCOMPLETE',
   REVIEW_CLAIMED_BY_OTHER: 'REVIEW_CLAIMED_BY_OTHER',
   REVIEW_CLAIM_REQUIRED: 'REVIEW_CLAIM_REQUIRED',
+  // Phase 6: owner verification.
+  OWNER_PROFILE_REQUIRED: 'OWNER_PROFILE_REQUIRED',
+  TIN_IN_USE: 'TIN_IN_USE',
+  OWNER_SUBMISSION_INCOMPLETE: 'OWNER_SUBMISSION_INCOMPLETE',
+  FIRST_APPROVAL_REQUIRED: 'FIRST_APPROVAL_REQUIRED',
+  SECOND_APPROVER_REQUIRED: 'SECOND_APPROVER_REQUIRED',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
@@ -90,6 +96,11 @@ const TITLES: Record<ErrorCode, string> = {
   DRIVER_SUBMISSION_INCOMPLETE: 'The verification request is incomplete',
   REVIEW_CLAIMED_BY_OTHER: 'Another officer is reviewing this case',
   REVIEW_CLAIM_REQUIRED: 'Claim the case before deciding it',
+  OWNER_PROFILE_REQUIRED: 'Create an organization owner profile first',
+  TIN_IN_USE: 'This TIN is already registered',
+  OWNER_SUBMISSION_INCOMPLETE: 'The verification request is incomplete',
+  FIRST_APPROVAL_REQUIRED: 'A first approval is required before the second approval',
+  SECOND_APPROVER_REQUIRED: 'A different verification officer must give the second approval',
 };
 
 const STATUS_TO_CODE: Partial<Record<number, ErrorCode>> = {
