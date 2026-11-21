@@ -30,6 +30,23 @@ abstract final class AppRoutes {
   static const ownerDocuments = '/owner/documents';
   static const ownerReview = '/owner/review';
 
+  /// Vehicles (Phase 7). The id routes carry a UUID; [isVehicleRoute] matches them.
+  static const vehicles = '/vehicles';
+  static const vehicleNew = '/vehicles/new';
+  static String vehicle(String id) => '/vehicles/$id';
+  static String vehicleEdit(String id) => '/vehicles/$id/edit';
+  static String vehicleReview(String id) => '/vehicles/$id/review';
+
+  static final _vehicleRoute = RegExp(
+    r'^/vehicles/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(/edit|/review)?$',
+  );
+
+  /// `/vehicles/<uuid>`, `/vehicles/<uuid>/edit` and `/vehicles/<uuid>/review`.
+  static bool isVehicleRoute(String location) => _vehicleRoute.hasMatch(location);
+
+  /// Every route the guard knows, including the vehicle id routes.
+  static bool isKnown(String location) => all.contains(location) || isVehicleRoute(location);
+
   /// Reachable without a session.
   static const signedOutRoutes = {welcome, login, loginVerify, register, forgotPassword};
 
@@ -52,5 +69,7 @@ abstract final class AppRoutes {
     ownerDetails,
     ownerDocuments,
     ownerReview,
+    vehicles,
+    vehicleNew,
   };
 }

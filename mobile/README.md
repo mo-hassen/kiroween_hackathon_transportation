@@ -47,5 +47,12 @@ resumable job the driver licence photos use (`LicenseUploadJob` now delegates to
 not submitted, pending, verified, rejected (reason and note as plain text), suspended, expired and
 re-verification required, each with guidance.
 
+Vehicles (Phase 7): `features/vehicles/` ("My vehicles" on the account screen). Only a verified owner
+can add a vehicle. A vehicle has a details form (type, make, model, year, plate, optional VIN and
+engine number, both only ever shown masked), ten evidence slots (four documents, five photos and an
+optional interior photo; insurance and inspection ask for their end date), a progress bar, a review
+step and submit with an Idempotency-Key. The server's blockers are shown in words. Uploads reuse
+`DocumentUploadJob`. Approved means verified, not listed for rent.
+
 Rules: no hard-coded user-facing strings (a test enforces this for `Text('...')`), no
 `double` for money (use `Money` from `packages/core_shared`), no secrets in `config/*.json`.

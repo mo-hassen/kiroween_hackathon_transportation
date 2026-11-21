@@ -25,6 +25,10 @@ import '../features/owner/presentation/owner_documents_screen.dart';
 import '../features/owner/presentation/owner_review_screen.dart';
 import '../features/owner/presentation/owner_screen.dart';
 import '../features/splash/splash_screen.dart';
+import '../features/vehicles/presentation/vehicle_form_screen.dart';
+import '../features/vehicles/presentation/vehicle_review_screen.dart';
+import '../features/vehicles/presentation/vehicle_screen.dart';
+import '../features/vehicles/presentation/vehicles_screen.dart';
 import '../features/welcome/welcome_screen.dart';
 import 'routes.dart';
 
@@ -38,7 +42,7 @@ import 'routes.dart';
 /// The identity return link is kept across session restore (cold start from the browser):
 /// splash carries it in `next` and it is resumed once signed in. Signed out, it is dropped.
 String? redirectFor(SessionState session, String location, {Uri? uri}) {
-  if (!AppRoutes.all.contains(location)) return null;
+  if (!AppRoutes.isKnown(location)) return null;
   final isPublic = AppRoutes.signedOutRoutes.contains(location);
   return switch (session) {
     SessionRestoring() || SessionUnreachable() =>
@@ -117,6 +121,22 @@ GoRouter buildRouter({
     GoRoute(path: AppRoutes.ownerDetails, builder: (_, _) => const OwnerDetailsScreen()),
     GoRoute(path: AppRoutes.ownerDocuments, builder: (_, _) => const OwnerDocumentsScreen()),
     GoRoute(path: AppRoutes.ownerReview, builder: (_, _) => const OwnerReviewScreen()),
+    GoRoute(path: AppRoutes.vehicles, builder: (_, _) => const VehiclesScreen()),
+    GoRoute(path: AppRoutes.vehicleNew, builder: (_, _) => const VehicleFormScreen()),
+    GoRoute(
+      path: '/vehicles/:id',
+      builder: (_, state) => VehicleScreen(vehicleId: state.pathParameters['id']!),
+      routes: [
+        GoRoute(
+          path: 'edit',
+          builder: (_, state) => VehicleFormScreen(vehicleId: state.pathParameters['id']),
+        ),
+        GoRoute(
+          path: 'review',
+          builder: (_, state) => VehicleReviewScreen(vehicleId: state.pathParameters['id']!),
+        ),
+      ],
+    ),
     // Browser return: confirms the provider result from this session, then shows the status.
     GoRoute(
       path: AppRoutes.identityReturn,

@@ -1249,5 +1249,467 @@
   "reasonREPRESENTATIVE_NOT_AUTHORIZED": "The letter does not authorize you to represent the organization",
   "@reasonREPRESENTATIVE_NOT_AUTHORIZED": {
     "description": "Decision reason."
+  },
+  "vehiclesTitle": "My vehicles",
+  "@vehiclesTitle": {
+    "description": "Screen title and menu entry."
+  },
+  "vehiclesMenuSubtitle": "Register and verify your vehicles",
+  "@vehiclesMenuSubtitle": {
+    "description": "Menu subtitle."
+  },
+  "vehiclesEmptyTitle": "No vehicles yet",
+  "@vehiclesEmptyTitle": {
+    "description": "Empty list title."
+  },
+  "vehiclesEmptyBody": "Add a vehicle with its documents and photos. Our team checks it before it can be used.",
+  "@vehiclesEmptyBody": {
+    "description": "Empty list body."
+  },
+  "vehiclesAddAction": "Add a vehicle",
+  "@vehiclesAddAction": {
+    "description": "Button."
+  },
+  "vehiclesOwnerRequiredTitle": "Verify your owner profile first",
+  "@vehiclesOwnerRequiredTitle": {
+    "description": "Gate title."
+  },
+  "vehiclesOwnerRequiredBody": "Only verified owners can register vehicles. Finish owner verification, then come back.",
+  "@vehiclesOwnerRequiredBody": {
+    "description": "Gate body."
+  },
+  "vehiclesOwnerGoAction": "Go to owner verification",
+  "@vehiclesOwnerGoAction": {
+    "description": "Button."
+  },
+  "vehicleStatusDraft": "Draft",
+  "@vehicleStatusDraft": {
+    "description": "Vehicle status."
+  },
+  "vehicleStatusSubmitted": "Waiting for review",
+  "@vehicleStatusSubmitted": {
+    "description": "Vehicle status."
+  },
+  "vehicleStatusUnderReview": "Being reviewed",
+  "@vehicleStatusUnderReview": {
+    "description": "Vehicle status."
+  },
+  "vehicleStatusApproved": "Approved",
+  "@vehicleStatusApproved": {
+    "description": "Vehicle status."
+  },
+  "vehicleStatusRejected": "Needs changes",
+  "@vehicleStatusRejected": {
+    "description": "Vehicle status."
+  },
+  "vehicleStatusExpired": "Documents expired",
+  "@vehicleStatusExpired": {
+    "description": "Vehicle status."
+  },
+  "vehicleStatusSuspended": "Suspended",
+  "@vehicleStatusSuspended": {
+    "description": "Vehicle status."
+  },
+  "vehicleStatusArchived": "Archived",
+  "@vehicleStatusArchived": {
+    "description": "Vehicle status."
+  },
+  "vehicleStatusUnknown": "Unknown",
+  "@vehicleStatusUnknown": {
+    "description": "Vehicle status."
+  },
+  "vehicleGuidanceDraft": "Add the details, documents and photos, then submit it for review.",
+  "@vehicleGuidanceDraft": {
+    "description": "Guidance."
+  },
+  "vehicleGuidanceSubmitted": "We received your vehicle. You cannot change it while it is being reviewed.",
+  "@vehicleGuidanceSubmitted": {
+    "description": "Guidance."
+  },
+  "vehicleGuidanceApproved": "Your vehicle is verified. Verification alone does not list it for rent.",
+  "@vehicleGuidanceApproved": {
+    "description": "Guidance."
+  },
+  "vehicleGuidanceRejected": "Fix what is listed below, then submit again.",
+  "@vehicleGuidanceRejected": {
+    "description": "Guidance."
+  },
+  "vehicleGuidanceExpired": "Insurance or inspection has expired. Upload the new certificate and submit again.",
+  "@vehicleGuidanceExpired": {
+    "description": "Guidance."
+  },
+  "vehicleGuidanceSuspended": "This vehicle is suspended. Contact support if you have questions.",
+  "@vehicleGuidanceSuspended": {
+    "description": "Guidance."
+  },
+  "vehicleApprovedChangeWarning": "Changing the make, model, year, type, plate, VIN or engine number, or replacing a document or photo, sends this vehicle back for review.",
+  "@vehicleApprovedChangeWarning": {
+    "description": "Warning on an approved vehicle."
+  },
+  "vehicleFormTitleNew": "New vehicle",
+  "@vehicleFormTitleNew": {
+    "description": "Screen title."
+  },
+  "vehicleFormTitleEdit": "Vehicle details",
+  "@vehicleFormTitleEdit": {
+    "description": "Screen title."
+  },
+  "vehicleTypeLabel": "Vehicle type",
+  "@vehicleTypeLabel": {
+    "description": "Field label."
+  },
+  "vehicleTypeSEDAN": "Sedan",
+  "@vehicleTypeSEDAN": {
+    "description": "Vehicle type."
+  },
+  "vehicleTypeHATCHBACK": "Hatchback",
+  "@vehicleTypeHATCHBACK": {
+    "description": "Vehicle type."
+  },
+  "vehicleTypeSUV": "SUV",
+  "@vehicleTypeSUV": {
+    "description": "Vehicle type."
+  },
+  "vehicleTypeMINIBUS": "Minibus",
+  "@vehicleTypeMINIBUS": {
+    "description": "Vehicle type."
+  },
+  "vehicleTypePICKUP": "Pickup",
+  "@vehicleTypePICKUP": {
+    "description": "Vehicle type."
+  },
+  "vehicleTypeTHREE_WHEELER": "Three-wheeler",
+  "@vehicleTypeTHREE_WHEELER": {
+    "description": "Vehicle type."
+  },
+  "vehicleTypeOTHER": "Other",
+  "@vehicleTypeOTHER": {
+    "description": "Vehicle type."
+  },
+  "vehicleMakeLabel": "Make (for example Toyota)",
+  "@vehicleMakeLabel": {
+    "description": "Field label."
+  },
+  "vehicleModelLabel": "Model (for example Vitz)",
+  "@vehicleModelLabel": {
+    "description": "Field label."
+  },
+  "vehicleYearLabel": "Year",
+  "@vehicleYearLabel": {
+    "description": "Field label."
+  },
+  "vehicleColorLabel": "Colour (optional)",
+  "@vehicleColorLabel": {
+    "description": "Field label."
+  },
+  "vehicleSeatsLabel": "Seats",
+  "@vehicleSeatsLabel": {
+    "description": "Field label."
+  },
+  "vehicleTransmissionLabel": "Transmission",
+  "@vehicleTransmissionLabel": {
+    "description": "Field label."
+  },
+  "vehicleTransmissionMANUAL": "Manual",
+  "@vehicleTransmissionMANUAL": {
+    "description": "Transmission."
+  },
+  "vehicleTransmissionAUTOMATIC": "Automatic",
+  "@vehicleTransmissionAUTOMATIC": {
+    "description": "Transmission."
+  },
+  "vehicleFuelLabel": "Fuel",
+  "@vehicleFuelLabel": {
+    "description": "Field label."
+  },
+  "vehicleFuelPETROL": "Petrol",
+  "@vehicleFuelPETROL": {
+    "description": "Fuel."
+  },
+  "vehicleFuelDIESEL": "Diesel",
+  "@vehicleFuelDIESEL": {
+    "description": "Fuel."
+  },
+  "vehicleFuelELECTRIC": "Electric",
+  "@vehicleFuelELECTRIC": {
+    "description": "Fuel."
+  },
+  "vehicleFuelHYBRID": "Hybrid",
+  "@vehicleFuelHYBRID": {
+    "description": "Fuel."
+  },
+  "vehicleFuelOTHER": "Other",
+  "@vehicleFuelOTHER": {
+    "description": "Fuel."
+  },
+  "vehiclePlateTitle": "Plate number, as printed",
+  "@vehiclePlateTitle": {
+    "description": "Section title."
+  },
+  "vehiclePlateRegionLabel": "Region (for example AA)",
+  "@vehiclePlateRegionLabel": {
+    "description": "Field label."
+  },
+  "vehiclePlateCodeLabel": "Code (for example 2)",
+  "@vehiclePlateCodeLabel": {
+    "description": "Field label."
+  },
+  "vehiclePlateNumberLabel": "Number",
+  "@vehiclePlateNumberLabel": {
+    "description": "Field label."
+  },
+  "vehicleVinLabel": "VIN or chassis number (optional)",
+  "@vehicleVinLabel": {
+    "description": "Field label."
+  },
+  "vehicleVinHelperKeep": "On file: {masked}. Leave empty to keep it.",
+  "@vehicleVinHelperKeep": {
+    "description": "Helper.",
+    "placeholders": {
+      "masked": {
+        "type": "String"
+      }
+    }
+  },
+  "vehicleEngineLabel": "Engine number (optional)",
+  "@vehicleEngineLabel": {
+    "description": "Field label."
+  },
+  "vehicleEngineHelperKeep": "An engine number is on file. Leave empty to keep it.",
+  "@vehicleEngineHelperKeep": {
+    "description": "Helper."
+  },
+  "vehicleFieldRequired": "Required",
+  "@vehicleFieldRequired": {
+    "description": "Validation."
+  },
+  "vehicleTextInvalid": "Use letters, digits and common punctuation only",
+  "@vehicleTextInvalid": {
+    "description": "Validation."
+  },
+  "vehicleYearInvalid": "Enter a year from 1980 to next year",
+  "@vehicleYearInvalid": {
+    "description": "Validation."
+  },
+  "vehicleSeatsInvalid": "Enter 1 to 60 seats",
+  "@vehicleSeatsInvalid": {
+    "description": "Validation."
+  },
+  "vehiclePlateInvalid": "Use 1 to 12 letters or digits",
+  "@vehiclePlateInvalid": {
+    "description": "Validation."
+  },
+  "vehicleVinInvalid": "Use 5 to 25 letters and digits",
+  "@vehicleVinInvalid": {
+    "description": "Validation."
+  },
+  "vehicleEngineInvalid": "Use 3 to 30 letters and digits",
+  "@vehicleEngineInvalid": {
+    "description": "Validation."
+  },
+  "vehicleSaved": "Vehicle saved",
+  "@vehicleSaved": {
+    "description": "Snackbar."
+  },
+  "vehiclePlateInUse": "This plate number is already registered.",
+  "@vehiclePlateInUse": {
+    "description": "Error."
+  },
+  "vehicleVinInUse": "This VIN is already registered.",
+  "@vehicleVinInUse": {
+    "description": "Error."
+  },
+  "vehicleOwnerNotVerified": "Your owner profile is not verified.",
+  "@vehicleOwnerNotVerified": {
+    "description": "Error."
+  },
+  "vehicleProgress": "{done} of {total} items ready",
+  "@vehicleProgress": {
+    "description": "Progress text.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "vehicleProgressSemantics": "Progress: {done} of {total} required items ready",
+  "@vehicleProgressSemantics": {
+    "description": "Screen reader text.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "vehicleEvidenceTitle": "Documents and photos",
+  "@vehicleEvidenceTitle": {
+    "description": "Section title."
+  },
+  "vehicleEditDetailsAction": "Edit details",
+  "@vehicleEditDetailsAction": {
+    "description": "Button."
+  },
+  "vehicleReviewAction": "Review and submit",
+  "@vehicleReviewAction": {
+    "description": "Button."
+  },
+  "vehicleArchiveAction": "Remove this vehicle",
+  "@vehicleArchiveAction": {
+    "description": "Button."
+  },
+  "vehicleArchiveTitle": "Remove this vehicle?",
+  "@vehicleArchiveTitle": {
+    "description": "Dialog title."
+  },
+  "vehicleArchiveBody": "It disappears from your list and its plate can be registered again.",
+  "@vehicleArchiveBody": {
+    "description": "Dialog body."
+  },
+  "vehicleArchiveConfirm": "Remove",
+  "@vehicleArchiveConfirm": {
+    "description": "Dialog button."
+  },
+  "vehicleSlotREGISTRATION": "Registration book (libre)",
+  "@vehicleSlotREGISTRATION": {
+    "description": "Evidence slot."
+  },
+  "vehicleSlotOWNERSHIP": "Proof of ownership",
+  "@vehicleSlotOWNERSHIP": {
+    "description": "Evidence slot."
+  },
+  "vehicleSlotINSURANCE": "Insurance certificate",
+  "@vehicleSlotINSURANCE": {
+    "description": "Evidence slot."
+  },
+  "vehicleSlotINSPECTION": "Inspection certificate",
+  "@vehicleSlotINSPECTION": {
+    "description": "Evidence slot."
+  },
+  "vehicleSlotPHOTO_FRONT": "Photo: front",
+  "@vehicleSlotPHOTO_FRONT": {
+    "description": "Evidence slot."
+  },
+  "vehicleSlotPHOTO_BACK": "Photo: back",
+  "@vehicleSlotPHOTO_BACK": {
+    "description": "Evidence slot."
+  },
+  "vehicleSlotPHOTO_LEFT": "Photo: left side",
+  "@vehicleSlotPHOTO_LEFT": {
+    "description": "Evidence slot."
+  },
+  "vehicleSlotPHOTO_RIGHT": "Photo: right side",
+  "@vehicleSlotPHOTO_RIGHT": {
+    "description": "Evidence slot."
+  },
+  "vehicleSlotPHOTO_PLATE": "Photo: number plate",
+  "@vehicleSlotPHOTO_PLATE": {
+    "description": "Evidence slot."
+  },
+  "vehicleSlotPHOTO_INTERIOR": "Photo: interior (optional)",
+  "@vehicleSlotPHOTO_INTERIOR": {
+    "description": "Evidence slot."
+  },
+  "vehicleSlotOwnershipHint": "The registration in your name, or a letter authorizing you.",
+  "@vehicleSlotOwnershipHint": {
+    "description": "Hint."
+  },
+  "vehicleExpiryPickAction": "Choose the end date",
+  "@vehicleExpiryPickAction": {
+    "description": "Button."
+  },
+  "vehicleExpiryHelp": "When does this certificate end?",
+  "@vehicleExpiryHelp": {
+    "description": "Date picker help."
+  },
+  "vehicleExpiryValue": "Valid until {date}",
+  "@vehicleExpiryValue": {
+    "description": "Shown under a certificate.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "vehicleReviewIntro": "Check the details. After you submit, you cannot change the vehicle until it has been reviewed.",
+  "@vehicleReviewIntro": {
+    "description": "Review intro."
+  },
+  "vehicleReviewConfirm": "The details, documents and photos are correct and belong to this vehicle.",
+  "@vehicleReviewConfirm": {
+    "description": "Confirmation."
+  },
+  "vehicleSubmitted": "Vehicle submitted for review",
+  "@vehicleSubmitted": {
+    "description": "Snackbar."
+  },
+  "vehiclePlateRow": "Plate",
+  "@vehiclePlateRow": {
+    "description": "Row label."
+  },
+  "vehicleProblemREGISTRATION_MISSING": "Add the registration book photo",
+  "@vehicleProblemREGISTRATION_MISSING": {
+    "description": "Blocker."
+  },
+  "vehicleProblemOWNERSHIP_MISSING": "Add the proof of ownership",
+  "@vehicleProblemOWNERSHIP_MISSING": {
+    "description": "Blocker."
+  },
+  "vehicleProblemINSURANCE_MISSING": "Add the insurance certificate",
+  "@vehicleProblemINSURANCE_MISSING": {
+    "description": "Blocker."
+  },
+  "vehicleProblemINSPECTION_MISSING": "Add the inspection certificate",
+  "@vehicleProblemINSPECTION_MISSING": {
+    "description": "Blocker."
+  },
+  "vehicleProblemPHOTO_FRONT_MISSING": "Add the front photo",
+  "@vehicleProblemPHOTO_FRONT_MISSING": {
+    "description": "Blocker."
+  },
+  "vehicleProblemPHOTO_BACK_MISSING": "Add the back photo",
+  "@vehicleProblemPHOTO_BACK_MISSING": {
+    "description": "Blocker."
+  },
+  "vehicleProblemPHOTO_LEFT_MISSING": "Add the left-side photo",
+  "@vehicleProblemPHOTO_LEFT_MISSING": {
+    "description": "Blocker."
+  },
+  "vehicleProblemPHOTO_RIGHT_MISSING": "Add the right-side photo",
+  "@vehicleProblemPHOTO_RIGHT_MISSING": {
+    "description": "Blocker."
+  },
+  "vehicleProblemPHOTO_PLATE_MISSING": "Add the number plate photo",
+  "@vehicleProblemPHOTO_PLATE_MISSING": {
+    "description": "Blocker."
+  },
+  "vehicleProblemINSURANCE_EXPIRED": "The insurance has expired. Upload a new certificate",
+  "@vehicleProblemINSURANCE_EXPIRED": {
+    "description": "Blocker."
+  },
+  "vehicleProblemINSPECTION_EXPIRED": "The inspection has expired. Upload a new certificate",
+  "@vehicleProblemINSPECTION_EXPIRED": {
+    "description": "Blocker."
+  },
+  "vehicleProblemOWNER_NOT_VERIFIED": "Your owner profile must be verified",
+  "@vehicleProblemOWNER_NOT_VERIFIED": {
+    "description": "Blocker."
+  },
+  "vehicleProblemOWNER_SUSPENDED": "Your owner profile is suspended",
+  "@vehicleProblemOWNER_SUSPENDED": {
+    "description": "Blocker."
+  },
+  "reasonVEHICLE_DETAILS_MISMATCH": "The details do not match the registration",
+  "@reasonVEHICLE_DETAILS_MISMATCH": {
+    "description": "Reason."
+  },
+  "reasonINVALID_DOCUMENT": "A document is not valid",
+  "@reasonINVALID_DOCUMENT": {
+    "description": "Reason."
   }
 }
