@@ -8,6 +8,7 @@ import '../../core/api.dart';
 import '../../core/session.dart';
 import '../drivers/driver_review_api.dart';
 import '../owners/owner_review_api.dart';
+import '../vehicles/vehicle_review_api.dart';
 
 final caseCountsProvider = FutureProvider.autoDispose<CaseCounts>(
   (ref) => ref.watch(driverReviewApiProvider).counts(),
@@ -15,6 +16,10 @@ final caseCountsProvider = FutureProvider.autoDispose<CaseCounts>(
 
 final ownerCountsProvider = FutureProvider.autoDispose<OwnerCounts>(
   (ref) => ref.watch(ownerReviewApiProvider).counts(),
+);
+
+final vehicleCountsProvider = FutureProvider.autoDispose<VehicleCounts>(
+  (ref) => ref.watch(vehicleReviewApiProvider).counts(),
 );
 
 /// Counts per area the staff member may review; each card opens the filtered queue.
@@ -68,6 +73,20 @@ class DashboardScreen extends ConsumerWidget {
               ('VERIFIED', l10n.countVerified, '/owners?status=VERIFIED'),
               ('REJECTED', l10n.countRejected, '/owners?status=REJECTED'),
               ('SUSPENDED', l10n.statusSuspended, '/owners?status=SUSPENDED'),
+            ],
+          ),
+        if (profile?.canReviewVehicles ?? false)
+          _CountSection(
+            title: l10n.vehicleDashboardSection,
+            counts: ref.watch(vehicleCountsProvider),
+            onRetry: () => ref.invalidate(vehicleCountsProvider),
+            cards: [
+              ('SUBMITTED', l10n.countSubmitted, '/vehicles?status=SUBMITTED'),
+              ('UNDER_REVIEW', l10n.countUnderReview, '/vehicles?status=UNDER_REVIEW'),
+              ('APPROVED', l10n.countApproved, '/vehicles?status=APPROVED'),
+              ('REJECTED', l10n.countRejected, '/vehicles?status=REJECTED'),
+              ('SUSPENDED', l10n.statusSuspended, '/vehicles?status=SUSPENDED'),
+              ('EXPIRED', l10n.statusExpired, '/vehicles?status=EXPIRED'),
             ],
           ),
       ],

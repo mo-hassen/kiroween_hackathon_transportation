@@ -1,8 +1,8 @@
 # Admin web console (staff)
 
 Flutter Web, Material 3, Riverpod 3, GoRouter, Dio. For `VERIFICATION_OFFICER` staff: the driver
-licence queue (Phase 5, `drivers.review`) and the owner verification queue (Phase 6,
-`owners.review`). Each area is shown only with its permission; the API checks again.
+licence queue (Phase 5, `drivers.review`), the owner verification queue (Phase 6,
+`owners.review`) and the vehicle queue (Phase 7, `vehicles.verify`). Each area is shown only with its permission; the API checks again.
 
 Owner review: individuals need one approval. Organizations need "Record first approval" by one
 officer and "Give second approval" by a different officer; the first officer sees the case as

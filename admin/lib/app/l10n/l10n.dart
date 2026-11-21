@@ -22,6 +22,7 @@ String failureText(AppLocalizations l10n, ApiFailure failure) {
       return l10n.errorClaimRequired;
     case 'DRIVER_SUBMISSION_INCOMPLETE':
     case 'OWNER_SUBMISSION_INCOMPLETE':
+    case 'VEHICLE_SUBMISSION_INCOMPLETE':
       return l10n.errorIncomplete(failure.fieldCodes.join(', '));
     case 'SECOND_APPROVER_REQUIRED':
       return l10n.errorSecondApprover;
@@ -67,6 +68,8 @@ String reasonText(AppLocalizations l10n, String code) => switch (code) {
   'SAFETY_CONCERN' => l10n.reasonSAFETY_CONCERN,
   'INVALID_ORGANIZATION_DETAILS' => l10n.reasonINVALID_ORGANIZATION_DETAILS,
   'REPRESENTATIVE_NOT_AUTHORIZED' => l10n.reasonREPRESENTATIVE_NOT_AUTHORIZED,
+  'VEHICLE_DETAILS_MISMATCH' => l10n.reasonVEHICLE_DETAILS_MISMATCH,
+  'INVALID_DOCUMENT' => l10n.reasonINVALID_DOCUMENT,
   _ => l10n.reasonOTHER,
 };
 
@@ -77,4 +80,27 @@ String ownerDocumentText(AppLocalizations l10n, String purpose) => switch (purpo
   'OWNER_TIN' => l10n.docOWNER_TIN,
   'OWNER_BUSINESS_LICENSE' => l10n.docOWNER_BUSINESS_LICENSE,
   _ => l10n.docOWNER_REPRESENTATIVE_LETTER,
+};
+
+String vehicleTypeText(AppLocalizations l10n, String type) => switch (type) {
+  'SEDAN' => l10n.vehicleTypeSEDAN,
+  'HATCHBACK' => l10n.vehicleTypeHATCHBACK,
+  'SUV' => l10n.vehicleTypeSUV,
+  'MINIBUS' => l10n.vehicleTypeMINIBUS,
+  'PICKUP' => l10n.vehicleTypePICKUP,
+  'THREE_WHEELER' => l10n.vehicleTypeTHREE_WHEELER,
+  _ => l10n.vehicleTypeOTHER,
+};
+
+String evidenceSlotText(AppLocalizations l10n, String slot) => switch (slot) {
+  'REGISTRATION' => l10n.slotREGISTRATION,
+  'OWNERSHIP' => l10n.slotOWNERSHIP,
+  'INSURANCE' => l10n.slotINSURANCE,
+  'INSPECTION' => l10n.slotINSPECTION,
+  'PHOTO_FRONT' => l10n.slotPHOTO_FRONT,
+  'PHOTO_BACK' => l10n.slotPHOTO_BACK,
+  'PHOTO_LEFT' => l10n.slotPHOTO_LEFT,
+  'PHOTO_RIGHT' => l10n.slotPHOTO_RIGHT,
+  'PHOTO_PLATE' => l10n.slotPHOTO_PLATE,
+  _ => l10n.slotPHOTO_INTERIOR,
 };

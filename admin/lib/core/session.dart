@@ -7,10 +7,11 @@ import 'package:uuid/uuid.dart';
 import 'api.dart';
 import 'config.dart';
 
-/// Permissions for the review areas (backend: drivers.review, owners.review). Navigation only:
+/// Permissions for the review areas (backend: drivers.review, owners.review, vehicles.verify). Navigation only:
 /// the API checks the permission on every call.
 const driversReviewPermission = 'drivers.review';
 const ownersReviewPermission = 'owners.review';
+const vehiclesVerifyPermission = 'vehicles.verify';
 
 final class StaffProfile {
   const StaffProfile({required this.displayName, required this.roles, required this.permissions});
@@ -29,7 +30,8 @@ final class StaffProfile {
 
   bool get canReviewDrivers => permissions.contains(driversReviewPermission);
   bool get canReviewOwners => permissions.contains(ownersReviewPermission);
-  bool get canReviewAnything => canReviewDrivers || canReviewOwners;
+  bool get canReviewVehicles => permissions.contains(vehiclesVerifyPermission);
+  bool get canReviewAnything => canReviewDrivers || canReviewOwners || canReviewVehicles;
 }
 
 sealed class StaffSession {

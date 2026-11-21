@@ -24,6 +24,8 @@ class AppShell extends ConsumerWidget {
       if (profile?.canReviewDrivers ?? false) ('/drivers', Icons.badge_outlined, l10n.queueTitle),
       if (profile?.canReviewOwners ?? false)
         ('/owners', Icons.business_outlined, l10n.ownersQueueTitle),
+      if (profile?.canReviewVehicles ?? false)
+        ('/vehicles', Icons.directions_car_outlined, l10n.vehiclesQueueTitle),
     ];
     final match = areas.indexWhere((a) => a.$1 != '/' && location.startsWith(a.$1));
     final selected = match < 0 ? 0 : match;
@@ -62,7 +64,7 @@ class AppShell extends ConsumerWidget {
   }
 }
 
-/// Shown to staff without drivers.review or owners.review (e.g. SUPER_ADMIN, SUPPORT, FINANCE).
+/// Shown to staff without drivers.review, owners.review or vehicles.verify (e.g. SUPER_ADMIN, SUPPORT, FINANCE).
 class NoPermissionScreen extends ConsumerWidget {
   const NoPermissionScreen({super.key});
 

@@ -701,5 +701,254 @@
   "tinCheckRequired": "Check the full TIN against the certificate before approving.",
   "@tinCheckRequired": {
     "description": "Hint and error."
+  },
+  "vehiclesQueueTitle": "Vehicles",
+  "@vehiclesQueueTitle": {
+    "description": "Navigation label and queue title."
+  },
+  "vehicleDashboardSection": "Vehicle verification",
+  "@vehicleDashboardSection": {
+    "description": "Dashboard section title."
+  },
+  "vehicleSearchLabel": "Plate, make, model or owner",
+  "@vehicleSearchLabel": {
+    "description": "Search field label."
+  },
+  "vehicleTypeAll": "All types",
+  "@vehicleTypeAll": {
+    "description": "Filter option."
+  },
+  "vehicleTypeSEDAN": "Sedan",
+  "@vehicleTypeSEDAN": {
+    "description": "Vehicle type."
+  },
+  "vehicleTypeHATCHBACK": "Hatchback",
+  "@vehicleTypeHATCHBACK": {
+    "description": "Vehicle type."
+  },
+  "vehicleTypeSUV": "SUV",
+  "@vehicleTypeSUV": {
+    "description": "Vehicle type."
+  },
+  "vehicleTypeMINIBUS": "Minibus",
+  "@vehicleTypeMINIBUS": {
+    "description": "Vehicle type."
+  },
+  "vehicleTypePICKUP": "Pickup",
+  "@vehicleTypePICKUP": {
+    "description": "Vehicle type."
+  },
+  "vehicleTypeTHREE_WHEELER": "Three-wheeler",
+  "@vehicleTypeTHREE_WHEELER": {
+    "description": "Vehicle type."
+  },
+  "vehicleTypeOTHER": "Other",
+  "@vehicleTypeOTHER": {
+    "description": "Vehicle type."
+  },
+  "vehicleCaseTitle": "Vehicle case",
+  "@vehicleCaseTitle": {
+    "description": "Case screen title."
+  },
+  "vehicleSection": "Vehicle",
+  "@vehicleSection": {
+    "description": "Case section."
+  },
+  "vehicleOwnerSection": "Owner",
+  "@vehicleOwnerSection": {
+    "description": "Case section."
+  },
+  "vehicleTypeLabel": "Type",
+  "@vehicleTypeLabel": {
+    "description": "Field label."
+  },
+  "plateLabel": "Plate",
+  "@plateLabel": {
+    "description": "Field label."
+  },
+  "makeLabel": "Make",
+  "@makeLabel": {
+    "description": "Field label."
+  },
+  "modelLabel": "Model",
+  "@modelLabel": {
+    "description": "Field label."
+  },
+  "yearLabel": "Year",
+  "@yearLabel": {
+    "description": "Field label."
+  },
+  "colorLabel": "Colour",
+  "@colorLabel": {
+    "description": "Field label."
+  },
+  "seatsLabel": "Seats",
+  "@seatsLabel": {
+    "description": "Field label."
+  },
+  "transmissionLabel": "Transmission",
+  "@transmissionLabel": {
+    "description": "Field label."
+  },
+  "fuelLabel": "Fuel",
+  "@fuelLabel": {
+    "description": "Field label."
+  },
+  "vinLabel": "VIN (chassis number)",
+  "@vinLabel": {
+    "description": "Field label."
+  },
+  "engineNumberLabel": "Engine number",
+  "@engineNumberLabel": {
+    "description": "Field label."
+  },
+  "vinMaskedHint": "Claim the case to see the full VIN and engine number.",
+  "@vinMaskedHint": {
+    "description": "Hint shown while the VIN is masked."
+  },
+  "identifiersAuditedHint": "The full VIN and engine number are shown because you hold the claim. Viewing them is recorded.",
+  "@identifiersAuditedHint": {
+    "description": "Hint shown with the full VIN."
+  },
+  "ownerVerificationLabel": "Owner verification",
+  "@ownerVerificationLabel": {
+    "description": "Field label."
+  },
+  "eligibilityLabel": "Eligibility",
+  "@eligibilityLabel": {
+    "description": "Field label."
+  },
+  "eligibleYes": "Eligible (approved and in date; not listed)",
+  "@eligibleYes": {
+    "description": "Eligibility value."
+  },
+  "eligibleNo": "Not eligible",
+  "@eligibleNo": {
+    "description": "Eligibility value."
+  },
+  "approvalBlockersLabel": "Would block approval",
+  "@approvalBlockersLabel": {
+    "description": "Field label."
+  },
+  "vehicleEvidenceSection": "Documents and photos",
+  "@vehicleEvidenceSection": {
+    "description": "Case section."
+  },
+  "slotREGISTRATION": "Registration (libre)",
+  "@slotREGISTRATION": {
+    "description": "Evidence slot."
+  },
+  "slotOWNERSHIP": "Proof of ownership",
+  "@slotOWNERSHIP": {
+    "description": "Evidence slot."
+  },
+  "slotINSURANCE": "Insurance",
+  "@slotINSURANCE": {
+    "description": "Evidence slot."
+  },
+  "slotINSPECTION": "Inspection certificate",
+  "@slotINSPECTION": {
+    "description": "Evidence slot."
+  },
+  "slotPHOTO_FRONT": "Photo: front",
+  "@slotPHOTO_FRONT": {
+    "description": "Evidence slot."
+  },
+  "slotPHOTO_BACK": "Photo: back",
+  "@slotPHOTO_BACK": {
+    "description": "Evidence slot."
+  },
+  "slotPHOTO_LEFT": "Photo: left side",
+  "@slotPHOTO_LEFT": {
+    "description": "Evidence slot."
+  },
+  "slotPHOTO_RIGHT": "Photo: right side",
+  "@slotPHOTO_RIGHT": {
+    "description": "Evidence slot."
+  },
+  "slotPHOTO_PLATE": "Photo: plate",
+  "@slotPHOTO_PLATE": {
+    "description": "Evidence slot."
+  },
+  "slotPHOTO_INTERIOR": "Photo: interior (optional)",
+  "@slotPHOTO_INTERIOR": {
+    "description": "Evidence slot."
+  },
+  "evidenceValidUntil": "Valid until {date}",
+  "@evidenceValidUntil": {
+    "description": "Evidence expiry.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "approveVehicleAction": "Approve vehicle",
+  "@approveVehicleAction": {
+    "description": "Button."
+  },
+  "approveVehicleTitle": "Approve this vehicle",
+  "@approveVehicleTitle": {
+    "description": "Dialog title."
+  },
+  "approveVehicleWarning": "Approval verifies the vehicle. It does not list it or make it available.",
+  "@approveVehicleWarning": {
+    "description": "Dialog warning."
+  },
+  "rejectVehicleTitle": "Reject this vehicle",
+  "@rejectVehicleTitle": {
+    "description": "Dialog title."
+  },
+  "rejectVehicleWarning": "The owner sees the reason and the note and can correct the vehicle.",
+  "@rejectVehicleWarning": {
+    "description": "Dialog warning."
+  },
+  "suspendVehicleAction": "Suspend vehicle",
+  "@suspendVehicleAction": {
+    "description": "Button."
+  },
+  "suspendVehicleTitle": "Suspend this vehicle",
+  "@suspendVehicleTitle": {
+    "description": "Dialog title."
+  },
+  "suspendVehicleWarning": "A suspended vehicle is not eligible. The note is internal.",
+  "@suspendVehicleWarning": {
+    "description": "Dialog warning."
+  },
+  "reinstateVehicleAction": "Reinstate vehicle",
+  "@reinstateVehicleAction": {
+    "description": "Button."
+  },
+  "reinstateVehicleTitle": "Reinstate this vehicle",
+  "@reinstateVehicleTitle": {
+    "description": "Dialog title."
+  },
+  "checkVehicleDetailsMatch": "Make, model, year and plate match the registration",
+  "@checkVehicleDetailsMatch": {
+    "description": "Approval check."
+  },
+  "checkOwnerMatchesRegistration": "The registration is in the owner’s name, or the ownership proof authorizes the owner",
+  "@checkOwnerMatchesRegistration": {
+    "description": "Approval check."
+  },
+  "checkVehicleDocumentsLegible": "All documents are legible and look genuine",
+  "@checkVehicleDocumentsLegible": {
+    "description": "Approval check."
+  },
+  "checkPhotosMatch": "The photos show this vehicle and its plate",
+  "@checkPhotosMatch": {
+    "description": "Approval check."
+  },
+  "noteForVehicleOwnerLabel": "Note for the owner (optional)",
+  "@noteForVehicleOwnerLabel": {
+    "description": "Field label."
+  },
+  "reasonVEHICLE_DETAILS_MISMATCH": "Vehicle details do not match",
+  "@reasonVEHICLE_DETAILS_MISMATCH": {
+    "description": "Reason."
+  },
+  "reasonINVALID_DOCUMENT": "A document is invalid",
+  "@reasonINVALID_DOCUMENT": {
+    "description": "Reason."
   }
 }

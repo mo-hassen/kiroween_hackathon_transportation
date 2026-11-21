@@ -9,10 +9,12 @@ import '../features/drivers/queue_screen.dart';
 import '../features/login/login_screen.dart';
 import '../features/owners/owner_case_screen.dart';
 import '../features/owners/owner_queue_screen.dart';
+import '../features/vehicles/vehicle_case_screen.dart';
+import '../features/vehicles/vehicle_queue_screen.dart';
 import 'shell.dart';
 
 /// Pure redirect rule (tested directly). Every staff route needs a session and at least one
-/// review permission; /drivers needs drivers.review and /owners needs owners.review. The API
+/// review permission; /drivers needs drivers.review, /owners needs owners.review and /vehicles needs vehicles.verify. The API
 /// enforces the same again on every call.
 String? staffRedirect(StaffSession session, Uri location) {
   final path = location.path;
@@ -24,6 +26,7 @@ String? staffRedirect(StaffSession session, Uri location) {
   if (atLogin || atNoPermission) return '/';
   if (path.startsWith('/drivers') && !profile.canReviewDrivers) return '/';
   if (path.startsWith('/owners') && !profile.canReviewOwners) return '/';
+  if (path.startsWith('/vehicles') && !profile.canReviewVehicles) return '/';
   return null;
 }
 
@@ -64,6 +67,17 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: ':id',
                 builder: (_, state) => OwnerCaseScreen(caseId: state.pathParameters['id']!),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/vehicles',
+            builder: (_, state) =>
+                VehicleQueueScreen(initialStatus: state.uri.queryParameters['status']),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (_, state) => VehicleCaseScreen(caseId: state.pathParameters['id']!),
               ),
             ],
           ),
