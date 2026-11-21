@@ -86,6 +86,8 @@ jobs:
         run: npm run test:coverage:drivers
       - name: Owner verification coverage (target 90% lines)
         run: npm run test:coverage:owners
+      - name: Vehicle verification coverage (target 90% lines)
+        run: npm run test:coverage:vehicles
       - run: npm run build
       - run: npm run audit:deps
 

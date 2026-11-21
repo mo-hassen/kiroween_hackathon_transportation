@@ -2,10 +2,11 @@
 
 A platform that connects verified vehicle owners with verified drivers in Addis Ababa.
 
-Status: **Phase 6 (owner verification) implemented, awaiting review.** Customers become
-individual or organization owners; organizations need two different verification officers to
-approve (four-eyes). Phases 3–5 (authentication, identity, documents and driver verification) are
-complete. See [`docs/reports/phase-06.md`](docs/reports/phase-06.md),
+Status: **Phase 7 (vehicle registration and verification) implemented, awaiting review.**
+Verified owners register vehicles with documents and photos; verification officers approve,
+reject, suspend or reinstate them. Phase 6 (owner verification, four-eyes for organizations) and
+phases 3–5 (authentication, identity, documents and driver verification) are complete. See
+[`docs/reports/phase-07.md`](docs/reports/phase-07.md), [`docs/reports/phase-06.md`](docs/reports/phase-06.md),
 [`docs/reports/phase-05.md`](docs/reports/phase-05.md),
 [`docs/reports/phase-04.md`](docs/reports/phase-04.md),
 [`docs/reports/phase-03.md`](docs/reports/phase-03.md),
@@ -70,6 +71,8 @@ npm run build && npm run start:dev
 | `npm run identity:expire` | Applies due identity expiries (run from a scheduler; after `npm run build`) |
 | `npm run drivers:refresh` | Nightly: expires licences by Addis Ababa date and refreshes driver eligibility |
 | `npm run test:coverage:owners` | Coverage of owner verification code; fails below 90% lines |
+| `npm run test:coverage:vehicles` | Coverage of vehicle registration and verification code; fails below 90% lines |
+| `npm run vehicles:refresh` | Nightly: moves approved vehicles whose insurance or inspection ended to EXPIRED (no scheduler is deployed yet; run it from cron) |
 | `npm run owners:refresh` | Nightly: applies identity expiries and moves affected verified owners to EXPIRED / REVERIFICATION_REQUIRED |
 | `npm run audit:deps` | Production dependency audit |
 
@@ -147,6 +150,16 @@ letter) through the same document pipeline; owner documents accept JPEG, PNG and
 Officers with `owners.review` (VERIFICATION_OFFICER only) review in the staff console under
 "Owner verification". An organization needs a first approval and then a second approval by a
 different officer; the API and the database both refuse the same officer twice.
+
+## Vehicle verification in development
+A VERIFIED owner registers vehicles with `POST /api/v1/vehicles`, attaches four documents
+(registration, ownership proof, insurance, inspection) and five photos (front, back, left, right,
+plate) through `PUT /api/v1/vehicles/{id}/evidence/{slot}`, then submits with
+`POST /api/v1/vehicles/{id}/submit`. `GET /api/v1/vehicles/{id}/status` lists what still blocks a
+submission. Officers with `vehicles.verify` (VERIFICATION_OFFICER only) review under
+`/api/v1/admin/vehicle-verifications` and in the staff console under "Vehicles". An approved
+vehicle is verified, not listed: marketplace availability is a later phase. Insurance and
+inspection end dates are checked lazily and by `npm run vehicles:refresh` (no scheduler yet).
 
 ## Admin web console
 
