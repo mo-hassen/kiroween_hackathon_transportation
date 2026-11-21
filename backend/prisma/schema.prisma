@@ -151,6 +151,12 @@ model User {
   licenseDecisions      DriverLicense[]        @relation("DriverLicenseDecider")
   driverReviewEvents    DriverReviewEvent[]
   notifications         Notification[]
+  ownerProfile          OwnerProfile?
+  ownerClaims           OwnerProfile[]         @relation("OwnerProfileClaimer")
+  ownerFirstApprovals   OwnerProfile[]         @relation("OwnerProfileFirstApprover")
+  ownerVerifications    OwnerProfile[]         @relation("OwnerProfileVerifier")
+  ownerDecisions        OwnerProfile[]         @relation("OwnerProfileDecider")
+  ownerReviewEvents     OwnerReviewEvent[]
 
   @@map("users")
 }
@@ -401,6 +407,10 @@ model IdentityVerification {
 enum DocumentPurpose {
   DRIVER_LICENSE_FRONT
   DRIVER_LICENSE_BACK
+  // Phase 6: organization owners (images only; see document-policy.ts).
+  OWNER_TIN
+  OWNER_BUSINESS_LICENSE
+  OWNER_REPRESENTATIVE_LETTER
 }
 
 // Upload and processing lifecycle (separate from the review decision).
@@ -462,6 +472,9 @@ enum ReviewReasonCode {
   INVALID_LICENSE_DETAILS
   SUSPECTED_FRAUD
   SAFETY_CONCERN
+  // Phase 6: owner verification.
+  INVALID_ORGANIZATION_DETAILS
+  REPRESENTATIVE_NOT_AUTHORIZED
   OTHER
 }
 
@@ -499,6 +512,7 @@ model Document {
   owner       User                   @relation("DocumentOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
   reviewedBy  User?                  @relation("DocumentReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
   licenseLink DriverLicenseDocument?
+  ownerLink   OwnerDocument?
 
   @@index([ownerUserId, createdAt(sort: Desc)])
   // Partial (WHERE upload_status IN (PENDING_UPLOAD, UPLOADED, PROCESSING)) in SQL: cleanup.
@@ -601,6 +615,98 @@ model DriverReviewEvent {
 }
 
 // Thin in-app notifications (10 §1). Delivery (push/SMS) and the list API are Phase 15.
+// --- Phase 6: owner verification (02 §3.4, 03 "owner_profiles", 08 §7) -------------
+
+enum OwnerType {
+  INDIVIDUAL
+  ORGANIZATION
+}
+
+// 02 §3.4. Review claims and the four-eyes first approval are separate columns, not states.
+enum OwnerVerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+  SUSPENDED
+  EXPIRED
+  REVERIFICATION_REQUIRED
+}
+
+model OwnerProfile {
+  id                 String                  @id @default(uuid(7)) @db.Uuid
+  userId             String                  @unique @map("user_id") @db.Uuid
+  ownerType          OwnerType               @map("owner_type")
+  organizationName   String?                 @map("organization_name")
+  // AES-256-GCM; associated data binds it to this row. Never logged or returned in full.
+  tinEnc             Bytes?                  @map("tin_enc")
+  // Keyed HMAC of the normalized TIN: one organization per TIN across accounts.
+  tinHmac            String?                 @unique @map("tin_hmac")
+  // Last 4 characters, for masked display only.
+  tinLast4           String?                 @map("tin_last4")
+  verificationStatus OwnerVerificationStatus @default(UNVERIFIED) @map("verification_status")
+  submittedAt        DateTime?               @map("submitted_at") @db.Timestamptz(6)
+  claimedById        String?                 @map("claimed_by") @db.Uuid
+  claimExpiresAt     DateTime?               @map("claim_expires_at") @db.Timestamptz(6)
+  // Organization owners: first of two approvals by different officers [ASSUMPTION] 08 §7.
+  firstApprovedById  String?                 @map("first_approved_by") @db.Uuid
+  firstApprovedAt    DateTime?               @map("first_approved_at") @db.Timestamptz(6)
+  firstApprovalNote  String?                 @map("first_approval_note")
+  // The approval that made the owner VERIFIED (individual: the only one; organization: the second).
+  verifiedById       String?                 @map("verified_by") @db.Uuid
+  verifiedAt         DateTime?               @map("verified_at") @db.Timestamptz(6)
+  decidedById        String?                 @map("decided_by") @db.Uuid
+  decidedAt          DateTime?               @map("decided_at") @db.Timestamptz(6)
+  decisionReasonCode ReviewReasonCode?       @map("decision_reason_code")
+  // Rejection note is shown to the owner (plain text); suspension notes are internal.
+  decisionNote       String?                 @map("decision_note")
+  createdAt          DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version            Int                     @default(0)
+
+  user            User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  claimedBy       User?              @relation("OwnerProfileClaimer", fields: [claimedById], references: [id], onDelete: Restrict)
+  firstApprovedBy User?              @relation("OwnerProfileFirstApprover", fields: [firstApprovedById], references: [id], onDelete: Restrict)
+  verifiedBy      User?              @relation("OwnerProfileVerifier", fields: [verifiedById], references: [id], onDelete: Restrict)
+  decidedBy       User?              @relation("OwnerProfileDecider", fields: [decidedById], references: [id], onDelete: Restrict)
+  documents       OwnerDocument[]
+  events          OwnerReviewEvent[]
+
+  @@index([verificationStatus, submittedAt])
+  @@map("owner_profiles")
+}
+
+model OwnerDocument {
+  ownerProfileId String          @map("owner_profile_id") @db.Uuid
+  documentId     String          @unique @map("document_id") @db.Uuid
+  purpose        DocumentPurpose
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  profile  OwnerProfile @relation(fields: [ownerProfileId], references: [id], onDelete: Cascade)
+  document Document     @relation(fields: [documentId], references: [id], onDelete: Restrict)
+
+  @@id([ownerProfileId, purpose])
+  @@map("owner_documents")
+}
+
+model OwnerReviewEvent {
+  id             String                   @id @default(uuid(7)) @db.Uuid
+  ownerProfileId String                   @map("owner_profile_id") @db.Uuid
+  actorUserId    String?                  @map("actor_user_id") @db.Uuid
+  action         String
+  fromStatus     OwnerVerificationStatus? @map("from_status")
+  toStatus       OwnerVerificationStatus  @map("to_status")
+  reasonCode     ReviewReasonCode?        @map("reason_code")
+  note           String?
+  createdAt      DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  profile OwnerProfile @relation(fields: [ownerProfileId], references: [id], onDelete: Restrict)
+  actor   User?        @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([ownerProfileId, createdAt])
+  @@map("owner_review_events")
+}
+
 model Notification {
   id              String    @id @default(uuid(7)) @db.Uuid
   recipientUserId String    @map("recipient_user_id") @db.Uuid
