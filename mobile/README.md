@@ -40,5 +40,12 @@ Idempotency-Key per visit. Officer notes are shown as plain text. The screens on
 `GET /drivers/me` allows (`editable`, eligibility blockers); the server enforces every rule. With
 the emulator, run `adb reverse tcp:58333 tcp:58333` so presigned storage URLs resolve.
 
+Owner onboarding (Phase 6): `features/owner/` lets a customer choose individual or organization,
+enter the organization name and TIN (only ever shown masked), upload the three organization
+documents and submit. Uploads go through `features/documents/document_upload.dart`, the same
+resumable job the driver licence photos use (`LicenseUploadJob` now delegates to it). Statuses:
+not submitted, pending, verified, rejected (reason and note as plain text), suspended, expired and
+re-verification required, each with guidance.
+
 Rules: no hard-coded user-facing strings (a test enforces this for `Text('...')`), no
 `double` for money (use `Money` from `packages/core_shared`), no secrets in `config/*.json`.

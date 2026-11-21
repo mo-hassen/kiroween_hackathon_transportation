@@ -2,10 +2,11 @@
 
 A platform that connects verified vehicle owners with verified drivers in Addis Ababa.
 
-Status: **Phase 5 (documents, driver licence verification, minimal admin web) implemented, awaiting
-review.** Drivers upload licence photos that are checked and re-encoded by the API; verification
-officers review them in the staff console. Phase 4 (identity verification) and Phase 3
-(authentication) are complete. See [`docs/reports/phase-05.md`](docs/reports/phase-05.md),
+Status: **Phase 6 (owner verification) implemented, awaiting review.** Customers become
+individual or organization owners; organizations need two different verification officers to
+approve (four-eyes). Phases 3–5 (authentication, identity, documents and driver verification) are
+complete. See [`docs/reports/phase-06.md`](docs/reports/phase-06.md),
+[`docs/reports/phase-05.md`](docs/reports/phase-05.md),
 [`docs/reports/phase-04.md`](docs/reports/phase-04.md),
 [`docs/reports/phase-03.md`](docs/reports/phase-03.md),
 [`docs/reports/phase-02.md`](docs/reports/phase-02.md) and the roadmap in
@@ -68,6 +69,8 @@ npm run build && npm run start:dev
 | `npm run test:coverage:drivers` | Coverage of documents, drivers and scanner code; fails below 90% lines |
 | `npm run identity:expire` | Applies due identity expiries (run from a scheduler; after `npm run build`) |
 | `npm run drivers:refresh` | Nightly: expires licences by Addis Ababa date and refreshes driver eligibility |
+| `npm run test:coverage:owners` | Coverage of owner verification code; fails below 90% lines |
+| `npm run owners:refresh` | Nightly: applies identity expiries and moves affected verified owners to EXPIRED / REVERIFICATION_REQUIRED |
 | `npm run audit:deps` | Production dependency audit |
 
 Schema changes: edit `prisma/schema.prisma`, run `npx prisma migrate dev --create-only --name <name>`,
@@ -134,6 +137,16 @@ then stores the copy that can be downloaded (60-second URLs).
 - Reviews need a staff account with the `VERIFICATION_OFFICER` role (assigned by a super
   administrator with `POST /api/v1/admin/staff/{id}/roles`). Super administrators, support and
   finance staff cannot review licences.
+
+## Owner verification in development
+
+`POST /api/v1/owners/me` creates an INDIVIDUAL owner (needs only a verified identity) or an
+ORGANIZATION owner (organization name and TIN; the TIN is encrypted, never returned in full).
+Organizations upload three photos (TIN certificate, business licence, authorized-representative
+letter) through the same document pipeline; owner documents accept JPEG, PNG and WebP only.
+Officers with `owners.review` (VERIFICATION_OFFICER only) review in the staff console under
+"Owner verification". An organization needs a first approval and then a second approval by a
+different officer; the API and the database both refuse the same officer twice.
 
 ## Admin web console
 
