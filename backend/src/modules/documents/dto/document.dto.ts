@@ -8,7 +8,13 @@ import type {
 } from '../../../generated/prisma/client.js';
 import { ALLOWED_MIME_TYPES } from '../file-inspection.js';
 
-export const DOCUMENT_PURPOSES: DocumentPurpose[] = ['DRIVER_LICENSE_FRONT', 'DRIVER_LICENSE_BACK'];
+export const DOCUMENT_PURPOSES: DocumentPurpose[] = [
+  'DRIVER_LICENSE_FRONT',
+  'DRIVER_LICENSE_BACK',
+  'OWNER_TIN',
+  'OWNER_BUSINESS_LICENSE',
+  'OWNER_REPRESENTATIVE_LETTER',
+];
 const UPLOAD_STATUSES: DocumentUploadStatus[] = [
   'PENDING_UPLOAD',
   'UPLOADED',

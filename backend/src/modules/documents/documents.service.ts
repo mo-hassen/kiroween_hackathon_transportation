@@ -133,8 +133,21 @@ export class DocumentsService {
     return { document: toDocumentResponse(document), upload: presentedRequest(upload) };
   }
 
-  /** Driver licence images need a driver profile (the only Phase 5 purposes). */
+  /**
+   * Driver licence images need a driver profile; organization documents need an
+   * ORGANIZATION owner profile (individual owners upload nothing).
+   */
   private async assertPurposeAllowed(userId: string, purpose: DocumentPurpose): Promise<void> {
+    if (purpose.startsWith('OWNER_')) {
+      const owner = await this.prisma.ownerProfile.findUnique({
+        where: { userId },
+        select: { ownerType: true },
+      });
+      if (owner?.ownerType !== 'ORGANIZATION') {
+        throw new DomainError(ErrorCode.OWNER_PROFILE_REQUIRED, HttpStatus.CONFLICT);
+      }
+      return;
+    }
     if (purpose.startsWith('DRIVER_LICENSE_')) {
       const profile = await this.prisma.driverProfile.findUnique({
         where: { userId },
@@ -434,6 +447,29 @@ export class DocumentsService {
     ) {
       throw new DomainError(ErrorCode.DOCUMENT_NOT_AVAILABLE, HttpStatus.CONFLICT);
     }
+  }
+}
+
+/** Rejects anything an owner may not attach (same rules as licences, for owner links). */
+export async function assertAttachableToOwner(
+  tx: Tx,
+  userId: string,
+  documentId: string,
+  purpose: DocumentPurpose,
+  ownerProfileId: string,
+): Promise<void> {
+  const document = await tx.document.findUnique({
+    where: { id: documentId },
+    include: { ownerLink: true },
+  });
+  if (document === null || document.ownerUserId !== userId) throw notFound();
+  if (
+    document.purpose !== purpose ||
+    document.uploadStatus !== 'AVAILABLE' ||
+    document.reviewStatus !== 'DRAFT' ||
+    (document.ownerLink !== null && document.ownerLink.ownerProfileId !== ownerProfileId)
+  ) {
+    throw new DomainError(ErrorCode.DOCUMENT_NOT_AVAILABLE, HttpStatus.CONFLICT);
   }
 }
 

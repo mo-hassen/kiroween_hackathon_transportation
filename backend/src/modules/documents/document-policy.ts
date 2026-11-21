@@ -2,6 +2,9 @@ import type { AccountType, DocumentPurpose } from '../../generated/prisma/client
 import type { RateLimitRule } from '../../common/rate-limit/rate-limit.service.js';
 import { ALLOWED_MIME_TYPES, type AllowedMimeType } from './file-inspection.js';
 
+/** Images only: re-encoded without metadata. PDFs are not accepted for owner documents. */
+const IMAGE_TYPES: readonly AllowedMimeType[] = ['image/jpeg', 'image/png', 'image/webp'];
+
 const MB = 1024 * 1024;
 
 export interface PurposePolicy {
@@ -23,6 +26,14 @@ export const PURPOSE_POLICIES: Readonly<Record<DocumentPurpose, PurposePolicy>> 
   DRIVER_LICENSE_BACK: {
     accountTypes: ['CUSTOMER'],
     mimeTypes: ALLOWED_MIME_TYPES,
+    maxBytes: 10 * MB,
+  },
+  // Phase 6: organization owners (photos of paper documents).
+  OWNER_TIN: { accountTypes: ['CUSTOMER'], mimeTypes: IMAGE_TYPES, maxBytes: 10 * MB },
+  OWNER_BUSINESS_LICENSE: { accountTypes: ['CUSTOMER'], mimeTypes: IMAGE_TYPES, maxBytes: 10 * MB },
+  OWNER_REPRESENTATIVE_LETTER: {
+    accountTypes: ['CUSTOMER'],
+    mimeTypes: IMAGE_TYPES,
     maxBytes: 10 * MB,
   },
 });
