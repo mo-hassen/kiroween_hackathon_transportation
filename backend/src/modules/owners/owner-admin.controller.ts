@@ -34,6 +34,8 @@ import {
   OwnerReinstateDto,
   OwnerRejectDto,
   OwnerSuspendDto,
+  TinCheckDto,
+  TinCheckResponse,
 } from './dto/owner.dto.js';
 import { OwnerReviewService } from './owner-review.service.js';
 
@@ -205,6 +207,22 @@ export class OwnerAdminController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<OwnerCaseSummaryResponse> {
     return replayed(response, await this.review.reinstate(officer, id, dto.note, key, meta));
+  }
+
+  @Post(':id/tin-check')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({
+    type: TinCheckResponse,
+    description:
+      'Compares the TIN read on the certificate with the stored TIN. Claim holder only; reason required; audited (result only); the stored TIN is never returned',
+  })
+  tinCheck(
+    @CurrentPrincipal() officer: Principal,
+    @Param('id', idPipe) id: string,
+    @Body() dto: TinCheckDto,
+    @ReqMeta() meta: RequestMeta,
+  ): Promise<TinCheckResponse> {
+    return this.review.tinCheck(officer, id, dto, meta);
   }
 
   @Get(':id/documents/:documentId/url')

@@ -281,6 +281,33 @@ export class OwnerReinstateDto {
   note!: string;
 }
 
+/**
+ * The officer types the TIN as printed on the certificate; the server compares it with the
+ * stored HMAC. The stored TIN is never decrypted or returned.
+ */
+export class TinCheckDto {
+  @ApiProperty({
+    maxLength: 40,
+    description: 'As printed on the TIN certificate; never stored or logged',
+  })
+  @IsString()
+  @MaxLength(40)
+  tin!: string;
+
+  @ApiProperty({ minLength: 10, maxLength: 500, description: 'Why the check is made (audited)' })
+  @Transform(trim)
+  @IsString()
+  @MinLength(10)
+  @MaxLength(500)
+  reason!: string;
+}
+
+export class TinCheckResponse {
+  @ApiProperty({ description: 'The typed TIN equals the stored TIN (after normalization)' })
+  matches!: boolean;
+  @ApiProperty({ format: 'date-time' }) checkedAt!: string;
+}
+
 export class OwnerCaseSummaryResponse {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ enum: OWNER_TYPES }) ownerType!: OwnerType;
@@ -339,6 +366,8 @@ export class OwnerCaseDetailResponse extends OwnerCaseSummaryResponse {
   identityVerifiedName!: string | null;
   @ApiProperty({ nullable: true, type: String, description: 'Masked; the full TIN is not shown' })
   tinMasked!: string | null;
+  @ApiProperty({ description: 'The caller confirmed the full TIN for this submission (TIN check)' })
+  tinCheckedByMe!: boolean;
   @ApiProperty({ nullable: true, type: String, format: 'uuid' }) firstApprovedById!: string | null;
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) firstApprovedAt!:
     string | null;

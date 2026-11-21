@@ -53,6 +53,7 @@ export const ErrorCode = {
   OWNER_SUBMISSION_INCOMPLETE: 'OWNER_SUBMISSION_INCOMPLETE',
   FIRST_APPROVAL_REQUIRED: 'FIRST_APPROVAL_REQUIRED',
   SECOND_APPROVER_REQUIRED: 'SECOND_APPROVER_REQUIRED',
+  TIN_CHECK_REQUIRED: 'TIN_CHECK_REQUIRED',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
@@ -101,6 +102,7 @@ const TITLES: Record<ErrorCode, string> = {
   OWNER_SUBMISSION_INCOMPLETE: 'The verification request is incomplete',
   FIRST_APPROVAL_REQUIRED: 'A first approval is required before the second approval',
   SECOND_APPROVER_REQUIRED: 'A different verification officer must give the second approval',
+  TIN_CHECK_REQUIRED: 'Check the TIN against the certificate before approving',
 };
 
 const STATUS_TO_CODE: Partial<Record<number, ErrorCode>> = {

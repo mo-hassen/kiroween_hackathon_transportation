@@ -1,12 +1,18 @@
+import { timingSafeEqual } from 'node:crypto';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import type { Principal } from '../../common/auth/principal.js';
 import { AuditService } from '../../common/audit/audit.service.js';
 import { FieldEncryption } from '../../common/crypto/field-encryption.js';
-import { DomainError, ErrorCode } from '../../common/http/problem-details.js';
+import { SecretHasher } from '../../common/crypto/secret-hasher.js';
+import { DomainError, ErrorCode, validationError } from '../../common/http/problem-details.js';
 import type { RequestMeta } from '../../common/http/request-meta.js';
 import { IdempotencyService } from '../../common/idempotency/idempotency.service.js';
 import { NotificationService } from '../../common/notifications/notification.service.js';
 import { OutboxService } from '../../common/outbox/outbox.service.js';
+import {
+  RateLimitService,
+  type RateLimitRule,
+} from '../../common/rate-limit/rate-limit.service.js';
 import type {
   OwnerVerificationStatus,
   Prisma,
@@ -27,12 +33,29 @@ import type {
   OwnerQueueQuery,
   OwnerRejectDto,
   OwnerSuspendDto,
+  TinCheckDto,
+  TinCheckResponse,
 } from './dto/owner.dto.js';
-import { approvalBlockers, type ApprovalAction, approvalRefusal, maskTin } from './owner-rules.js';
+import {
+  approvalBlockers,
+  type ApprovalAction,
+  approvalRefusal,
+  maskTin,
+  normalizeTin,
+} from './owner-rules.js';
 import { OwnerStatusService } from './owner-status.service.js';
 import { documentFacts, documentSlots, OWNER_INCLUDE } from './owners.service.js';
 
 type Tx = Prisma.TransactionClient;
+
+/** Audit action of a TIN check; its `changes.matches` is the result (never the value). */
+export const TIN_CHECK_ACTION = 'owner.tin_checked_by_staff';
+/** A check is a lookup aid for one claimed case, not a search: 10 per officer and case per hour. */
+const TIN_CHECK_LIMIT: RateLimitRule = {
+  name: 'owners-tin-check-1h',
+  limit: 10,
+  windowMs: 60 * 60_000,
+};
 
 const CASE_INCLUDE = {
   ...OWNER_INCLUDE,
@@ -101,6 +124,8 @@ export class OwnerReviewService {
     private readonly status: OwnerStatusService,
     private readonly idempotency: IdempotencyService,
     private readonly encryption: FieldEncryption,
+    private readonly hasher: SecretHasher,
+    private readonly rateLimits: RateLimitService,
     private readonly audit: AuditService,
     private readonly outbox: OutboxService,
     private readonly notifications: NotificationService,
@@ -191,6 +216,7 @@ export class OwnerReviewService {
         select: { id: true, verifiedClaimsEnc: true },
       }),
     ]);
+    const tinCheckedByMe = await this.hasMatchingTinCheck(this.prisma, row, officer);
     await this.audit.record(this.prisma, {
       actor: { type: 'STAFF', userId: officer.userId },
       action: 'owner.case_viewed',
@@ -216,6 +242,7 @@ export class OwnerReviewService {
       identityStatus: row.user.identityStatus,
       identityVerifiedName: verifiedName,
       tinMasked: row.tinLast4 === null ? null : maskTin(row.tinLast4),
+      tinCheckedByMe,
       firstApprovedById: row.firstApprovedById,
       firstApprovedAt: row.firstApprovedAt?.toISOString() ?? null,
       firstApprovalNote: row.firstApprovalNote,
@@ -328,6 +355,7 @@ export class OwnerReviewService {
       this.assertHoldsClaim(row, officer, now);
       this.assertApprovalAllowed('FIRST_APPROVAL', row, officer);
       this.assertApprovable(row);
+      await this.assertTinChecked(tx, row, officer);
       const updated = await tx.ownerProfile.updateMany({
         where: { id: row.id, verificationStatus: 'PENDING', firstApprovedById: null },
         data: {
@@ -366,6 +394,7 @@ export class OwnerReviewService {
       this.assertApprovalAllowed('SECOND_APPROVAL', row, officer);
       this.assertHoldsClaim(row, officer, now);
       this.assertApprovable(row);
+      await this.assertTinChecked(tx, row, officer);
       await this.verify(tx, row, officer, now);
       await tx.document.updateMany({
         where: { id: { in: row.documents.map((d) => d.documentId) } },
@@ -499,6 +528,40 @@ export class OwnerReviewService {
   }
 
   /**
+   * Compares the TIN the officer reads on the certificate with the stored one, without ever
+   * decrypting or returning it. Claim holder only (PENDING organization cases), with a
+   * reason; audited with the result only; rate-limited per officer and case.
+   */
+  async tinCheck(
+    officer: Principal,
+    caseId: string,
+    dto: TinCheckDto,
+    meta: RequestMeta,
+  ): Promise<TinCheckResponse> {
+    const row = await this.load(this.prisma, caseId);
+    if (row.userId === officer.userId || row.ownerType !== 'ORGANIZATION' || row.tinHmac === null) {
+      throw notFound();
+    }
+    this.assertHoldsClaim(row, officer, new Date());
+    await this.rateLimits.consume(TIN_CHECK_LIMIT, `${officer.userId}:${row.id}`);
+    const typed = normalizeTin(dto.tin);
+    if (typed === null) throw validationError('tin', 'INVALID_FORMAT');
+    const expected = Buffer.from(row.tinHmac, 'hex');
+    const actual = Buffer.from(this.hasher.hmacHex('tin', typed), 'hex');
+    const matches = expected.length === actual.length && timingSafeEqual(expected, actual);
+    const checkedAt = new Date();
+    await this.audit.record(this.prisma, {
+      actor: { type: 'STAFF', userId: officer.userId },
+      action: TIN_CHECK_ACTION,
+      target: { type: 'owner_profile', id: row.id },
+      reason: dto.reason,
+      changes: { matches },
+      meta,
+    });
+    return { matches, checkedAt: checkedAt.toISOString() };
+  }
+
+  /**
    * 60-second URL to a case document, audited with the reason. While a case is PENDING,
    * only the officer holding the claim may open its documents.
    */
@@ -578,6 +641,29 @@ export class OwnerReviewService {
       },
     );
     return { replayed: result.replayed, body: await this.summaryOf(caseId, officer) };
+  }
+
+  /** A matching TIN check by this officer for the current submission. */
+  private async hasMatchingTinCheck(db: Tx, row: CaseRow, officer: Principal): Promise<boolean> {
+    if (row.ownerType !== 'ORGANIZATION' || row.submittedAt === null) return false;
+    const check = await db.auditLog.findFirst({
+      where: {
+        action: TIN_CHECK_ACTION,
+        actorUserId: officer.userId,
+        targetId: row.id,
+        occurredAt: { gte: row.submittedAt },
+        changes: { path: ['matches'], equals: true },
+      },
+      select: { seq: true },
+    });
+    return check !== null;
+  }
+
+  /** Each approving officer must have confirmed the full TIN themselves (independent review). */
+  private async assertTinChecked(tx: Tx, row: CaseRow, officer: Principal): Promise<void> {
+    if (!(await this.hasMatchingTinCheck(tx, row, officer))) {
+      throw new DomainError(ErrorCode.TIN_CHECK_REQUIRED, HttpStatus.CONFLICT);
+    }
   }
 
   private async summaryOf(caseId: string, officer: Principal): Promise<OwnerCaseSummaryResponse> {
