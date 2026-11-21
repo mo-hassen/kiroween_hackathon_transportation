@@ -4,7 +4,12 @@ import sharp from 'sharp';
 import { bearer, type Customer, http, registerCustomer, type Tokens } from './auth-helpers.js';
 import { verifyIdentity } from './identity-helpers.js';
 
-export type Purpose = 'DRIVER_LICENSE_FRONT' | 'DRIVER_LICENSE_BACK';
+export type Purpose =
+  | 'DRIVER_LICENSE_FRONT'
+  | 'DRIVER_LICENSE_BACK'
+  | 'OWNER_TIN'
+  | 'OWNER_BUSINESS_LICENSE'
+  | 'OWNER_REPRESENTATIVE_LETTER';
 
 export function sha256(bytes: Buffer): string {
   return createHash('sha256').update(bytes).digest('hex');

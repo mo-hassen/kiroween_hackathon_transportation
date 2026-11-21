@@ -20,6 +20,13 @@ import {
   uploadDocument,
 } from '../helpers/document-helpers.js';
 import { startVerification } from '../helpers/identity-helpers.js';
+import {
+  attachOwnerDocument,
+  ORG_APPROVAL,
+  preparedOwner,
+  uniqueTin,
+  uploadOwnerDocument,
+} from '../helpers/owner-helpers.js';
 import { collectRoutes } from '../helpers/routes.js';
 import { createTestApp, type TestApp } from '../helpers/test-app.js';
 
@@ -53,6 +60,10 @@ interface Fixtures {
   /** A submitted driver case (another driver) and its front image. */
   caseId: string;
   caseDocumentId: string;
+  /** Phase 6: otherCustomer's organization owner document, and a submitted owner case. */
+  otherCustomerOwnerDocumentId: string;
+  ownerCaseId: string;
+  ownerCaseDocumentId: string;
 }
 
 interface Row {
@@ -434,6 +445,144 @@ const PHASE5_ROWS: Row[] = [
 ];
 ROWS.push(...PHASE5_ROWS);
 
+/**
+ * Phase 6. Both customers are driver accounts (driverFixtures). otherCustomer is the owner
+ * (an organization profile); customer is a different customer with no owner profile until
+ * the first row creates an individual one. The case belongs to a third owner.
+ */
+async function ownerFixtures(
+  app: TestApp['app'],
+  other: Tokens,
+): Promise<Pick<Fixtures, 'otherCustomerOwnerDocumentId' | 'ownerCaseId' | 'ownerCaseDocumentId'>> {
+  await http(app)
+    .post('/api/v1/owners/me')
+    .set(bearer(other))
+    .send({ ownerType: 'ORGANIZATION', organizationName: 'Matrix Transport PLC', tin: uniqueTin() })
+    .expect(201);
+  const documentId = await uploadOwnerDocument(app, other, 'tin');
+  await attachOwnerDocument(app, other, 'tin', documentId);
+  const owner = await preparedOwner(app, { submit: true });
+  return {
+    otherCustomerOwnerDocumentId: documentId,
+    ownerCaseId: owner.profileId,
+    ownerCaseDocumentId: owner.documents.tin!,
+  };
+}
+
+const ownerReviewer = verificationOfficerOnly;
+const decision = (path: string, body: object) => (a: ReturnType<typeof http>, fx: Fixtures) =>
+  a
+    .post(`/api/v1/admin/owner-verifications/${fx.ownerCaseId}/${path}`)
+    .set('Idempotency-Key', randomUUID())
+    .send(body);
+
+const PHASE6_ROWS: Row[] = [
+  {
+    // customer creates an individual profile (201); otherCustomer already has one (200).
+    route: 'POST owners/me',
+    call: (a) => a.post('/api/v1/owners/me').send({ ownerType: 'INDIVIDUAL' }),
+    expect: customersOnly(201, 200),
+  },
+  {
+    route: 'GET owners/me',
+    call: (a) => a.get('/api/v1/owners/me'),
+    expect: customersOnly(200, 200),
+  },
+  {
+    route: 'PATCH owners/me',
+    call: (a) => a.patch('/api/v1/owners/me').set('If-Match', '0').send({}),
+    expect: customersOnly(200, 200),
+  },
+  {
+    route: 'GET owners/me/status',
+    call: (a) => a.get('/api/v1/owners/me/status'),
+    expect: customersOnly(200, 200),
+  },
+  {
+    // Someone else's document: 404 for customer (IDOR); otherCustomer replaces its own.
+    route: 'PUT owners/me/documents/:slot',
+    call: (a, fx) =>
+      a
+        .put('/api/v1/owners/me/documents/tin')
+        .send({ documentId: fx.otherCustomerOwnerDocumentId }),
+    expect: customersOnly(404, 200),
+  },
+  {
+    // 422 for both: identities not verified (and documents missing).
+    route: 'POST owners/me/submit',
+    call: (a) => a.post('/api/v1/owners/me/submit').set('Idempotency-Key', randomUUID()),
+    expect: customersOnly(422, 422),
+  },
+  {
+    route: 'GET admin/owner-verifications',
+    call: (a) => a.get('/api/v1/admin/owner-verifications'),
+    expect: ownerReviewer(200),
+  },
+  {
+    route: 'GET admin/owner-verifications/counts',
+    call: (a) => a.get('/api/v1/admin/owner-verifications/counts'),
+    expect: ownerReviewer(200),
+  },
+  {
+    route: 'GET admin/owner-verifications/:id',
+    call: (a, fx) => a.get(`/api/v1/admin/owner-verifications/${fx.ownerCaseId}`),
+    expect: ownerReviewer(200),
+  },
+  {
+    route: 'POST admin/owner-verifications/:id/claim',
+    call: (a, fx) => a.post(`/api/v1/admin/owner-verifications/${fx.ownerCaseId}/claim`),
+    expect: ownerReviewer(200),
+  },
+  {
+    // After the claim above: the officer holds it.
+    route: 'GET admin/owner-verifications/:id/documents/:documentId/url',
+    call: (a, fx) =>
+      a
+        .get(
+          `/api/v1/admin/owner-verifications/${fx.ownerCaseId}/documents/${fx.ownerCaseDocumentId}/url`,
+        )
+        .query({ reason: 'Authorization matrix check' }),
+    expect: ownerReviewer(200),
+  },
+  {
+    route: 'POST admin/owner-verifications/:id/release',
+    call: (a, fx) => a.post(`/api/v1/admin/owner-verifications/${fx.ownerCaseId}/release`),
+    expect: ownerReviewer(200),
+  },
+  {
+    // 409 for the officer below: released above, so not claimed (or not VERIFIED/SUSPENDED).
+    route: 'POST admin/owner-verifications/:id/approve',
+    call: decision('approve', { identityConfirmed: true }),
+    expect: ownerReviewer(409),
+  },
+  {
+    route: 'POST admin/owner-verifications/:id/first-approval',
+    call: decision('first-approval', ORG_APPROVAL),
+    expect: ownerReviewer(409),
+  },
+  {
+    route: 'POST admin/owner-verifications/:id/second-approval',
+    call: decision('second-approval', ORG_APPROVAL),
+    expect: ownerReviewer(409),
+  },
+  {
+    route: 'POST admin/owner-verifications/:id/reject',
+    call: decision('reject', { reasonCode: 'BLURRY' }),
+    expect: ownerReviewer(409),
+  },
+  {
+    route: 'POST admin/owner-verifications/:id/suspend',
+    call: decision('suspend', { reasonCode: 'OTHER', note: 'Authorization matrix check' }),
+    expect: ownerReviewer(409),
+  },
+  {
+    route: 'POST admin/owner-verifications/:id/reinstate',
+    call: decision('reinstate', { note: 'Authorization matrix check' }),
+    expect: ownerReviewer(409),
+  },
+];
+ROWS.push(...PHASE6_ROWS);
+
 const normalizeRoute = (route: string) => route.replace(/:[a-z]+/g, ':param');
 
 describe('authorization matrix', () => {
@@ -462,6 +611,7 @@ describe('authorization matrix', () => {
         .verification.id as string,
       managedStaffId: managed.userId,
       ...(await driverFixtures(app, customer.tokens, other.tokens)),
+      ...(await ownerFixtures(app, other.tokens)),
     };
   });
   afterAll(async () => {
